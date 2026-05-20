@@ -5,7 +5,7 @@ type Props = {}
 
 const LeftSidebar = (props: Props) => {
   return (
-     <div className="w-1/2 bg-[#005864]  flex flex-col items-center justify-center relative overflow-hidden">
+     <div className="w-1/2 bg-[#005864]  hidden lg:flex flex-col items-center justify-center relative overflow-hidden">
         {/* Decorative circle background */}
         <div className="absolute w-full h-full rounded-full opacity-20" style={{
           background: 'radial-gradient(circle, rgba(215,223,35,0.21) 0%, rgba(0,88,100,0.21) 100%)'

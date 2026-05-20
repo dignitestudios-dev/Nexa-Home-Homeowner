@@ -8,9 +8,19 @@ import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { useCompleteProfile } from '@/features/user/hooks'
 
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+
 const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  referralCode: z.string().optional(),
+  name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(30, 'Name must be at most 30 characters')
+    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens and apostrophes'),
+  referralCode: z
+    .string()
+    .max(30, 'Referral code must be at most 30 characters')
+    .optional()
+    .or(z.literal('')),
 })
 
 type ProfileFormData = z.infer<typeof profileSchema>
@@ -19,6 +29,7 @@ const Profile = () => {
   const router = useRouter()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState('')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
@@ -40,8 +51,10 @@ const Profile = () => {
   const onSubmit = (data: ProfileFormData) => {
     completeProfile({
       name: data.name,
-      referralCode: data.referralCode,
-      profilePicture: photoFile ?? undefined,
+      referralCode: data.referralCode || undefined,
+      profilePicture: photoFile
+        ? { location: URL.createObjectURL(photoFile), file: photoFile }
+        : undefined,
     })
   }
 
@@ -82,22 +95,43 @@ const Profile = () => {
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (!file) return
+                if (!VALID_IMAGE_TYPES.includes(file.type)) {
+                  setPhotoError('Please select a valid image format (JPEG, PNG, JPG, GIF, WEBP).')
+                  return
+                }
+                setPhotoError('')
                 setPhotoFile(file)
                 setPhotoPreview(URL.createObjectURL(file))
               }}
             />
+            {photoError && <p className="text-red-500 text-xs text-center">{photoError}</p>}
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#181818]">Full Name</label>
-              <Input {...register('name')} placeholder="John Doe" className={inputClass} />
+              <label className="text-sm font-medium text-[#181818]">Name</label>
+              <Input
+                {...register('name', {
+                  onChange: (e) => {
+                    e.target.value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '')
+                  }
+                })}
+                maxLength={30}
+                placeholder="John Doe"
+                className={inputClass}
+              />
               {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#181818]">Referral Code (Optional)</label>
-              <Input {...register('referralCode')} placeholder="e.g., REF123" className={inputClass} />
+              <Input
+                {...register('referralCode')}
+                maxLength={30}
+                placeholder="e.g., REF123"
+                className={inputClass}
+              />
+              {errors.referralCode && <p className="text-red-500 text-xs">{errors.referralCode.message}</p>}
             </div>
 
             <button

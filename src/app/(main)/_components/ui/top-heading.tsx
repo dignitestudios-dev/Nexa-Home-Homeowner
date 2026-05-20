@@ -6,7 +6,7 @@ type Props = {
 
 const TopHeading = ({title}: Props) => {
   return (
-      <h1 className="text-[32px] font-semibold ">{title}</h1>
+      <h1 className="text-[32px] truncate w-[80%] font-semibold ">{title}</h1>
   )
 }
 

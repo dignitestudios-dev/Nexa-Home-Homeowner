@@ -14,12 +14,21 @@ interface VerifyPhoneOtpVars {
   otp: string
 }
 
+interface SendChangeEmailOtpVars {
+  email: string
+}
+
+interface VerifyChangeEmailOtpVars {
+  email: string
+  otp: string
+}
+
 interface User {
   _id: string
   name: string | null
   email: string | null
   phone: string
-  profilePicture: string | null
+  profilePicture: {location:string}
   role: string
   authType: string
   primaryIdentifier: string
@@ -45,8 +54,14 @@ interface VerifyPhoneOtpResponse {
   }
 }
 
+interface GetOwnUserResponse {
+  success: boolean
+  message: string
+  data: User
+}
+
 interface CompleteProfileVars {
-  profilePicture?: File
+  profilePicture?: {location: string, file: File}
   name: string
   referralCode?: string
 }
@@ -54,4 +69,19 @@ interface CompleteProfileVars {
 interface CompleteProfileResponse {
   success: boolean
   message: string
+}
+
+interface SocialAuthVars {
+  idToken: string
+  method: 'google' | 'apple'
+  role: 'user'
+}
+
+interface SocialAuthResponse {
+  success: boolean
+  message: string
+  data?: {
+    token: string
+    user: User
+  }
 }

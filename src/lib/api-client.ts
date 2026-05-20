@@ -5,6 +5,9 @@ import { getToken, removeToken } from "./cookies";
 // Create instance
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true',
+  },
 });
 
 let fpPromise: Promise<string> | null = null;
@@ -49,7 +52,7 @@ apiClient.interceptors.response.use(
 
       if (typeof window !== "undefined") {
         removeToken();
-        // window.location.href = "/";
+        window.location.href = "/";
       }
     }
 

@@ -4,15 +4,19 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Input } from '@/components/ui/input'
+import { Apple } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useSendPhoneOtp } from '@/features/auth/hooks'
+import { useSendPhoneOtp, useSocialAuth } from '@/features/auth/hooks'
+import { signInWithGoogle } from '@/lib/firebase'
+import { setToken } from '@/lib/cookies'
+import Image from 'next/image'
 
+// User enters digits only (10 digits), we prepend +1
 const loginSchema = z.object({
   phone: z
     .string()
     .min(1, 'Phone number is required')
-    .regex(/^\+\d{11}$/, 'Phone number must be in format +XXXXXXXXXXX (11 digits)'),
+    .regex(/^\d{10}$/, 'Enter a valid 10-digit US phone number'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -36,8 +40,40 @@ export default function LoginPage() {
     },
   })
 
+  const { mutate: socialAuth, isPending: isSocialPending } = useSocialAuth({
+    onSuccess: (data) => {
+      if (data.success && data.data) {
+        setToken(data.data.token)
+        if (!data.data.user.isPhoneVerified) {
+          router.push(`/social-phone?isProfileCompleted=${data.data.user.isProfileCompleted}`)
+        } else if (data.data.user.isProfileCompleted) {
+          router.push('/dashboard')
+        } else {
+          router.push('/profile')
+        }
+      }
+    },
+  })
+
+  const [googleError, setGoogleError] = React.useState('')
+
+  const handleGoogleLogin = async () => {
+    try {
+      setGoogleError('')
+      const idToken = await signInWithGoogle()
+      socialAuth({ idToken, method: 'google', role: 'user' })
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code
+      console.error('Google sign-in error:', err)
+      if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+        setGoogleError(`Google sign-in failed: ${code ?? 'unknown error'}`)
+      }
+    }
+  }
+
   const onSubmit = (data: LoginFormData) => {
-    sendOtp({ phone: data.phone, role: 'user' })
+    // Prepend +1 before sending to API
+    sendOtp({ phone: `+1${data.phone}`, role: 'user' })
   }
 
   return (
@@ -54,12 +90,25 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#000000]">Phone Number</label>
-              <Input
-                {...register('phone')}
-                type="tel"
-                placeholder="+12345678911"
-                className="h-12 rounded-[12px] border border-[#005864] bg-[#F8F8F8] px-4 py-3 text-base text-[#1C1C1C] placeholder:text-[rgba(24,24,24,0.6)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-              />
+              <div className="flex items-center gap-2">
+                {/* +1 US flag prefix */}
+                <div className="flex h-12 shrink-0 items-center gap-1.5 rounded-[12px] border border-[#005864] bg-[#F8F8F8] px-3">
+                  <Image src="/images/us-flag.png" alt="US Flag" width={22} height={15} className="object-contain rounded-[2px]" />
+                  <span className="text-sm font-semibold text-[#181818]">+1</span>
+                </div>
+                <input
+                  {...register('phone', {
+                    onChange: (e) => {
+                      e.target.value = e.target.value.replace(/\D/g, '')
+                    }
+                  })}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="Enter your phone number"
+                  className="h-12 flex-1 rounded-[12px] border border-[#005864] bg-[#F8F8F8] px-4 py-3 text-base text-[#1C1C1C] placeholder:text-[rgba(24,24,24,0.6)] focus:outline-none focus:ring-0"
+                />
+              </div>
               {errors.phone && (
                 <p className="text-red-500 text-xs">{errors.phone.message}</p>
               )}
@@ -81,23 +130,27 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 border border-[#E0E0E0] bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="24" height="24" rx="3" fill="none" />
-                <path d="M4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8-8-3.59-8-8z" fill="#FFC107" />
-                <path d="M8.5 12c0-1.93 1.57-3.5 3.5-3.5s3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5-3.5-1.57-3.5-3.5z" fill="#FF3D00" />
-                <path d="M4 12c0-4.41 3.59-8 8-8" stroke="#4CAF50" strokeWidth="2" fill="none" />
-              </svg>
-              <span className="text-sm font-medium text-[#181818]">Google</span>
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isSocialPending}
+              type="button"
+              className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Image src={"/images/google.png"} alt="Google" width={20} height={20} />
+              <span className="text-sm font-medium text-[#181818]">
+                {isSocialPending ? 'Signing in...' : 'Google'}
+              </span>
             </button>
 
-            <button className="flex items-center justify-center gap-2 border border-[#E0E0E0] bg-[#F8F8F8] rounded-xl py-3 hover:bg-[#F0F0F0] transition-colors">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-black">
-                <path d="M17.05 13.5c-.91 0-1.64.55-2.05 1.54h4.1c-.41-1.02-1.14-1.54-2.05-1.54zm-8.93 0c-.91 0-1.64.55-2.05 1.54h4.1c-.41-1.02-1.14-1.54-2.05-1.54zm4.48-2.5c1.52 0 2.75-1.23 2.75-2.75S13.52 5.5 12 5.5s-2.75 1.23-2.75 2.75 1.23 2.75 2.75 2.75z" />
-              </svg>
+            <button
+              className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors"
+              type="button"
+            >
+              <Image src={"/images/apple.png"} alt="Apple" width={20} height={20} />
               <span className="text-sm font-medium text-[#181818]">Apple</span>
             </button>
           </div>
+          {googleError && <p className="mt-3 text-center text-xs text-red-500">{googleError}</p>}
         </div>
       </div>
     </div>
