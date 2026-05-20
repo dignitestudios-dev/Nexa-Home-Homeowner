@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useAddAddress } from '@/features/user/hooks'
+import { PencilLine } from 'lucide-react'
+import { useAddAddress, useGetAddresses, useEditAddress } from '@/features/user/hooks'
 
 const AddAddressDialog = dynamic(
   () => import('@/components/ui/add-address-dialog').then((m) => m.AddAddressDialog),
@@ -12,24 +13,25 @@ const AddAddressDialog = dynamic(
 
 const AddAddress = () => {
   const router = useRouter()
-  const [addresses, setAddresses] = useState<AddressData[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<SavedAddress | null>(null)
   const [addressError, setAddressError] = useState('')
 
+  const { data, isLoading } = useGetAddresses()
+  const addresses = data?.data?.addresses ?? []
+
   const { mutate: addAddress, isPending } = useAddAddress({
-    onSuccess: (data) => {
-      if (data.success) {
-        router.push('/dashboard')
+    onSuccess: (res) => {
+      if (res.success) {
+        setIsDialogOpen(false)
+        setAddressError('')
       }
     },
   })
 
-  const handleSaveAddress = (address: AddressData) => {
-    setAddresses((prev) => [...prev, address])
-    setIsDialogOpen(false)
-    setAddressError('')
-    addAddress(address)
-  }
+  const { mutate: editAddress, isPending: isEditing } = useEditAddress({
+    onSuccess: (res) => { if (res.success) setEditTarget(null) },
+  })
 
   const handleContinue = () => {
     if (addresses.length === 0) {
@@ -58,7 +60,9 @@ const AddAddress = () => {
                 + Add A New Address
               </button>
               <div className="mt-4 rounded-[16px] border border-dashed border-[#005864] bg-white p-4 text-center text-sm text-[rgba(24,24,24,0.7)]">
-                {addresses.length === 0 ? (
+                {isLoading ? (
+                  <p>Loading...</p>
+                ) : addresses.length === 0 ? (
                   <p>No addresses added yet.</p>
                 ) : (
                   <p>{addresses.length} address{addresses.length > 1 ? 'es' : ''} added</p>
@@ -68,13 +72,20 @@ const AddAddress = () => {
 
             {addresses.length > 0 && (
               <div className="space-y-3">
-                {addresses.map((address, index) => (
-                  <div key={index} className="rounded-[18px] border border-[#E5E5E5] bg-[#F8F8F8] p-4">
+                {addresses.map((address) => (
+                  <div key={address._id} className="rounded-[18px] border border-[#E5E5E5] bg-[#F8F8F8] p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-[#181818]">{address.label}</p>
                         <p className="mt-2 text-sm leading-6 text-[rgba(24,24,24,0.7)]">{address.address}</p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setEditTarget(address)}
+                        className="flex size-9 items-center justify-center rounded-lg text-[#1F1F1F] transition hover:bg-[#F0F0F0]"
+                      >
+                        <PencilLine className="size-4" strokeWidth={1.8} />
+                      </button>
                     </div>
                     <div className="mt-4 flex items-center justify-between rounded-[14px] bg-white p-3 text-sm text-[rgba(24,24,24,0.7)]">
                       <span>{address.city}, {address.state}</span>
@@ -82,7 +93,9 @@ const AddAddress = () => {
                     </div>
                     <div className="mt-3 rounded-[14px] bg-white px-4 py-3 text-sm text-[rgba(24,24,24,0.7)]">
                       <div className="font-medium text-[#181818]">Coordinates</div>
-                      <div className="mt-1">Lat: {address.latitude}, Lng: {address.longitude}</div>
+                      <div className="mt-1">
+                        Lat: {address.coordinates.coordinates[1]}, Lng: {address.coordinates.coordinates[0]}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -94,10 +107,9 @@ const AddAddress = () => {
             <button
               type="button"
               onClick={handleContinue}
-              disabled={isPending}
               className="mt-2 w-full rounded-[12px] bg-[#005864] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#004550] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Saving...' : 'Continue'}
+              Continue
             </button>
           </div>
         </div>
@@ -106,8 +118,28 @@ const AddAddress = () => {
       <AddAddressDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        onSave={handleSaveAddress}
+        onSave={(address) => addAddress(address)}
         isPending={isPending}
+      />
+
+      <AddAddressDialog
+        open={!!editTarget}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+        onSave={(address) => editTarget && editAddress({ ...address, id: editTarget._id })}
+        isPending={isEditing}
+        initialData={editTarget ? {
+          label: editTarget.label,
+          address: editTarget.address,
+          country: editTarget.country,
+          state: editTarget.state,
+          city: editTarget.city,
+          zipCode: editTarget.zipCode,
+          longitude: String(editTarget.coordinates.coordinates[0]),
+          latitude: String(editTarget.coordinates.coordinates[1]),
+          lat: editTarget.coordinates.coordinates[1],
+          lng: editTarget.coordinates.coordinates[0],
+        } : undefined}
+        title="Edit Address"
       />
     </div>
   )
