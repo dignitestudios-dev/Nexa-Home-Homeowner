@@ -18,7 +18,7 @@ const LeftSidebar = (props: Props) => {
             alt="NexaHome Logo"
             width={300}
             height={300}
-            // priority
+            priority
           />
         </div>
       </div>
