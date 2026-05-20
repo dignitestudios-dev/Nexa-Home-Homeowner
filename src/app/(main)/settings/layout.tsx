@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useGetOwnUser } from "@/features/user/hooks";
 
 const menuItems = [
   { label: "Notifications", icon: Bell, href: "/settings/notifications" },
@@ -22,7 +23,7 @@ const menuItems = [
   { label: "Change Phone Number", icon: Phone, href: "/settings/change-phone" },
   { label: "Address", icon: MapPin, href: "/settings/address" },
   { label: "Report An Issue", icon: AlertTriangle, href: "/settings/report-issue" },
-  { label: "Report An Issue - 2", icon: AlertTriangle, href: "/settings/report-issue-2" },
+  // { label: "Report An Issue - 2", icon: AlertTriangle, href: "/settings/report-issue-2" },
   { label: "Delete Account", icon: Trash2, href: "/settings/delete-account" },
   { label: "Terms And Conditions", icon: FileText, href: "/settings/terms" },
   { label: "Privacy Policy", icon: Shield, href: "/settings/privacy" },
@@ -31,6 +32,17 @@ const menuItems = [
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const { data , isLoading } = useGetOwnUser()
+  const filteredMenuItems = menuItems.filter((item) => {
+  if (
+    item.href === "/settings/email" &&
+    data?.data?.authType !== "jwt"
+  ) {
+    return false
+  }
+
+  return true
+})
 
   return (
     <div className="min-h-screen bg-[#EFF4F4] px-6 pb-16 pt-10 sm:px-10 lg:px-16">
@@ -42,7 +54,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="grid gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
           <aside className="rounded-[24px] bg-white p-4 shadow-sm">
             <nav className="space-y-4">
-              {menuItems.map((item) => {
+              {filteredMenuItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
 

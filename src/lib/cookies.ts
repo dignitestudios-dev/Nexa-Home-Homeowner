@@ -7,6 +7,7 @@ export const setToken = (token: string) => {
   document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=86400; SameSite=Lax`;
 };
 
+
 // GET cookie
 export const getToken = (): string | null => {
   if (typeof document === "undefined") return null;

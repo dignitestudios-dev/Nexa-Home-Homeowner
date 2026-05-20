@@ -124,12 +124,12 @@ export default function ViewProfile() {
         <div className="flex flex-col gap-1 flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[20px] font-bold text-[#181818] leading-tight truncate">{displayName}</span>
-            {user?.isEmailVerified && (
+            {/* {user?.isEmailVerified && (
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <circle cx="10" cy="10" r="10" fill="#1877F2" />
                 <path d="M6 10.5L8.5 13L14 7.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            )}
+            )} */}
           </div>
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
@@ -204,24 +204,44 @@ export default function ViewProfile() {
             <div className="flex flex-col items-center mt-6 mb-6">
               <div className="relative">
                 {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Profile"
-                    className="h-[106px] w-[106px] rounded-full object-cover"
-                  />
+                  <div className="relative">
+                    <img
+                      src={previewUrl}
+                      alt="Profile"
+                      className="h-[106px] w-[106px] rounded-full object-cover"
+                    />
+                    {picFile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPicFile(null)
+                          setPreviewUrl(user?.profilePicture?.location ?? null)
+                          setPhotoError('')
+                          if (fileInputRef.current) fileInputRef.current.value = ''
+                        }}
+                        className="absolute right-0 top-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-200 text-[#181818] shadow-sm "
+                        aria-label="Cancel selected profile picture"
+                      >
+                        <X className="h-4 w-4" color={"red"} strokeWidth={2} />
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex h-[106px] w-[106px] items-center justify-center rounded-full bg-[#DDEDEF] text-2xl font-semibold text-[#16484D]">
                     {initials}
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="mt-3 text-[16px] font-medium text-[#181818] underline underline-offset-2 capitalize hover:opacity-70 transition-opacity"
-              >
-                Upload Profile Picture
-              </button>
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[16px] font-medium text-[#181818] underline underline-offset-2 capitalize hover:opacity-70 transition-opacity"
+                >
+                  Upload Profile Picture
+                </button>
+            
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -235,7 +255,7 @@ export default function ViewProfile() {
             {/* Email (read-only) */}
             <div className="mb-2">
               <div className="flex items-center h-12 w-full rounded-[12px] bg-[rgba(0,88,100,0.06)] px-4">
-                <span className="text-[16px] text-black">{user?.email ?? '—'}</span>
+                <span className="text-[16px] italic text-black">{user?.email ?? 'Not Provided'}</span>
               </div>
               <p className="mt-2 text-[16px] leading-5 text-[rgba(24,24,24,0.6)]">
                 Your email address cannot be changed for security reasons.

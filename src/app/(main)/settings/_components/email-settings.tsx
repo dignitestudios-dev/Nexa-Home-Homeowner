@@ -33,10 +33,21 @@ export default function EmailSettings() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors , isDirty },
+    reset,
+    watch,
   } = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
   })
+
+  const formEmail = watch('email')
+  const emailChanged = formEmail !== currentEmail
+
+  useEffect(() => {
+    if (typeof currentEmail !== 'undefined') {
+      reset({ email: currentEmail || '' })
+    }
+  }, [currentEmail, reset])
 
   useEffect(() => {
     if (resendTimer > 0 && isDialogOpen) {
@@ -76,6 +87,7 @@ export default function EmailSettings() {
           style: { backgroundColor: '#005864', color: 'white', border: 'none' },
         })
         setIsDialogOpen(false)
+        reset({ email: formEmail })
       } else {
         toast.error(data.message || 'Invalid or expired OTP', {
           style: { backgroundColor: '#005864', color: 'white', border: 'none' },
@@ -87,7 +99,7 @@ export default function EmailSettings() {
         style: { backgroundColor: '#005864', color: 'white', border: 'none' },
       })
     }
-  })
+  }, ['userOwn'])
 
   const onSubmitEmail = (data: EmailFormData) => {
     sendOtp({ email: data.email })
@@ -138,16 +150,6 @@ export default function EmailSettings() {
         </p>
       </div>
 
-      {currentEmail && (
-        <div className="rounded-[12px] border border-[#E5E5E5] bg-[#F8F8F8] px-4 py-3 flex items-center gap-3">
-          <Mail className="h-4 w-4 shrink-0 text-[#005864]" />
-          <div>
-            <p className="text-xs text-[rgba(24,24,24,0.5)] leading-none mb-0.5">Current email</p>
-            <p className="text-sm font-medium text-[#181818]">{currentEmail}</p>
-          </div>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit(onSubmitEmail)} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-700">Email Address</label>
@@ -167,7 +169,7 @@ export default function EmailSettings() {
 
         <Button 
           type="submit" 
-          disabled={isSending}
+          disabled={isSending || !emailChanged}
           className="w-full sm:w-auto text-white py-5  px-8 bg-[#005864] hover:bg-[#004d57] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSending ? 'Sending OTP...' : 'Save Changes'}

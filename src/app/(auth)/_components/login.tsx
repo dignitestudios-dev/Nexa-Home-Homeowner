@@ -83,7 +83,7 @@ export default function LoginPage() {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-[#181818] mb-4">Welcome back!</h2>
             <p className="text-base text-[rgba(24,24,24,0.8)] leading-relaxed">
-              Enter your phone number below to receive a one-time pass code for login.
+            Enter your phone number below to receive a one-time passcode on your phone number for login/signup
             </p>
           </div>
 

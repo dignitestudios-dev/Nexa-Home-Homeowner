@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,14 @@ const Dashboard = (props: Props) => {
 
   const categoryDocs = categoryData?.data || [];
   const totalPages = categoryData?.pagination?.totalPages || 1;
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const recentCategoryDocs = categoryDocs.slice(0, 5);
+  const carouselItems = !isCategoriesLoading && recentCategoryDocs.length ? recentCategoryDocs : recentActivities;
+
+  const scrollCarousel = (direction: number) => {
+    if (!scrollContainerRef.current) return;
+    scrollContainerRef.current.scrollBy({ left: direction * 252, behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (
@@ -92,7 +100,7 @@ const Dashboard = (props: Props) => {
           <TopHeading title={`Welcome ${userData?.data.name}`} />
           <p className="text-xl text-slate-600 mt-1">Toronto, Canada</p>
         </div>
-        <Button className="flex items-center gap-2 px-5" variant="primary">
+        <Button onClick={() => router.push("/find-expert")} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
           <Search size={18} />
           Find an Expert
         </Button>
@@ -100,7 +108,7 @@ const Dashboard = (props: Props) => {
 
       <div className="space-y-8">
         <div className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-3 ">
             {tabs.map((tab) => {
               const active = tab === activeTab;
               return (
@@ -123,28 +131,59 @@ const Dashboard = (props: Props) => {
         </div>
 
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-slate-950">
-            Based on your recent activity
-          </h2>
-          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.title}
-                className="overflow-hidden rounded-[12px] bg-white shadow-sm border border-slate-200"
-              >
-                <div
-                  className={cn(
-                    "h-[117px] rounded-t-[12px] p-4",
-                    activity.imageClass,
-                  )}
-                />
-                <div className="px-4 py-4">
-                  <p className="text-base font-medium text-slate-900">
-                    {activity.title}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-semibold text-slate-950">
+              Based on your recent activity
+            </h2>
+          </div>
+          <div className="relative mt-4">
+            <div
+              ref={scrollContainerRef}
+              className="flex gap-4 overflow-x-auto pb-2 pr-2 scroll-smooth scrollbar-hide snap-x snap-mandatory"
+            >
+              {carouselItems.map((item) => {
+                const title = "name" in item ? item.name : item.title;
+                const imageSrc = "icon" in item ? item.icon?.location : undefined;
+
+                return (
+                  <div
+                    key={title}
+                    className="min-w-[231px] snap-start overflow-hidden rounded-[12px] bg-white shadow-sm border border-slate-200"
+                  >
+                    <div className="h-[117px] rounded-t-[12px] overflow-hidden bg-slate-100">
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          alt={title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-slate-200" />
+                      )}
+                    </div>
+                    <div className="px-4 py-4">
+                      <p className="text-base font-medium text-slate-900">
+                        {title}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => scrollCarousel(-1)}
+              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-slate-200 bg-white p-2 text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollCarousel(1)}
+              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full border border-slate-200 bg-white p-2 text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </div>

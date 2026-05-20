@@ -51,11 +51,13 @@ export function useSendChangeEmailOtp(
 }
 
 export function useVerifyChangeEmailOtp(
-  options?: Parameters<typeof useApiMutation<VerifyPhoneOtpResponse, VerifyChangeEmailOtpVars>>[0]['mutationOptions']
+  options?: Parameters<typeof useApiMutation<VerifyPhoneOtpResponse, VerifyChangeEmailOtpVars>>[0]['mutationOptions'],
+  invalidateKeys?: string[]
 ) {
   return useApiMutation<VerifyPhoneOtpResponse, VerifyChangeEmailOtpVars>({
     endpoint: '/auth/verify-change-email',
     method: 'POST',
+    invalidateKeys: invalidateKeys || [],
     mutationOptions: options,
   })
 }

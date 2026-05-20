@@ -22,7 +22,7 @@ const addressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
   state: z.string().min(1, 'State is required'),
   city: z.string().min(1, 'City is required'),
-  zipCode: z.string().min(1, 'Zip Code is required').regex(/^\d+$/, 'Zip code must contain only numbers'),
+  zipCode: z.string().min(1, 'Zip Code is required').regex(/^\d{5,6}$/, 'Zip code must be 5 or 6 digits'),
   latitude: z.string().min(1, 'Please select a location on the map'),
   longitude: z.string().min(1, 'Please select a location on the map'),
 })
@@ -366,11 +366,12 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#181818]">Zip Code</label>
               <Input
-                {...register('zipCode', {
-                  onChange: (e) => {
-                    e.target.value = e.target.value.replace(/\D/g, '')
-                  }
-                })}
+                {...register('zipCode')}
+                maxLength={6}
+                inputMode="numeric"
+                onInput={(e) => {
+                  e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '')
+                }}
                 placeholder="12345"
                 className={inputClass}
               />
