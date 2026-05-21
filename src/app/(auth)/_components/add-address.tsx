@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { PencilLine } from 'lucide-react'
 import { useAddAddress, useGetAddresses, useEditAddress } from '@/features/user/hooks'
+import { useQueryClient } from '@tanstack/react-query';
 
 const AddAddressDialog = dynamic(
   () => import('@/components/ui/add-address-dialog').then((m) => m.AddAddressDialog),
@@ -13,6 +14,7 @@ const AddAddressDialog = dynamic(
 
 const AddAddress = () => {
   const router = useRouter()
+  const query = useQueryClient()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<SavedAddress | null>(null)
   const [addressError, setAddressError] = useState('')
@@ -38,7 +40,8 @@ const AddAddress = () => {
       setAddressError('Please add at least one address before continuing.')
       return
     }
-    router.push('/dashboard')
+    query.invalidateQueries({ queryKey: ['userOwn'] }) // Invalidate user data to ensure fresh data is fetched
+    router.replace('/dashboard')
   }
 
   return (

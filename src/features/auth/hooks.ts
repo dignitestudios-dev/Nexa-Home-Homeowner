@@ -26,6 +26,7 @@ export function useVerifyPhoneOtp(
   return useApiMutation<VerifyPhoneOtpResponse, VerifyPhoneOtpVars>({
     endpoint: '/auth/verify-phone-otp',
     method: 'POST',
+    invalidateKeys: ["userOwn"],
     mutationOptions: options,
   })
 }

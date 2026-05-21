@@ -45,7 +45,7 @@ const Profile = () => {
   const { mutate: completeProfile, isPending } = useCompleteProfile({
     onSuccess: (data) => {
       if (data.success) {
-        router.push('/profile/add-address')
+        router.replace('/profile/add-address')
       }
     },
   })

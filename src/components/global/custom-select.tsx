@@ -36,11 +36,11 @@ export default function CustomSelect({
       <div
         className={`relative 
           w-full
-          h-[48px]
-          rounded-[12px]
+          h-12
+          rounded-xl
           bg-[#F8F8F8]
           shadow-[0_1px_2px_rgba(0,0,0,0.05)]
-          text-[16px]
+          text-base
           font-normal
           text-[#18181899]
           flex
@@ -49,7 +49,7 @@ export default function CustomSelect({
           ${className}
         `}
       >
-        <SelectTrigger className="w-full h-full border-0 px-4 shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:hidden rounded-[12px] bg-transparent">
+        <SelectTrigger className="w-full h-full border-0 px-4 shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:hidden rounded-xl bg-transparent">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
 
@@ -61,11 +61,13 @@ export default function CustomSelect({
       </div>
 
       <SelectContent
-        position="item-aligned"
-        className="w-[var(--radix-select-trigger-width)] rounded-xl border-none shadow-md bg-[#F8F8F8]"
+        position="popper"
+        align="start"
+        sideOffset={6}
+        className="w-(--radix-select-trigger-width) gap-4 rounded-xl border-none ring-0 shadow-md bg-[#F8F8F8]"
       >
         {options.map((item) => (
-          <SelectItem key={item.value} value={item.value}>
+          <SelectItem key={item.value} className="py-2" value={item.value}>
             {item.label}
           </SelectItem>
         ))}

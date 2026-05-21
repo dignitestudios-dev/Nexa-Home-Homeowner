@@ -135,8 +135,8 @@ export default function ExpertMatchesForm({
         </div>
 
         {/* Search + Filter */}
-        <div className="flex items-center gap-2">
-          <div className="relative w-[417px]">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full">
+          <div className="relative w-full sm:max-w-[417px]">
             <input
               type="text"
               placeholder="Search here"
@@ -149,7 +149,9 @@ export default function ExpertMatchesForm({
               className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(24,24,24,0.8)]"
             />
           </div>
-          <ExpertFilters />
+          <div className="sm:ml-2">
+            <ExpertFilters />
+          </div>
         </div>
       </div>
       <div className="px-8">
@@ -177,7 +179,7 @@ export default function ExpertMatchesForm({
       </div>
 
       {/* Expert Cards Grid */}
-      <div className="grid grid-cols-4 gap-3 min-h-70">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
         {allExperts.map((expert) => {
           const isSelected = data.selectedExpertIds.includes(expert.id);
           return (
@@ -210,7 +212,7 @@ export default function ExpertMatchesForm({
       <div className="flex justify-end mt-8">
         <button
           onClick={onNext}
-          className="w-[230px] h-12 bg-[#005864] rounded-[12px] text-white text-[16px] font-semibold capitalize hover:bg-[#004750] transition-colors"
+          className="w-full sm:w-[230px] h-12 bg-[#005864] rounded-[12px] text-white text-[16px] font-semibold capitalize hover:bg-[#004750] transition-colors"
         >
           Next
         </button>

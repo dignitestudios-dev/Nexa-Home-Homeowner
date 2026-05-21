@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { ArrowLeft, MapPin, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import DisclaimerDialog from "./ui/disclaimer-dialog";
+import SuccessDialog from "./ui/success-dialog";
 import { Expert, StepOneData } from "../page";
 
 const experts = [
@@ -66,7 +68,18 @@ export default function SummaryForm({
   onBack,
   onSubmit,
 }: StepThreeProps) {
-  const router = useRouter();
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+
+  const handleNextClick = () => {
+    setIsDisclaimerOpen(true);
+  };
+
+  const handleConfirmDisclaimer = () => {
+    setIsDisclaimerOpen(false);
+    setIsSuccessOpen(true);
+  };
+
   return (
     <div className="min-h-screen ">
       <div className="max-w-[1400px] mx-auto rounded-[24px] py-2 ">
@@ -235,9 +248,26 @@ export default function SummaryForm({
             </div>
 
             {/* CTA */}
-            <Button className="mt-8 h-12 rounded-xl bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+            <Button
+              type="button"
+              className="mt-8 h-12 w-full sm:w-auto rounded-xl bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold"
+              onClick={handleNextClick}
+            >
               Next
             </Button>
+            <DisclaimerDialog
+              open={isDisclaimerOpen}
+              onOpenChange={setIsDisclaimerOpen}
+              onConfirm={handleConfirmDisclaimer}
+            />
+            <SuccessDialog
+              open={isSuccessOpen}
+              onOpenChange={setIsSuccessOpen}
+              onClose={() => {
+                setIsSuccessOpen(false);
+                onSubmit();
+              }}
+            />
           </div>
         </div>
       </div>

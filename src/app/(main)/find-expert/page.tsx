@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import FindExpertForm from "./_components/find-expert-stepOne";
 import ExpertMatchesForm from "./_components/find-expert-stepTwo";
 import SummaryForm from "./_components/find-expert-stepThree";
@@ -79,14 +79,24 @@ export const ALL_EXPERTS: Expert[] = [
 
 const FindExpert = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const categoryFromParams = searchParams.get("category");
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [stepOneData, setStepOneData] = useState<StepOneData>({
     ...initialStepOne,
-    service: categoryFromParams || "",
+    service: "",
   });
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+      const category = params.get('category');
+      if (category) {
+        setStepOneData((prev) => ({ ...prev, service: category }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
   const [stepTwoData, setStepTwoData] = useState<StepTwoData>(initialStepTwo);
 
   // ── Step One handlers ─────────────────────────────────────
@@ -168,7 +178,7 @@ const FindExpert = () => {
   );
 
   return (
-    <div className="pb-6 px-20">
+    <div className="pb-6 px-10 lg:px-20">
       <>
         {currentStep === 1 && (
           <FindExpertForm
