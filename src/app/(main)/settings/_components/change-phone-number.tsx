@@ -16,7 +16,7 @@ const phoneSchema = z.object({
   phone: z
     .string()
     .min(1, 'Phone number is required')
-    .regex(/^\+\d{11}$/, 'Phone number must be in format +XXXXXXXXXXX (11 digits)'),
+    .regex(/^\d{10}$/, 'Phone number must be 10 digits'),
 })
 
 type PhoneFormData = z.infer<typeof phoneSchema>
@@ -93,7 +93,7 @@ export default function ChangePhoneNumber() {
   })
 
   const onSubmitPhone = (data: PhoneFormData) => {
-    sendOtp({ phone: data.phone })
+    sendOtp({ phone: `+1${data.phone}` })
   }
 
   const handleInputChange = (index: number, value: string) => {
@@ -136,12 +136,14 @@ export default function ChangePhoneNumber() {
     <div className="flex min-h-[520px] flex-col">
       <h2 className="text-[24px] font-semibold leading-none text-[#181818]">Change Phone Number</h2>
 
-      {currentPhone && (
+      {userData?.data && (
         <div className="mt-4 rounded-[12px] border border-[#E5E5E5] bg-[#F8F8F8] px-4 py-3 flex items-center gap-3 max-w-sm">
           <Phone className="h-4 w-4 shrink-0 text-[#005864]" />
           <div>
             <p className="text-xs text-[rgba(24,24,24,0.5)] leading-none mb-0.5">Current phone</p>
-            <p className="text-sm font-medium text-[#181818]">{currentPhone}</p>
+            <p className="text-sm font-medium text-[#181818]">
+              {currentPhone || 'Not provided'}
+            </p>
           </div>
         </div>
       )}
@@ -167,7 +169,9 @@ export default function ChangePhoneNumber() {
                 <Input
                   {...register('phone')}
                   type="tel"
-                  placeholder="Enter your new phone number"
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="Enter your 10-digit phone number"
                   className="h-12 flex-1 rounded-[12px] border border-[#005864] bg-[#F8F8F8] px-4 text-base text-[#1C1C1C] placeholder:text-[rgba(24,24,24,0.6)] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
                 />
               </div>

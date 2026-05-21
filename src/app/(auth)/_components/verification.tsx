@@ -9,6 +9,7 @@ import {
   useVerifyPhoneOtp,
   useVerifyChangePhoneOtp,
 } from "@/features/auth/hooks";
+import { useQueryClient } from '@tanstack/react-query';
 import { useSendPhoneOtp, useSendChangePhoneOtp } from "@/features/auth/hooks";
 import { setToken } from "@/lib/cookies";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ export default function Verification() {
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -59,22 +61,38 @@ export default function Verification() {
       if (isSocialFlow) {
         // For social flow, data.data is the user object directly, and token is already set.
         const profileCompleted = data.data?.isProfileCompleted ?? isProfileCompleted;
+        if (data.data) {
+          queryClient.setQueryData(['userOwn'], {
+            success: true,
+            message: data.message || '',
+            data: data.data,
+          });
+        }
         if (profileCompleted) {
-          router.push("/dashboard");
+          router.replace("/dashboard");
         } else {
-          router.push("/profile");
+          router.replace("/profile");
         }
       } else {
         // For normal flow, data.data is { token: string, user: User }
         if (data.data && data.data.token) {
           setToken(data.data.token);
+          if (data.data.user) {
+            queryClient.setQueryData(['userOwn'], {
+              success: true,
+              message: data.message || '',
+              data: data.data.user,
+            });
+          }
+          // still invalidate to ensure any server-side differences are refreshed
+          queryClient.invalidateQueries({ queryKey: ['userOwn'] });
           if (data.data.user?.isProfileCompleted) {
-            router.push("/dashboard");
+            router.replace("/dashboard");
           } else {
-            router.push("/profile");
+            router.replace("/profile");
           }
         } else {
-          router.push("/dashboard");
+          router.replace("/dashboard");
         }
       }
     } else {

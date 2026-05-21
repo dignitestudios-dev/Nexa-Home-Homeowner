@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import CategoriesTab from "./categories-tab";
+import OnGoingServicesTab from "./ongoing-services-tab";
 
 type Props = {};
 
@@ -62,6 +64,14 @@ const Dashboard = (props: Props) => {
 
   const categoryDocs = categoryData?.data || [];
   const totalPages = categoryData?.pagination?.totalPages || 1;
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const recentCategoryDocs = categoryDocs.slice(0, 5);
+  const carouselItems = !isCategoriesLoading && recentCategoryDocs.length ? recentCategoryDocs : recentActivities;
+
+  const scrollCarousel = (direction: number) => {
+    if (!scrollContainerRef.current) return;
+    scrollContainerRef.current.scrollBy({ left: direction * 252, behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (
@@ -92,7 +102,7 @@ const Dashboard = (props: Props) => {
           <TopHeading title={`Welcome ${userData?.data.name}`} />
           <p className="text-xl text-slate-600 mt-1">Toronto, Canada</p>
         </div>
-        <Button className="flex items-center gap-2 px-5" variant="primary">
+        <Button onClick={() => router.push("/find-expert")} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
           <Search size={18} />
           Find an Expert
         </Button>
@@ -100,7 +110,7 @@ const Dashboard = (props: Props) => {
 
       <div className="space-y-8">
         <div className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-3 ">
             {tabs.map((tab) => {
               const active = tab === activeTab;
               return (
@@ -121,121 +131,37 @@ const Dashboard = (props: Props) => {
             })}
           </div>
         </div>
-
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-slate-950">
-            Based on your recent activity
-          </h2>
-          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.title}
-                className="overflow-hidden rounded-[12px] bg-white shadow-sm border border-slate-200"
-              >
-                <div
-                  className={cn(
-                    "h-[117px] rounded-t-[12px] p-4",
-                    activity.imageClass,
-                  )}
-                />
-                <div className="px-4 py-4">
-                  <p className="text-base font-medium text-slate-900">
-                    {activity.title}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
-
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-2xl font-semibold text-slate-950">Categories</h2>
-        </div>
-
-        {isCategoriesLoading ? (
-          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 animate-pulse">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div
-                key={i}
-                className="overflow-hidden rounded-[12px] bg-white p-3 shadow-sm border border-slate-200"
-              >
-                <div className="h-[211px] rounded-lg bg-slate-200" />
-                <div className="px-1 py-4 space-y-2">
-                  <div className="h-5 w-2/3 bg-slate-200 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
-            {categoryDocs.map((category) => (
-              <div
-                key={category._id}
-                className="overflow-hidden rounded-[12px] bg-white p-3 shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200"
-              >
-                <div className="h-[211px] rounded-lg bg-slate-100 overflow-hidden relative border border-slate-100">
-                  {category.icon?.location ? (
-                    <img
-                      src={category.icon.location}
-                      alt={category.name}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 font-medium">
-                      No Image
-                    </div>
-                  )}
-                </div>
-                <div className="px-1 py-4">
-                  <p className="text-base font-semibold text-[#1C1C1C] truncate">
-                    {category.name}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Circular & Pill Pagination UI matching Figma perfectly and floating below the grid */}
-        <div className="flex justify-end pt-2">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              disabled={categoryPage === 1}
-              onClick={() => setCategoryPage((prev) => Math.max(prev - 1, 1))}
-              className={cn(
-                "inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors",
-                categoryPage === 1
-                  ? "bg-[#005864]/5 text-[#005864]/40 cursor-not-allowed"
-                  : "bg-[rgba(0,88,100,0.06)] text-[#005864] hover:bg-[rgba(0,88,100,0.12)]"
-              )}
-            >
-              <ChevronLeft size={20} strokeWidth={2.5} />
-            </button>
-            
-            <div className="inline-flex h-12 items-center justify-center rounded-full bg-[#F9FAFA] px-6 text-base font-semibold text-[#181818] border border-slate-100 min-w-[54px]">
-              {categoryPage.toString().padStart(2, "0")}
-            </div>
-            
-            <button
-              type="button"
-              disabled={categoryPage >= totalPages}
-              onClick={() => setCategoryPage((prev) => Math.min(prev + 1, totalPages))}
-              className={cn(
-                "inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors",
-                categoryPage >= totalPages
-                  ? "bg-[#005864]/5 text-[#005864]/40 cursor-not-allowed"
-                  : "bg-[#005864] text-white hover:bg-[#004d57]"
-              )}
-            >
-              <ChevronRight size={20} strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
-      </div>
-
+ {activeTab == "Home" &&
+ (
+<CategoriesTab
+  carouselItems={carouselItems}
+  isCategoriesLoading={isCategoriesLoading}
+  categoryDocs={categoryDocs}
+  scrollContainerRef={scrollContainerRef}
+  scrollCarousel={scrollCarousel}
+  categoryPage={categoryPage}
+  setCategoryPage={setCategoryPage}
+  totalPages={totalPages}
+/>
+ )
+ 
+ }
+ {activeTab == "Ongoing" &&
+ (
+<OnGoingServicesTab
+  carouselItems={carouselItems}
+  isCategoriesLoading={isCategoriesLoading}
+  categoryDocs={categoryDocs}
+  scrollContainerRef={scrollContainerRef}
+  scrollCarousel={scrollCarousel}
+  categoryPage={categoryPage}
+  setCategoryPage={setCategoryPage}
+  totalPages={totalPages}
+/>
+ )
+ 
+ }
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
         <DialogContent className="sm:max-w-[400px] border-none p-6 rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}

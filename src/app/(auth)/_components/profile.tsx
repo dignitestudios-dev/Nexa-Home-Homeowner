@@ -5,8 +5,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useCompleteProfile } from '@/features/user/hooks'
+import { removeToken } from '@/lib/cookies'
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
 
@@ -43,10 +45,15 @@ const Profile = () => {
   const { mutate: completeProfile, isPending } = useCompleteProfile({
     onSuccess: (data) => {
       if (data.success) {
-        router.push('/profile/add-address')
+        router.replace('/profile/add-address')
       }
     },
   })
+
+  const handleLogout = () => {
+    removeToken()
+    router.push('/login')
+  }
 
   const onSubmit = (data: ProfileFormData) => {
     completeProfile({
@@ -63,7 +70,16 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen w-full relative text-[13px]">
-      <div className="mx-auto flex justify-center items-center min-h-[calc(100vh-64px)] w-full overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)]">
+      <div className="mx-auto flex justify-center items-center min-h-[calc(100vh-64px)] w-full overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)] relative">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="absolute right-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-[#DC2626] bg-white px-4 py-2 text-sm font-semibold text-[#DC2626] shadow-sm transition hover:bg-[#fee2e2]"
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </button>
+
         <div className="w-[70%] mx-auto">
           <div className="text-center">
             <h1 className="text-[36px] font-semibold leading-[45px] text-[#181818]">Profile Setup</h1>

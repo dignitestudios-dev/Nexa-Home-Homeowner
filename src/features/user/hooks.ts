@@ -1,6 +1,7 @@
 import { useApiMutation } from '@/hooks/api/use-api-mutation'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
+import { getToken } from '@/lib/cookies';
 
 export const ADDRESS_QUERY_KEY = 'addresses'
 
@@ -11,6 +12,7 @@ export function useCompleteProfile(
     endpoint: '/user/complete-profile',
     method: 'POST',
     isMultiPart: true,
+    invalidateKeys: [ADDRESS_QUERY_KEY, 'userOwn'],
     toBody: (vars) => {
       const fd = new FormData()
       fd.append('name', vars.name)
@@ -39,6 +41,7 @@ export function useGetOwnUser() {
       const res = await apiClient.get<GetOwnUserResponse>('/user/own')
       return res.data
     },
+    enabled: !!getToken(),
   })
 }
 
@@ -48,7 +51,7 @@ export function useSetDefaultAddress(
   return useApiMutation<AddAddressResponse, { id: string }>({
     endpoint: (vars) => `/address/set-default/${vars.id}`,
     method: 'POST',
-    invalidateKeys: [ADDRESS_QUERY_KEY],
+    invalidateKeys: [ADDRESS_QUERY_KEY , ""],
     mutationOptions: options,
   })
 }
@@ -82,7 +85,7 @@ export function useAddAddress(
   return useApiMutation<AddAddressResponse, AddAddressVars>({
     endpoint: '/address/add-address',
     method: 'POST',
-    invalidateKeys: [ADDRESS_QUERY_KEY],
+    invalidateKeys: [ADDRESS_QUERY_KEY , "userOwn"],
     mutationOptions: options,
   })
 }
