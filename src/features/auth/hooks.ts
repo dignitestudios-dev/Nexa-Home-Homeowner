@@ -17,6 +17,7 @@ export function useSendChangePhoneOtp(
     endpoint: '/auth/change-phone',
     method: 'POST',
     mutationOptions: options,
+  
   })
 }
 
@@ -38,6 +39,7 @@ export function useVerifyChangePhoneOtp(
     endpoint: '/auth/verify-change-phone',
     method: 'POST',
     mutationOptions: options,
+      invalidateKeys: ["userOwn"],
   })
 }
 

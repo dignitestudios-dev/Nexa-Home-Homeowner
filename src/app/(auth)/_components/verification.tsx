@@ -95,17 +95,11 @@ export default function Verification() {
           router.replace("/dashboard");
         }
       }
-    } else {
-      toast.error(data.message || "Invalid or expired OTP", {
-        style: { backgroundColor: "#005864", color: "white", border: "none" },
-      });
     }
   };
 
   const onErrorCallback = () => {
-    toast.error("Invalid or expired OTP", {
-      style: { backgroundColor: "#005864", color: "white", border: "none" },
-    });
+    // Handled by global Axios interceptor
   };
 
   const { mutate: verifyOtp, isPending: isVerifyPending } = useVerifyPhoneOtp({

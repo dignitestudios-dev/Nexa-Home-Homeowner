@@ -1,6 +1,6 @@
 interface SendPhoneOtpVars {
   phone: string
-  role: 'user'
+  role: "user"
 }
 
 interface SendPhoneOtpResponse {
@@ -10,7 +10,7 @@ interface SendPhoneOtpResponse {
 
 interface VerifyPhoneOtpVars {
   phone: string
-  role: 'user'
+  role: "user"
   otp: string
 }
 
@@ -23,35 +23,67 @@ interface VerifyChangeEmailOtpVars {
   otp: string
 }
 
+interface ProfilePicture {
+  location: string
+}
+
+type UserRole = "user"
+
+type AuthType = "jwt" | "google" | "apple"
+
+type PrimaryIdentifier = "phone" | "email"
+
+type IdentityStatus =
+  | "not-provided"
+  | "pending"
+  | "approved"
+  | "rejected"
+
+type ProviderServicePlan = "none" | "basic" | "premium"
+
 interface User {
   _id: string
+
   name: string | null
   email: string | null
+  contactEmail: string | null
   phone: string
-  profilePicture: {location:string}
-  role: string
-  authType: string
-  primaryIdentifier: string
-  identityStatus: string
+
+  profilePicture: ProfilePicture | null
+
+  role: UserRole
+  authType: AuthType
+  primaryIdentifier: PrimaryIdentifier
+  identityStatus: IdentityStatus
+
+  isPartnerApproved: boolean
   isPasswordSet: boolean
+
   overview: string | null
   referralCode: string | null
+
+  providerServicePlan: ProviderServicePlan
+
   isEmailVerified: boolean
   isPhoneVerified: boolean
   isProfileCompleted: boolean
   businessDocsSubmitted: boolean
+  portfolioMediaUploaded: boolean
   isDeactivatedByAdmin: boolean
+
   createdAt: string
   updatedAt: string
+}
+
+interface AuthData {
+  token: string
+  user: User
 }
 
 interface VerifyPhoneOtpResponse {
   success: boolean
   message: string
-  data?: {
-    token: string
-    user: User
-  }
+  data?: AuthData
 }
 
 interface GetOwnUserResponse {
@@ -61,7 +93,10 @@ interface GetOwnUserResponse {
 }
 
 interface CompleteProfileVars {
-  profilePicture?: {location: string, file: File}
+  profilePicture?: {
+    location: string
+    file: File
+  }
   name: string
   referralCode?: string
 }
@@ -73,15 +108,12 @@ interface CompleteProfileResponse {
 
 interface SocialAuthVars {
   idToken: string
-  method: 'google' | 'apple'
-  role: 'user'
+  method: "google" | "apple"
+  role: "user"
 }
 
 interface SocialAuthResponse {
   success: boolean
   message: string
-  data?: {
-    token: string
-    user: User
-  }
+  data?: AuthData
 }

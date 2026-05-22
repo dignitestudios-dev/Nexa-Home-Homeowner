@@ -4,10 +4,12 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { ChevronDown, Phone } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { X } from 'lucide-react'
+import SuccessDialog from '@/components/ui/success-dialog'
 import { useSendChangePhoneOtp, useVerifyChangePhoneOtp } from '@/features/auth/hooks'
 import { useGetOwnUser } from '@/features/user/hooks'
 import { toast } from 'sonner'
@@ -30,6 +32,9 @@ export default function ChangePhoneNumber() {
   const [code, setCode] = useState<string[]>(['', '', '', '', ''])
   const [resendTimer, setResendTimer] = useState(60)
   const [canResend, setCanResend] = useState(false)
+  const [successOpen, setSuccessOpen] = useState(false)
+  const [errorOpen, setErrorOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
   
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -37,6 +42,8 @@ export default function ChangePhoneNumber() {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
+    watch,
   } = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
   })
@@ -50,6 +57,15 @@ export default function ChangePhoneNumber() {
     }
   }, [resendTimer, isDialogOpen])
 
+  // Prefill phone input from user data (normalize to 10 digits)
+  useEffect(() => {
+    if (typeof currentPhone !== 'undefined') {
+      const digits = (currentPhone || '').replace(/\D/g, '')
+      const normalized = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits
+      reset({ phone: normalized || '' })
+    }
+  }, [currentPhone, reset])
+
   const { mutate: sendOtp, isPending: isSending } = useSendChangePhoneOtp({
     onSuccess: (data, variables) => {
       if (data.success) {
@@ -59,42 +75,28 @@ export default function ChangePhoneNumber() {
         setCanResend(false)
         setCode(['', '', '', '', ''])
         setTimeout(() => inputRefs.current[0]?.focus(), 100)
-      } else {
-        toast.error(data.message || 'Failed to send OTP', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
       }
-    },
-    onError: () => {
-      toast.error('Failed to send OTP', {
-        style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-      })
     }
   })
 
   const { mutate: verifyOtp, isPending: isVerifying } = useVerifyChangePhoneOtp({
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(data.message || 'Phone number updated successfully!', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
         setIsDialogOpen(false)
-      } else {
-        toast.error(data.message || 'Invalid or expired OTP', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
+        const msg = data.message || 'Phone Number Changed Successfully'
+        setSuccessMsg(msg)
+        setSuccessOpen(true)
       }
-    },
-    onError: () => {
-      toast.error('Invalid or expired OTP', {
-        style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-      })
     }
   })
 
   const onSubmitPhone = (data: PhoneFormData) => {
     sendOtp({ phone: `+1${data.phone}` })
   }
+
+  const formPhone = watch('phone')
+  const currentPhoneDigits = currentPhone ? (currentPhone.replace(/\D/g, '').length === 11 && currentPhone.replace(/\D/g, '').startsWith('1') ? currentPhone.replace(/\D/g, '').slice(1) : currentPhone.replace(/\D/g, '')) : ''
+  const phoneChanged = formPhone !== currentPhoneDigits
 
   const handleInputChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(-1)
@@ -136,18 +138,6 @@ export default function ChangePhoneNumber() {
     <div className="flex min-h-[520px] flex-col">
       <h2 className="text-[24px] font-semibold leading-none text-[#181818]">Change Phone Number</h2>
 
-      {userData?.data && (
-        <div className="mt-4 rounded-[12px] border border-[#E5E5E5] bg-[#F8F8F8] px-4 py-3 flex items-center gap-3 max-w-sm">
-          <Phone className="h-4 w-4 shrink-0 text-[#005864]" />
-          <div>
-            <p className="text-xs text-[rgba(24,24,24,0.5)] leading-none mb-0.5">Current phone</p>
-            <p className="text-sm font-medium text-[#181818]">
-              {currentPhone || 'Not provided'}
-            </p>
-          </div>
-        </div>
-      )}
-
       <div className="flex flex-1 items-start justify-center pt-16 sm:pt-20">
         <div className="w-full max-w-[426px]">
           <p className="mb-8 text-center text-[14px] leading-5 text-[rgba(24,24,24,0.6)]">
@@ -182,7 +172,7 @@ export default function ChangePhoneNumber() {
 
             <button
               type="submit"
-              disabled={isSending}
+              disabled={isSending || !phoneChanged}
               className="h-12 w-full rounded-[12px] bg-[#005864] px-[10px] text-[16px] font-semibold leading-5 text-white transition-colors hover:bg-[#004a54] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSending ? 'Sending OTP...' : 'Update Phone Number'}
@@ -257,6 +247,13 @@ export default function ChangePhoneNumber() {
           </div>
         </DialogContent>
       </Dialog>
+
+        <SuccessDialog
+          open={successOpen}
+          onClose={() => setSuccessOpen(false)}
+          title={successMsg || 'Phone Number Changed Successfully'}
+          description="Your phone number has been updated."
+        />
     </div>
   )
 }

@@ -70,7 +70,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen w-full relative text-[13px]">
-      <div className="mx-auto flex justify-center items-center min-h-[calc(100vh-64px)] w-full overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)] relative">
+      <div className="mx-auto flex justify-center items-center min-h-screen w-full overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)] relative">
         <button
           type="button"
           onClick={handleLogout}
