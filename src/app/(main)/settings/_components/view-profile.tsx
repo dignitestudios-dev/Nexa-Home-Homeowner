@@ -42,16 +42,7 @@ export default function ViewProfile() {
         })
         setEditOpen(false)
         queryClient.invalidateQueries({ queryKey: ['userOwn'] })
-      } else {
-        toast.error('Failed to update profile', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
       }
-    },
-    onError: () => {
-      toast.error('Failed to update profile', {
-        style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-      })
     },
   })
 

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { useSendChangeEmailOtp, useVerifyChangeEmailOtp } from '@/features/auth/hooks'
 import { useGetOwnUser } from '@/features/user/hooks'
 import { toast } from 'sonner'
+import SuccessDialog from '@/components/ui/success-dialog';
 
 const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -20,8 +21,9 @@ type EmailFormData = z.infer<typeof emailSchema>
 
 export default function EmailSettings() {
   const { data: userData } = useGetOwnUser()
-  const currentEmail = userData?.data?.email
-
+  const currentEmail = userData?.data?.contactEmail;
+ const [successOpen, setSuccessOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState<string[]>(['', '', '', '', ''])
@@ -67,16 +69,7 @@ export default function EmailSettings() {
         setCanResend(false)
         setCode(['', '', '', '', ''])
         setTimeout(() => inputRefs.current[0]?.focus(), 100)
-      } else {
-        toast.error(data.message || 'Failed to send OTP', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
       }
-    },
-    onError: () => {
-      toast.error('Failed to send OTP', {
-        style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-      })
     }
   })
 
@@ -87,17 +80,10 @@ export default function EmailSettings() {
           style: { backgroundColor: '#005864', color: 'white', border: 'none' },
         })
         setIsDialogOpen(false)
+        setSuccessOpen(true)
+        setSuccessMsg(data.message || 'Email address updated successfully!')
         reset({ email: formEmail })
-      } else {
-        toast.error(data.message || 'Invalid or expired OTP', {
-          style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-        })
       }
-    },
-    onError: () => {
-      toast.error('Invalid or expired OTP', {
-        style: { backgroundColor: '#005864', color: 'white', border: 'none' },
-      })
     }
   }, ['userOwn'])
 
@@ -242,6 +228,12 @@ export default function EmailSettings() {
           </div>
         </DialogContent>
       </Dialog>
+      <SuccessDialog
+        open={successOpen}
+        onClose={() => setSuccessOpen(false)}
+        title={successMsg}
+        description="Email Changed Successfully"
+      />
     </div>
   )
 }
