@@ -4,15 +4,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 interface CategoryCardProps {
+  id: string;
   title: string;
   imageSrc?: string;
 }
 
-export function CategoryCard({ title, imageSrc }: CategoryCardProps) {
+export function CategoryCard({ id, title, imageSrc }: CategoryCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/find-expert?category=${encodeURIComponent(title)}`);
+    router.push(`/find-expert?categoryId=${encodeURIComponent(id)}&categoryName=${encodeURIComponent(title)}`);
   };
   return (
     <div

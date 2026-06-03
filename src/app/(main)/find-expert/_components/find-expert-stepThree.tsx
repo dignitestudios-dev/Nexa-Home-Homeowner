@@ -1,78 +1,66 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowLeft, MapPin, Play, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, MapPin, Star } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useGetAddresses, useCreateJob } from "@/features/user/hooks";
 import DisclaimerDialog from "./ui/disclaimer-dialog";
 import SuccessDialog from "./ui/success-dialog";
-import { Expert, StepOneData } from "../page";
-
-const experts = [
-  {
-    name: "Boot Krewe Cleaner",
-    location: "Greater New-Orleans Area",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "Landscape Workshop",
-    location: "Baton Rouge",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "Makaira Landscape Pools",
-    location: "Baton Rouge",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "Supreme Fencing LLC",
-    location: "Greater New-Orleans Area",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "Boot Krewe Cleaner",
-    location: "Greater New-Orleans Area",
-    image: "https://picsum.photos/200/300",
-  },
-];
-
-const infoItems = [
-  {
-    label: "Date Posted:",
-    value: "12/02/26",
-  },
-  {
-    label: "Status:",
-    value: "Ready To Hire",
-  },
-  {
-    label: "Job Type:",
-    value: "One Time",
-  },
-  {
-    label: "Contact Preferences:",
-    value: "Email",
-  },
-];
+import { StepOneData, StepTwoData } from "../page";
+import Link from "next/link";
 
 interface StepThreeProps {
   stepOneData: StepOneData;
-  selectedExperts: Expert[];
+  stepTwoData: StepTwoData;
+  matchedProviders: MatchingProvider[];
   onBack: () => void;
-  onSubmit: () => void;
+  onSuccess: () => void;
 }
 
-export default function SummaryForm({
-  stepOneData,
-  selectedExperts,
-  onBack,
-  onSubmit,
-}: StepThreeProps) {
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <p className="text-base font-normal text-[rgba(24,24,24,0.6)]">{label}</p>
+      <p className="text-base font-medium text-[#005864]">{value}</p>
+    </div>
+  );
+}
+
+export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedProviders, onBack, onSuccess }: StepThreeProps) {
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
-  const handleNextClick = () => {
-    setIsDisclaimerOpen(true);
+  const { data: addressData } = useGetAddresses();
+  const addresses = addressData?.data?.addresses ?? [];
+  const selectedAddress = addresses.find((a) => a._id === stepOneData.addressId);
+
+  const contactPreference = [
+    ...(stepOneData.contactCall ? ["phone"] : []),
+    ...(stepOneData.contactEmail ? ["email"] : []),
+  ];
+
+  const { mutate: createJob, isPending } = useCreateJob({
+    onSuccess: (res) => {
+      if (res.success) {
+        setIsDisclaimerOpen(true);
+      }
+    },
+  });
+
+  const handleNext = () => {
+    createJob({
+      addressId: stepOneData.addressId,
+      category: stepOneData.categoryId,
+      title: stepOneData.title,
+      description: stepOneData.description,
+      when: stepOneData.when,
+      type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
+      radius: stepTwoData.radius,
+      sendToAll: stepTwoData.sendToAll,
+      providerIds: stepTwoData.sendToAll ? undefined : stepTwoData.selectedProviderIds,
+      contactPreference,
+      images: stepOneData.uploadedImages,
+    });
   };
 
   const handleConfirmDisclaimer = () => {
@@ -81,196 +69,175 @@ export default function SummaryForm({
   };
 
   return (
-    <div className="min-h-screen ">
-      <div className="max-w-[1400px] mx-auto rounded-[24px] py-2 ">
-        {/* Header */}
-
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="flex items-center text-[#005864] hover:text-[#004750] transition-colors"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className="text-[32px] font-semibold">Summary</h1>
-          </div>
+    <div className="min-h-screen">
+      <div className="max-w-[1400px] mx-auto rounded-[24px] py-2">
+        <div className="flex items-center gap-4 mb-6">
+          <button onClick={onBack} className="flex items-center text-[#005864] hover:text-[#004750] transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-[32px] font-semibold">Summary</h1>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_487px] gap-6">
-          {/* LEFT CONTENT */}
+          {/* LEFT */}
           <div className="space-y-6">
             {/* Service Details */}
-            <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-[#181818] capitalize">
-                  Service Name
-                </h2>
-
-                <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">
-                  Lorem ipsum dolor sit amet consectetur. Diam aliquet lectus
-                  laoreet enim faucibus vitae facilisi. Quis amet imperdiet ut
-                  molestie luctus risus lacinia. Mauris vel mus at urna
-                  vulputate aliquet eu. Lorem ipsum dolor sit amet consectetur.
-                  Lorem ipsum dolor sit amet consectetur. Diam aliquet lectus
-                  laoreet enim faucibus vitae facilisi. Quis amet imperdiet ut
-                  molestie luctus risus lacinia. Mauris vel mus at urna
-                  vulputate aliquet eu.
-                </p>
+            <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold line-clamp-2 text-[#181818] capitalize">{stepOneData.title}</h2>
+                <span className="rounded-full text-nowrap  bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864]">
+                  {stepOneData.categoryName}
+                </span>
               </div>
+              <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">{stepOneData.description}</p>
             </div>
 
-            {/* Job Info */}
-            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-              <div className="space-y-5">
-                {infoItems.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between gap-4"
-                  >
-                    <p className="text-base font-normal text-[rgba(24,24,24,0.6)]">
-                      {item.label}
-                    </p>
-
-                    <p className="text-base font-medium text-[#005864]">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+            {/* Info */}
+            <div className="bg-[#F9FAFA] rounded-[12px] p-6 space-y-5">
+              <InfoRow label="When:" value={stepOneData.when} />
+              {/* {stepOneData.date && <InfoRow label="Date:" value={stepOneData.date} />} */}
+              <InfoRow label="Job Type:" value={stepOneData.jobType === "one-time" ? "One Time" : "Recurring"} />
+              <InfoRow label="Contact Preferences:" value={contactPreference.join(", ") || "None"} />
+              <InfoRow label="Radius:" value={`${stepTwoData.radius} miles`} />
+              <InfoRow label="Sending To:" value={stepTwoData.sendToAll ? "All Experts" : `${stepTwoData.selectedProviderIds.length} Selected`} />
             </div>
 
             {/* Attachments */}
-            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-              <h3 className="text-base font-semibold text-black mb-4">
-                Attachment
-              </h3>
-
-              <div className="flex gap-4">
-                {[1, 2, 3].map((item, index) => (
-                  <div
-                    key={item}
-                    className="relative w-[70px] h-[70px] rounded-xl overflow-hidden"
-                  >
-                    <Image
-                      src={`https://picsum.photos/200/200?random=${index + 1}`}
-                      alt="attachment"
-                      fill
-                      className="object-cover"
-                    />
-
-                    {index === 2 && (
-                      <div className="absolute inset-0 bg-[#005864]/40 flex items-center justify-center backdrop-blur-[2px]">
-                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                          <Play className="w-3 h-3 text-white fill-white" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {stepOneData.uploadedImages.length > 0 && (
+              <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+                <h3 className="text-base font-semibold text-black mb-4">Attachments</h3>
+                <div className="flex flex-wrap gap-4">
+                  {stepOneData.uploadedImages.map((file, index) => (
+                    <div key={index} className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]">
+                      <img src={URL.createObjectURL(file)} alt={`attachment-${index}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Location */}
-            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-              <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
-                <div>
-                  <h3 className="text-base font-semibold text-black mb-4">
-                    Location
-                  </h3>
-
-                  <div className="space-y-2">
-                    <p className="text-base font-medium text-[#282828]">
-                      Office
-                    </p>
-
-                    <p className="text-base text-[#787878] max-w-[420px]">
-                      123 Bay Street, Downtown Toronto, ON M5J 2X8, Canada
-                    </p>
-                  </div>
-                </div>
-
-                <Button className="h-[42px] rounded-md bg-[#005864] hover:bg-[#004752] px-5 text-white">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  View on map
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT SIDEBAR */}
-          <div className="bg-[#F9FAFA] rounded-[18px] p-6 flex flex-col">
-            <h2 className="text-[20px] font-bold text-[#181818] mb-6">
-              Selected Experts
-            </h2>
-
-            <div className="space-y-4 flex-1">
-              {experts.map((expert, index) => (
-                <div
-                  key={index}
-                  className="border border-[#005864] bg-[rgba(0,88,100,0.06)] rounded-xl p-4 transition hover:shadow-sm"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0">
-                      <Image
-                        src={expert.image}
-                        alt={expert.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <h3 className="text-base font-semibold text-black">
-                        {expert.name}
-                      </h3>
-
-                      <div className="flex items-center gap-1 mt-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className="w-3 h-3 fill-[#EDAF35] text-[#EDAF35]"
-                          />
-                        ))}
-
-                        <span className="ml-1 text-xs font-medium text-[#1C1C1C]">
-                          4.5
-                        </span>
-                      </div>
-
-                      <p className="mt-2 text-sm text-[rgba(24,24,24,0.8)]">
-                        {expert.location}
+            {selectedAddress && (
+              <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+                <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
+                  <div>
+                    <h3 className="text-base font-semibold text-black mb-4">Location</h3>
+                    <div className="flex items-start gap-1.5">
+                      <MapPin className="mt-0.5 size-4 shrink-0 text-[#005864]" strokeWidth={2} />
+                      <p className="text-base text-[#787878] max-w-[420px]">
+                        {selectedAddress.address}, {selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipCode}, {selectedAddress.country}
                       </p>
                     </div>
                   </div>
+                  <Button
+                    className="h-[42px] rounded-md bg-[#005864] hover:bg-[#004752] px-5 text-white"
+                    onClick={() => {
+                      const [lng, lat] = selectedAddress.coordinates.coordinates;
+                      window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+                    }}
+                  >
+                    View on Map
+                  </Button>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+          </div>
 
-            {/* CTA */}
+          {/* RIGHT */}
+          <div className="bg-[#F9FAFA] rounded-[18px] p-6 flex flex-col">
+            <h2 className="text-[20px] font-bold text-[#181818] mb-4">
+              {stepTwoData.sendToAll ? "Sending to All Experts" : "Selected Experts"}
+            </h2>
+
+            {stepTwoData.sendToAll ? (
+              <>
+                <p className="text-sm text-[rgba(24,24,24,0.5)] mb-4">
+                  Your request will be sent to all matching experts in your area.
+                </p>
+                <div className="flex-1 space-y-3 overflow-y-auto">
+                  {matchedProviders.map((provider) => (
+                    <Link
+                      href={`/provider/${provider._id}`}
+                      key={provider._id}
+                      className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
+                    >
+                      <div className="w-[46px] h-[46px] rounded-full shrink-0 bg-[#005864]/10 flex items-center justify-center text-sm font-semibold text-[#005864] overflow-hidden">
+                        {provider.profilePicture?.location
+                          ? <img src={provider.profilePicture.location} alt={provider.name} className="w-full h-full object-cover" />
+                          : provider.name?.slice(0, 2).toUpperCase()
+                        }
+                      </div>
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={11} className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"} />
+                          ))}
+                          <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
+                        </div>
+                        {provider.area && <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            ) : stepTwoData.selectedProviderIds.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-sm text-[rgba(24,24,24,0.5)]">No experts selected.</p>
+              </div>
+            ) : (
+              <div className="flex-1 space-y-3 overflow-y-auto">
+                {matchedProviders
+                  .filter((p) => stepTwoData.selectedProviderIds.includes(p._id))
+                  .map((provider) => (
+                    <div
+                      key={provider._id}
+                      className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
+                    >
+                      <div className="w-[46px] h-[46px] rounded-full shrink-0 bg-[#005864]/10 flex items-center justify-center text-sm font-semibold text-[#005864] overflow-hidden">
+                        {provider.profilePicture?.location
+                          ? <img src={provider.profilePicture.location} alt={provider.name} className="w-full h-full object-cover" />
+                          : provider.name?.slice(0, 2).toUpperCase()
+                        }
+                      </div>
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={11} className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"} />
+                          ))}
+                          <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
+                        </div>
+                        {provider.area && <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>}
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            )}
+
             <Button
               type="button"
-              className="mt-8 h-12 w-full sm:w-auto rounded-xl bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold"
-              onClick={handleNextClick}
+              disabled={isPending}
+              className="mt-6 h-12 w-full rounded-xl bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold"
+              onClick={handleNext}
             >
-              Next
+              {isPending ? "Submitting..." : "Next"}
             </Button>
-            <DisclaimerDialog
-              open={isDisclaimerOpen}
-              onOpenChange={setIsDisclaimerOpen}
-              onConfirm={handleConfirmDisclaimer}
-            />
-            <SuccessDialog
-              open={isSuccessOpen}
-              onOpenChange={setIsSuccessOpen}
-              onClose={() => {
-                setIsSuccessOpen(false);
-                onSubmit();
-              }}
-            />
           </div>
         </div>
       </div>
+
+      <DisclaimerDialog
+        open={isDisclaimerOpen}
+        onOpenChange={setIsDisclaimerOpen}
+        onConfirm={handleConfirmDisclaimer}
+      />
+      <SuccessDialog
+        open={isSuccessOpen}
+        onOpenChange={setIsSuccessOpen}
+        onClose={onSuccess}
+      />
     </div>
   );
 }

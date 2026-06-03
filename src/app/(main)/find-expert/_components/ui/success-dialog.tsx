@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 
@@ -10,6 +11,15 @@ interface SuccessDialogProps {
 }
 
 export default function SuccessDialog({ open, onOpenChange, onClose }: SuccessDialogProps) {
+  useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => {
+      onOpenChange(false);
+      onClose();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="relative w-[515px] max-w-[calc(100%-2rem)] h-[318px] rounded-[24px] bg-white p-0 overflow-hidden">

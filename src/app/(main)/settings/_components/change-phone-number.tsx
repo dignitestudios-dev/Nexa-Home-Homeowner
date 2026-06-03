@@ -35,7 +35,7 @@ export default function ChangePhoneNumber() {
   const [successOpen, setSuccessOpen] = useState(false)
   const [errorOpen, setErrorOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
-  
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const {
@@ -175,7 +175,7 @@ export default function ChangePhoneNumber() {
               disabled={isSending || !phoneChanged}
               className="h-12 w-full rounded-[12px] bg-[#005864] px-[10px] text-[16px] font-semibold leading-5 text-white transition-colors hover:bg-[#004a54] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSending ? 'Sending OTP...' : 'Update Phone Number'}
+              {isSending ? 'Sending Code...' : 'Update Phone Number'}
             </button>
           </form>
         </div>
@@ -204,12 +204,12 @@ export default function ChangePhoneNumber() {
                   placeholder="0"
                   className="w-14 h-14 bg-[#F8F8F8] text-[#005864] text-center text-xl font-semibold border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-colors"
                   onFocus={(e) => {
-                    ;(e.target as HTMLInputElement).style.borderColor = '#005864'
-                    ;(e.target as HTMLInputElement).style.borderWidth = '0.8px'
+                    ; (e.target as HTMLInputElement).style.borderColor = '#005864'
+                      ; (e.target as HTMLInputElement).style.borderWidth = '0.8px'
                   }}
                   onBlur={(e) => {
-                    ;(e.target as HTMLInputElement).style.borderColor = '#E0E0E0'
-                    ;(e.target as HTMLInputElement).style.borderWidth = '2px'
+                    ; (e.target as HTMLInputElement).style.borderColor = '#E0E0E0'
+                      ; (e.target as HTMLInputElement).style.borderWidth = '2px'
                   }}
                   autoComplete="off"
                   inputMode="numeric"
@@ -248,12 +248,12 @@ export default function ChangePhoneNumber() {
         </DialogContent>
       </Dialog>
 
-        <SuccessDialog
-          open={successOpen}
-          onClose={() => setSuccessOpen(false)}
-          title={successMsg || 'Phone Number Changed Successfully'}
-          description="Your phone number has been updated."
-        />
+      <SuccessDialog
+        open={successOpen}
+        onClose={() => setSuccessOpen(false)}
+        title={successMsg || 'Phone Number Changed Successfully'}
+        description="Your phone number has been updated."
+      />
     </div>
   )
 }

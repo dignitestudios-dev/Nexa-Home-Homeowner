@@ -83,7 +83,7 @@ export default function LoginPage() {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-[#181818] mb-4">Welcome back!</h2>
             <p className="text-base text-[rgba(24,24,24,0.8)] leading-relaxed">
-            Enter your phone number below to receive a one-time passcode on your phone number for login/signup
+              Enter your phone number below to receive a one-time passcode on your phone number for login/signup
             </p>
           </div>
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
               disabled={isPending}
               className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Sending OTP...' : 'Continue'}
+              {isPending ? 'Sending Code...' : 'Continue'}
             </button>
           </form>
 

@@ -22,20 +22,20 @@ type EmailFormData = z.infer<typeof emailSchema>
 export default function EmailSettings() {
   const { data: userData } = useGetOwnUser()
   const currentEmail = userData?.data?.contactEmail;
- const [successOpen, setSuccessOpen] = useState(false)
+  const [successOpen, setSuccessOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState<string[]>(['', '', '', '', ''])
   const [resendTimer, setResendTimer] = useState(60)
   const [canResend, setCanResend] = useState(false)
-  
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const {
     register,
     handleSubmit,
-    formState: { errors , isDirty },
+    formState: { errors, isDirty },
     reset,
     watch,
   } = useForm<EmailFormData>({
@@ -141,10 +141,10 @@ export default function EmailSettings() {
           <label className="text-sm font-medium text-slate-700">Email Address</label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <Input 
+            <Input
               {...register('email')}
-              type="email" 
-              placeholder="Enter your email address" 
+              type="email"
+              placeholder="Enter your email address"
               className="pl-10 h-12"
             />
           </div>
@@ -153,12 +153,12 @@ export default function EmailSettings() {
           )}
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isSending || !emailChanged}
           className="w-full sm:w-auto text-white py-5  px-8 bg-[#005864] hover:bg-[#004d57] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSending ? 'Sending OTP...' : 'Save Changes'}
+          {isSending ? 'Sending Code...' : 'Save Changes'}
         </Button>
       </form>
 
@@ -185,12 +185,12 @@ export default function EmailSettings() {
                   placeholder="0"
                   className="w-14 h-14 bg-[#F8F8F8] text-[#005864] text-center text-xl font-semibold border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-colors"
                   onFocus={(e) => {
-                    ;(e.target as HTMLInputElement).style.borderColor = '#005864'
-                    ;(e.target as HTMLInputElement).style.borderWidth = '0.8px'
+                    ; (e.target as HTMLInputElement).style.borderColor = '#005864'
+                      ; (e.target as HTMLInputElement).style.borderWidth = '0.8px'
                   }}
                   onBlur={(e) => {
-                    ;(e.target as HTMLInputElement).style.borderColor = '#E0E0E0'
-                    ;(e.target as HTMLInputElement).style.borderWidth = '2px'
+                    ; (e.target as HTMLInputElement).style.borderColor = '#E0E0E0'
+                      ; (e.target as HTMLInputElement).style.borderWidth = '2px'
                   }}
                   autoComplete="off"
                   inputMode="numeric"

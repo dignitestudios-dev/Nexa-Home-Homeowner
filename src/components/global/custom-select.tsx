@@ -49,7 +49,7 @@ export default function CustomSelect({
           ${className}
         `}
       >
-        <SelectTrigger className="w-full h-full border-0 px-4 shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:hidden rounded-xl bg-transparent">
+        <SelectTrigger type="button" className="w-full h-full border-0 px-4 shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:hidden rounded-xl bg-transparent">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
 
@@ -64,10 +64,10 @@ export default function CustomSelect({
         position="popper"
         align="start"
         sideOffset={6}
-        className="w-(--radix-select-trigger-width) gap-4 rounded-xl border-none ring-0 shadow-md bg-[#F8F8F8]"
+        className="w-(--radix-select-trigger-width) p-2 px-4 gap-4 rounded-xl border-none ring-0 shadow-md bg-[#F8F8F8]"
       >
         {options.map((item) => (
-          <SelectItem key={item.value} className="py-2" value={item.value}>
+          <SelectItem key={item.value} className="py-2 " value={item.value}>
             {item.label}
           </SelectItem>
         ))}

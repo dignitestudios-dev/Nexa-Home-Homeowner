@@ -54,7 +54,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="grid gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
           <aside className="rounded-[24px] bg-white p-4 shadow-sm">
             <nav className="space-y-4">
-              {filteredMenuItems.map((item) => {
+              {menuItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
 
