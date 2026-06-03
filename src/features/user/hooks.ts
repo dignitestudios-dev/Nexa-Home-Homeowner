@@ -156,3 +156,195 @@ export function useGetCategories(params: { page: number; limit: number; search?:
     },
   })
 }
+
+export function useGetJobs(params: { tab: JobTab; page: number; limit: number }) {
+  return useQuery<GetJobsResponse>({
+    queryKey: ['jobs', params],
+    queryFn: async () => {
+      const res = await apiClient.get<GetJobsResponse>('/job/my-jobs', { params })
+      return res.data
+    },
+  })
+}
+
+export function useGetJobDetail(id: string) {
+  return useQuery<GetJobDetailResponse>({
+    queryKey: ['job', id],
+    queryFn: async () => {
+      const res = await apiClient.get<GetJobDetailResponse>(`/job/user/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
+export function useGetMatchingProviders(
+  params: { addressId: string; category: string; radius: number },
+  enabled: boolean
+) {
+  return useQuery<GetMatchingProvidersResponse>({
+    queryKey: ['matching-providers', params],
+    queryFn: async () => {
+      const res = await apiClient.get<GetMatchingProvidersResponse>('/job/matching-providers', { params })
+      return res.data
+    },
+    enabled,
+  })
+}
+
+export function useUpdateJobStatus(
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId: string }>>[0]['mutationOptions']
+) {
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId: string }>({
+    endpoint: (vars) => `/job/${vars.jobId}/status`,
+    method: 'PATCH',
+    invalidateKeys: ['job', 'jobs'],
+    toBody: ({ providerId }) => ({ status: 'accepted', providerId }),
+    mutationOptions: options,
+  })
+}
+
+export function useCompleteJob(
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string }>>[0]['mutationOptions']
+) {
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string }>({
+    endpoint: (vars) => `/job/${vars.jobId}/status`,
+    method: 'PATCH',
+    invalidateKeys: ['job', 'jobs'],
+    toBody: () => ({ status: 'completed' }),
+    mutationOptions: options,
+  })
+}
+
+export interface ProviderMedia {
+  _id: string
+  fileName: string
+  key: string
+  location: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProviderDetail {
+  _id: string
+  name: string
+  rating: number
+  profilePicture: ProviderMedia | null
+  jobCount: number
+  overview: string | null
+  services: string[]
+  portfolioMedia: ProviderMedia[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GetProviderDetailResponse {
+  success: boolean
+  message: string
+  data: ProviderDetail
+}
+
+export function useGetProviderDetail(id: string) {
+  return useQuery<GetProviderDetailResponse>({
+    queryKey: ['provider', id],
+    queryFn: async () => {
+      const res = await apiClient.get<GetProviderDetailResponse>(`/user/provider/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
+export interface ProviderReviewUser {
+  _id: string
+  name: string
+  profilePicture: { location?: string; url?: string } | null
+}
+
+export interface ProviderReview {
+  _id: string
+  reviewer: ProviderReviewUser
+  receiver: ProviderReviewUser
+  job: { _id: string; title: string; status: string }
+  category: { _id: string; name: string; slug: string }
+  stars: number
+  description: string
+  isOwn: boolean
+  createdAt: string
+}
+
+export interface GetProviderReviewsResponse {
+  success: boolean
+  message: string
+  data: {
+    summary: {
+      averageRating: number
+      totalReviews: number
+      distribution: Record<string, number>
+    }
+    reviews: ProviderReview[]
+    pagination: {
+      currentPage: number
+      totalPages: number
+      totalItems: number
+      itemsPerPage: number
+    }
+  }
+}
+
+export function useGetProviderReviews(userId: string, page: number) {
+  return useQuery<GetProviderReviewsResponse>({
+    queryKey: ['provider-reviews', userId, page],
+    queryFn: async () => {
+      const res = await apiClient.get<GetProviderReviewsResponse>('/review', {
+        params: { type: 'received', userId, page, limit: 10 },
+      })
+      return res.data
+    },
+    enabled: !!userId,
+  })
+}
+
+export function useSubmitReview(
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string; stars: number; description: string }>>[0]['mutationOptions']
+) {
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string; stars: number; description: string }>({
+    endpoint: '/review',
+    method: 'POST',
+    invalidateKeys: ['job'],
+    mutationOptions: options,
+  })
+}
+
+export function useCreateJob(
+  options?: Parameters<typeof useApiMutation<CreateJobResponse, CreateJobVars>>[0]['mutationOptions']
+) {
+  return useApiMutation<CreateJobResponse, CreateJobVars>({
+    endpoint: '/job/create',
+    method: 'POST',
+    isMultiPart: true,
+    invalidateKeys: ['jobs'],
+    toBody: (vars) => {
+      const fd = new FormData()
+      fd.append('addressId', vars.addressId)
+      fd.append('category', vars.category)
+      fd.append('title', vars.title)
+      fd.append('description', vars.description)
+      fd.append('when', vars.when)
+      fd.append('type', vars.type)
+      fd.append('radius', String(vars.radius))
+      fd.append('sendToAll', String(vars.sendToAll))
+      if (vars.contactPreference) {
+        vars.contactPreference.forEach((c) => fd.append('contactPreference', c))
+      }
+      if (!vars.sendToAll && vars.providerIds) {
+        vars.providerIds.forEach((id) => fd.append('providerIds', id))
+      }
+      if (vars.images) {
+        vars.images.forEach((img) => fd.append('images', img))
+      }
+      return fd
+    },
+    mutationOptions: options,
+  })
+}

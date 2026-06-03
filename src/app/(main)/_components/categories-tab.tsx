@@ -16,13 +16,12 @@ type Props = {
   carouselItems: CarouselItem[];
   isCategoriesLoading: boolean;
   categoryDocs: Category[];
-
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   scrollCarousel: (direction: number) => void;
-
   categoryPage: number;
   setCategoryPage: React.Dispatch<React.SetStateAction<number>>;
   totalPages: number;
+  onCategoryClick: (path: string) => void;
 };
 
 const CategoriesTab = ({
@@ -34,7 +33,11 @@ const CategoriesTab = ({
   categoryPage,
   setCategoryPage,
   totalPages,
+  onCategoryClick,
 }: Props) => {
+  const handleCategoryClick = (id: string, name: string) => {
+    onCategoryClick(`/find-expert?categoryId=${encodeURIComponent(id)}&categoryName=${encodeURIComponent(name)}`);
+  };
   return (
     <>
       {/* Recent Activity Carousel */}
@@ -51,18 +54,18 @@ const CategoriesTab = ({
             className="flex gap-4 overflow-x-auto pb-2 pr-2 scroll-smooth scrollbar-hide snap-x snap-mandatory"
           >
             {carouselItems.map((item) => {
-              const title =
-                "name" in item ? item.name : item.title;
-
-              const imageSrc =
-                "icon" in item
-                  ? item.icon?.location
-                  : undefined;
+              const isCategory = "_id" in item;
+              const title = isCategory ? item.name : item.title;
+              const imageSrc = isCategory ? item.icon?.location : undefined;
 
               return (
                 <div
                   key={title}
-                  className="min-w-[231px] snap-start overflow-hidden rounded-[12px] bg-white shadow-sm border border-slate-200"
+                  onClick={() => isCategory ? handleCategoryClick(item._id, item.name) : undefined}
+                  className={cn(
+                    "min-w-[231px] snap-start overflow-hidden rounded-[12px] bg-white shadow-sm border border-slate-200",
+                    isCategory && "cursor-pointer hover:shadow-md transition-shadow duration-200"
+                  )}
                 >
                   <div className="h-[117px] rounded-t-[12px] overflow-hidden bg-slate-100">
                     {imageSrc ? (
@@ -112,7 +115,7 @@ const CategoriesTab = ({
       <div className="space-y-6 mt-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-semibold text-slate-950">
-            Categories
+            Popular services near you
           </h2>
         </div>
 
@@ -136,7 +139,8 @@ const CategoriesTab = ({
             {categoryDocs.map((category) => (
               <div
                 key={category._id}
-                className="overflow-hidden rounded-[12px] bg-white p-3 shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200"
+                onClick={() => handleCategoryClick(category._id, category.name)}
+                className="overflow-hidden rounded-[12px] bg-white p-3 shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200 cursor-pointer"
               >
                 <div className="h-[211px] rounded-lg bg-slate-100 overflow-hidden relative border border-slate-100">
                   {category.icon?.location ? (

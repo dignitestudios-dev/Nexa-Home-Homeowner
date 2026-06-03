@@ -20,9 +20,9 @@ const addressSchema = z.object({
   label: z.string().min(1, 'Label is required').max(15, 'Label must be at most 15 characters'),
   address: z.string().min(1, 'Address is required').max(50, 'Address must be at most 50 characters'),
   country: z.string().min(1, 'Country is required'),
-  state: z.string().min(1, 'State is required'),
+  state: z.string().optional().or(z.literal('')),
   city: z.string().min(1, 'City is required'),
-  zipCode: z.string().min(1, 'Zip Code is required').regex(/^\d{5,6}$/, 'Zip code must be 5 or 6 digits'),
+  zipCode: z.string().min(1, 'Zip Code is required').regex(/^\d+$/, 'Zip code must contain only digits'),
   latitude: z.string().min(1, 'Please select a location on the map'),
   longitude: z.string().min(1, 'Please select a location on the map'),
 })
@@ -132,15 +132,15 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
       reset(
         initialData
           ? {
-              label: initialData.label,
-              address: initialData.address,
-              country: initialData.country,
-              state: initialData.state,
-              city: initialData.city,
-              zipCode: initialData.zipCode,
-              latitude: initialData.latitude,
-              longitude: initialData.longitude,
-            }
+            label: initialData.label,
+            address: initialData.address,
+            country: initialData.country,
+            state: initialData.state,
+            city: initialData.city,
+            zipCode: initialData.zipCode,
+            latitude: initialData.latitude,
+            longitude: initialData.longitude,
+          }
           : emptyForm
       )
 
@@ -228,10 +228,10 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
       if (!e.latLng) return;
       const clickedLat = e.latLng.lat();
       const clickedLng = e.latLng.lng();
-      
+
       setValue('latitude', clickedLat.toFixed(6), { shouldValidate: true });
       setValue('longitude', clickedLng.toFixed(6), { shouldValidate: true });
-      
+
       marker.setPosition({ lat: clickedLat, lng: clickedLng });
       geocodeLatLng(clickedLat, clickedLng);
     });
@@ -241,10 +241,10 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
       if (!pos) return;
       const draggedLat = pos.lat();
       const draggedLng = pos.lng();
-      
+
       setValue('latitude', draggedLat.toFixed(6), { shouldValidate: true });
       setValue('longitude', draggedLng.toFixed(6), { shouldValidate: true });
-      
+
       geocodeLatLng(draggedLat, draggedLng);
     });
   }, [isLoaded, open]);
@@ -264,7 +264,7 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
       label: data.label,
       address: data.address,
       country: data.country,
-      state: data.state,
+      state: data.state ? data.state : "",
       city: data.city,
       zipCode: data.zipCode,
       latitude: data.latitude,

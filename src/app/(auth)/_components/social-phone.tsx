@@ -86,7 +86,7 @@ export default function SocialPhonePage() {
               disabled={isPending}
               className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Sending OTP...' : 'Continue'}
+              {isPending ? 'Sending Code...' : 'Continue'}
             </button>
           </form>
         </div>

@@ -16,9 +16,41 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const navItems = [{ href: "/dashboard", label: "Home" }];
-
+const notifications = [
+  {
+    id: 1,
+    title: "Title goes here",
+    description:
+      "Lorem ipsum dolor sit amet consectetur. In volutpat et mattis ut tristique viverra blandit.",
+    time: "7:30 PM",
+    unread: true,
+  },
+  {
+    id: 2,
+    title: "Title goes here",
+    description:
+      "Lorem ipsum dolor sit amet consectetur. In volutpat et mattis ut tristique viverra blandit.",
+    time: "7:30 PM",
+    unread: true,
+  },
+  {
+    id: 3,
+    title: "Title goes here",
+    description:
+      "Lorem ipsum dolor sit amet consectetur. In volutpat et mattis ut tristique viverra blandit.",
+    time: "7:30 PM",
+  },
+  {
+    id: 4,
+    title: "Title goes here",
+    description:
+      "Lorem ipsum dolor sit amet consectetur. In volutpat et mattis ut tristique viverra blandit.",
+    time: "7:30 PM",
+  },
+];
 const menuItems = [
   { label: "View Profile", href: "/my-profile" },
   { label: "Settings", href: "/settings" },
@@ -89,14 +121,69 @@ export default function Navbar() {
             </ul>
           </nav>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-11 rounded-full text-[#005864] hover:bg-[#EAF0F0] hover:text-[#005864]"
-            aria-label="Notifications"
-          >
-            <Bell className="size-5" strokeWidth={1.8} />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="relative flex h-11 w-11 items-center justify-center rounded-full text-[#005864] transition hover:bg-[#EAF0F0]"
+                aria-label="Notifications"
+              >
+                <Bell className="size-5" strokeWidth={1.8} />
+
+                <span className="absolute right-[8px] top-[8px] flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-medium text-white">
+                  2
+                </span>
+              </button>
+            </PopoverTrigger>
+
+            <PopoverContent
+              align="end"
+              sideOffset={12}
+              className="w-[508px] rounded-[8px] border-0 outline-none bg-white p-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
+            >
+              <div className="px-[23px] py-[19px]">
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-[16px] font-semibold text-[#181818]">
+                    Notifications
+                  </h2>
+
+                  <button className="text-[13px] font-semibold text-[#005864] underline">
+                    Clear All
+                  </button>
+                </div>
+
+                {/* List */}
+                <div className="max-h-[340px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {notifications.map((item) => (
+                    <div
+                      key={item.id}
+                      className="relative border-b border-[#E4E4E4] py-4"
+                    >
+                      <div className="mb-2 flex justify-between">
+                        <h3 className="text-[13px] font-bold text-[#787F8C]">
+                          {item.title}
+                        </h3>
+
+                        <span className="text-[12px] font-medium text-[#717171]">
+                          {item.time}
+                        </span>
+                      </div>
+
+                      <p className="max-w-[400px] text-[13px] leading-4 text-[rgba(24,24,24,0.5)]">
+                        {item.description}
+                      </p>
+
+                      {item.unread && (
+                        <div className="absolute right-0 top-[50px] flex h-[19px] w-[19px] items-center justify-center rounded-full bg-[#FF0000] text-[11px] text-white">
+                          1
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {isLoading ? (
             <div className="flex items-center gap-3 h-11 pr-1 select-none animate-pulse">

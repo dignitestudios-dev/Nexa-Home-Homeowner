@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CategoriesTab from "./categories-tab";
 import OnGoingServicesTab from "./ongoing-services-tab";
 import CustomSelect from "@/components/global/custom-select";
@@ -52,7 +52,12 @@ const recentActivities = [
 
 const Dashboard = (props: Props) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState(tabs[0]);
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams.get("tab");
+  const initialTab = tabs.find((t) => t.toLowerCase() === tabParam?.toLowerCase()) ?? tabs[0];
+
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [emailPopupOpen, setEmailPopupOpen] = useState(false);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState("");
@@ -68,7 +73,7 @@ const Dashboard = (props: Props) => {
   const addresses = addressData?.data?.addresses || [];
   const defaultAddress = addresses.find((addr) => addr.isDefault);
   const addressText = defaultAddress
-    ? `${defaultAddress.address}, ${defaultAddress.city}`
+    ? `${defaultAddress.label}, ${defaultAddress.zipCode}`
     : "Select Location";
 
   // Paginated Categories state & query
@@ -89,19 +94,15 @@ const Dashboard = (props: Props) => {
     scrollContainerRef.current.scrollBy({ left: direction * 252, behavior: "smooth" });
   };
 
-  useEffect(() => {
-    if (
-      !isUserLoading &&
-      userData?.data &&
-      userData.data.contactEmail == null
-    ) {
-      const shown = sessionStorage.getItem("email_popup_shown");
-      if (!shown) {
-        setEmailPopupOpen(true);
-        sessionStorage.setItem("email_popup_shown", "true");
-      }
+  const hasEmail = !!userData?.data?.contactEmail;
+
+  const handleFindExpert = (path = "/find-expert") => {
+    if (!hasEmail) {
+      setEmailPopupOpen(true);
+      return;
     }
-  }, [isUserLoading, userData]);
+    router.push(path);
+  };
 
   useEffect(() => {
     if (isLocationDialogOpen && defaultAddress) {
@@ -116,12 +117,13 @@ const Dashboard = (props: Props) => {
       </div>
     );
   }
-
+  
   return (
     <div className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <TopHeading title={`Welcome ${userData?.data.name}`} />
+  <p className="text-gray-400" >What do you need help with?</p>
           <button
             onClick={() => setIsLocationDialogOpen(true)}
             className="flex items-center gap-1.5 text-xl text-slate-600 mt-1 hover:text-[#005864] transition-colors focus:outline-none"
@@ -133,7 +135,7 @@ const Dashboard = (props: Props) => {
             </span>
           </button>
         </div>
-        <Button onClick={() => router.push("/find-expert")} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
+        <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
           <Search size={18} />
           Find an Expert
         </Button>
@@ -174,25 +176,13 @@ const Dashboard = (props: Props) => {
             categoryPage={categoryPage}
             setCategoryPage={setCategoryPage}
             totalPages={totalPages}
+            onCategoryClick={handleFindExpert}
           />
         )
 
       }
-      {activeTab == "Ongoing" &&
-        (
-          <OnGoingServicesTab
-            carouselItems={carouselItems}
-            isCategoriesLoading={isCategoriesLoading}
-            categoryDocs={categoryDocs}
-            scrollContainerRef={scrollContainerRef}
-            scrollCarousel={scrollCarousel}
-            categoryPage={categoryPage}
-            setCategoryPage={setCategoryPage}
-            totalPages={totalPages}
-          />
-        )
-
-      }
+      {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" />}
+      {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" />}
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
         <DialogContent className="sm:max-w-[400px] border-none p-6 rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}
@@ -253,7 +243,7 @@ const Dashboard = (props: Props) => {
                 value={selectedAddressId}
                 onChange={setSelectedAddressId}
                 options={addresses.map((addr) => ({
-                  label: `${addr.label}: ${addr.address}, ${addr.city}, ${addr.country}`,
+                  label: `${addr.label}: ${addr.address}, ${addr.city}`,
                   value: addr._id,
                 }))}
                 placeholder="Select Location"

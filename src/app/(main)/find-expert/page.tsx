@@ -1,37 +1,32 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import FindExpertForm from "./_components/find-expert-stepOne";
-import ExpertMatchesForm from "./_components/find-expert-stepTwo";
-import SummaryForm from "./_components/find-expert-stepThree";
+
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import FindExpertStepOne from "./_components/find-expert-stepOne";
+import FindExpertStepTwo from "./_components/find-expert-stepTwo";
+import FindExpertStepThree from "./_components/find-expert-stepThree";
+import { useGetOwnUser } from "@/features/user/hooks";
+import { Loader2 } from "lucide-react";
 
 export type JobType = "one-time" | "recurring";
 
 export interface StepOneData {
-  service: string;
+  categoryId: string;
+  categoryName: string;
+  title: string;
   description: string;
   when: string;
-  where: string;
+  addressId: string;
   jobType: JobType;
-  recurringDate: string;
   contactCall: boolean;
   contactEmail: boolean;
   uploadedImages: File[];
 }
 
-export interface Expert {
-  id: number;
-  name: string;
-  rating: number;
-  location: string;
-  avatar: string | null;
-  initials: string;
-  avatarBg: string;
-}
-
 export interface StepTwoData {
   sendToAll: boolean;
-  selectedExpertIds: number[];
+  selectedProviderIds: string[];
+  radius: number;
 }
 
 export interface FindExpertFormData {
@@ -39,82 +34,48 @@ export interface FindExpertFormData {
   stepTwo: StepTwoData;
 }
 
-const initialStepOne: StepOneData = {
-  service: "",
-  description: "",
-  when: "",
-  where: "",
-  jobType: "one-time",
-  recurringDate: "2026-02-12",
-  contactCall: false,
-  contactEmail: false,
-  uploadedImages: [],
-};
-
-const initialStepTwo: StepTwoData = {
-  sendToAll: true,
-  selectedExpertIds: [],
-};
-
-export const ALL_EXPERTS: Expert[] = [
-  {
-    id: 1,
-    name: "Landscape Workshop",
-    rating: 4.5,
-    location: "Greater New-Orleans Area",
-    avatar: null,
-    initials: "LW",
-    avatarBg: "#e8f5e9",
-  },
-  {
-    id: 2,
-    name: "Boot Krewe Cleaner",
-    rating: 4.5,
-    location: "Greater New-Orleans Area",
-    avatar: null,
-    initials: "BK",
-    avatarBg: "#fff3e0",
-  },
-];
-
 const FindExpert = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: userData, isLoading: isUserLoading } = useGetOwnUser();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const step = (Number(searchParams.get("step")) || 1) as 1 | 2 | 3;
+
   const [stepOneData, setStepOneData] = useState<StepOneData>({
-    ...initialStepOne,
-    service: "",
+    categoryId:     searchParams.get("categoryId")   ?? "",
+    categoryName:   searchParams.get("categoryName") ?? "",
+    title:          "",
+    description:    "",
+    when:           "",
+    addressId:      "",
+    jobType:        "one-time",
+    contactCall:    false,
+    contactEmail:   false,
+    uploadedImages: [],
   });
 
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-      const category = params.get('category');
-      if (category) {
-        setStepOneData((prev) => ({ ...prev, service: category }));
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-  const [stepTwoData, setStepTwoData] = useState<StepTwoData>(initialStepTwo);
+  const [stepTwoData, setStepTwoData] = useState<StepTwoData>({
+    sendToAll: true,
+    selectedProviderIds: [],
+    radius: 25,
+  });
 
-  // ── Step One handlers ─────────────────────────────────────
-  const handleStepOneChange = <K extends keyof StepOneData>(
-    field: K,
-    value: StepOneData[K],
-  ) => {
-    setStepOneData((prev) => ({ ...prev, [field]: value }));
+  const [matchedProviders, setMatchedProviders] = useState<MatchingProvider[]>([]);
+
+  const goTo = (s: number) => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("step", String(s));
+    router.push(`?${next.toString()}`, { scroll: false } as any);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      setStepOneData((prev) => ({
-        ...prev,
-        uploadedImages: [...prev.uploadedImages, ...Array.from(files)],
-      }));
-    }
+  const goNext = () => goTo(step + 1);
+  const goBack = () => {
+    if (step === 1) { router.back(); return; }
+    goTo(step - 1);
+  };
+
+  const handleStepOneChange = <K extends keyof StepOneData>(field: K, value: StepOneData[K]) => {
+    setStepOneData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRemoveImage = (index: number) => {
@@ -124,95 +85,92 @@ const FindExpert = () => {
     }));
   };
 
-  // ── Step Two handlers ─────────────────────────────────────
-  const handleToggleExpert = (id: number) => {
+  const handleToggleProvider = (id: string, allProviderIds: string[]) => {
     setStepTwoData((prev) => {
-      const already = prev.selectedExpertIds.includes(id);
-      const updated = already
-        ? prev.selectedExpertIds.filter((e) => e !== id)
-        : [...prev.selectedExpertIds, id];
-      return {
-        ...prev,
-        selectedExpertIds: updated,
-        sendToAll: updated.length === ALL_EXPERTS.length,
-      };
+      const updated = prev.selectedProviderIds.includes(id)
+        ? prev.selectedProviderIds.filter((e) => e !== id)
+        : [...prev.selectedProviderIds, id];
+      const allSelected = allProviderIds.length > 0 && allProviderIds.every((pid) => updated.includes(pid));
+      return { ...prev, selectedProviderIds: updated, sendToAll: allSelected };
     });
   };
 
-  const handleToggleSendToAll = () => {
+  const handleToggleSendToAll = (allProviderIds: string[]) => {
     setStepTwoData((prev) => {
       const next = !prev.sendToAll;
-      return {
-        sendToAll: next,
-        selectedExpertIds: next ? ALL_EXPERTS.map((e) => e.id) : [],
-      };
+      return { ...prev, sendToAll: next, selectedProviderIds: next ? allProviderIds : [] };
     });
   };
 
-  // ── Navigation ────────────────────────────────────────────
-  const goBack = () => {
-    if (currentStep === 1) {
-      router.back();
-    } else {
-      setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3);
-    }
+  const handleRadiusChange = (radius: number) => {
+    setStepTwoData((prev) => ({ ...prev, radius }));
   };
 
-  const goNext = () => {
-    if (currentStep < 3) {
-      setCurrentStep((prev) => (prev + 1) as 1 | 2 | 3);
-    } else {
-      // Final submit — send combined data to your API here
-      const payload: FindExpertFormData = {
-        stepOne: stepOneData,
-        stepTwo: stepTwoData,
-      };
-      console.log("Submitting:", payload);
-      // router.push("/success");
-    }
-  };
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="size-6 animate-spin text-[#005864]" />
+      </div>
+    );
+  }
 
-  // ── Selected expert objects (derived) ─────────────────────
-  const selectedExperts = ALL_EXPERTS.filter((e) =>
-    stepTwoData.selectedExpertIds.includes(e.id),
-  );
+  if (userData?.data && !userData.data.contactEmail) {
+    router.replace("/settings/email");
+    return null;
+  }
 
   return (
     <div className="pb-6 px-10 lg:px-20">
-      <>
-        {currentStep === 1 && (
-          <FindExpertForm
-            data={stepOneData}
-            onChange={handleStepOneChange}
-            onImageUpload={handleImageUpload}
-            onRemoveImage={handleRemoveImage}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        )}
-
-        {currentStep === 2 && (
-          <ExpertMatchesForm
-            data={stepTwoData}
-            allExperts={ALL_EXPERTS}
-            onToggleExpert={handleToggleExpert}
-            onToggleSendToAll={handleToggleSendToAll}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        )}
-
-        {currentStep === 3 && (
-          <SummaryForm
-            stepOneData={stepOneData}
-            selectedExperts={selectedExperts}
-            onBack={goBack}
-            onSubmit={goNext}
-          />
-        )}
-      </>
+      {step === 1 && (
+        <FindExpertStepOne
+          data={stepOneData}
+          onChange={handleStepOneChange}
+          onImageUpload={(e) => {
+            const files = e.target.files;
+            if (!files) return;
+            const valid = Array.from(files).filter((f) =>
+              ["image/jpeg", "image/png", "image/webp"].includes(f.type)
+            );
+            setStepOneData((prev) => ({
+              ...prev,
+              uploadedImages: [...prev.uploadedImages, ...valid].slice(0, 10),
+            }));
+          }}
+          onRemoveImage={handleRemoveImage}
+          onBack={goBack}
+          onNext={goNext}
+        />
+      )}
+      {step === 2 && (
+        <FindExpertStepTwo
+          data={stepTwoData}
+          categoryId={stepOneData.categoryId}
+          addressId={stepOneData.addressId}
+          onToggleProvider={handleToggleProvider}
+          onToggleSendToAll={handleToggleSendToAll}
+          onRadiusChange={handleRadiusChange}
+          onProvidersLoaded={setMatchedProviders}
+          onBack={goBack}
+          onNext={goNext}
+        />
+      )}
+      {step === 3 && (
+        <FindExpertStepThree
+          stepOneData={stepOneData}
+          stepTwoData={stepTwoData}
+          matchedProviders={matchedProviders}
+          onBack={goBack}
+          onSuccess={() => router.push("/dashboard")}
+        />
+      )}
     </div>
   );
 };
 
-export default FindExpert;
+export default function FindExpertPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="size-6 animate-spin text-[#005864]" /></div>}>
+      <FindExpert />
+    </Suspense>
+  );
+}
