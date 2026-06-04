@@ -7,6 +7,7 @@ type ServiceCardProps = {
   status: "Ongoing" | "Completed" | "Ready";
   postedDate: string;
   actionText: string;
+  when:string;
 };
 
 const tagStyles: Record<string, string> = {
@@ -28,6 +29,7 @@ export default function ServiceCard({
   status,
   postedDate,
   actionText,
+  when
 }: ServiceCardProps) {
   return (
     <Link href={`/service-details/${id}`} className="relative w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
@@ -66,7 +68,7 @@ export default function ServiceCard({
 
         <div className="flex flex-1 justify-center">
           <span className="text-[16px] font-bold text-[#005864]">
-            Ready to Hire
+           {when}
           </span>
         </div>
       </div>

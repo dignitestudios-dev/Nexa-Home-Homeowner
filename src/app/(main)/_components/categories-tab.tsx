@@ -4,6 +4,7 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/features/user/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type RecentActivity = {
   title: string;
@@ -120,16 +121,16 @@ const CategoriesTab = ({
         </div>
 
         {isCategoriesLoading ? (
-          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 animate-pulse">
+          <div className="grid gap-4 xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2">
             {Array.from({ length: 10 }).map((_, i) => (
               <div
                 key={i}
                 className="overflow-hidden rounded-[12px] bg-white p-3 shadow-sm border border-slate-200"
               >
-                <div className="h-[211px] rounded-lg bg-slate-200" />
+                <Skeleton className="h-[211px] w-full rounded-lg" />
 
                 <div className="px-1 py-4 space-y-2">
-                  <div className="h-5 w-2/3 bg-slate-200 rounded" />
+                  <Skeleton className="h-5 w-2/3" />
                 </div>
               </div>
             ))}

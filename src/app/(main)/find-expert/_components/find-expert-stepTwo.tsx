@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Loader2, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useGetMatchingProviders } from "@/features/user/hooks";
 import { StepTwoData } from "../page";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
@@ -224,18 +225,27 @@ export default function FindExpertStepTwo({
         <button
           onClick={() => onToggleSendToAll(allProviderIds)}
           className={`w-6 h-6 rounded-[4px] flex items-center justify-center border transition-colors ${
-            allSelected ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300"
+            data.sendToAll ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300"
           }`}
         >
-          {allSelected && <Check size={16} color="white" strokeWidth={2.5} />}
+          {data.sendToAll && <Check size={16} color="white" strokeWidth={2.5} />}
         </button>
         <span className="text-[18px] font-semibold text-[#005864]">Send To All Experts (Recommended)</span>
       </div>
 
       {/* Providers Grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="size-6 animate-spin text-[#005864]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="w-full h-[100px] rounded-2xl border border-gray-200 px-3 py-4 flex items-start gap-3 bg-white">
+              <Skeleton className="w-[52px] h-[52px] rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/3" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : providers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -287,7 +297,7 @@ export default function FindExpertStepTwo({
       <div className="flex justify-end mt-8">
         <button
           onClick={onNext}
-          disabled={!data.sendToAll && data.selectedProviderIds.length === 0}
+          disabled={(!data.sendToAll && data.selectedProviderIds.length === 0) || (data.sendToAll && providers.length === 0)}
           className="w-full sm:w-[230px] h-12 bg-[#005864] rounded-[12px] text-white text-[16px] font-semibold hover:bg-[#004750] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next

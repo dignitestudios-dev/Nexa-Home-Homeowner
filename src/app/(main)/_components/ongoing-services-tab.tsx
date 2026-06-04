@@ -57,8 +57,9 @@ export default function OnGoingServicesTab({ tab }: Props) {
           <ServiceCard
             key={job._id}
             id={job._id}
-            serviceName={job.title}
+            serviceName={job.category.name}
             description={job.description}
+            when={job.when}
             status={tab === 'ongoing' ? 'Ongoing' : 'Completed'}
             postedDate={new Date(job.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
             actionText={job.applyCount > 0 ? job.userDisplayTag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'Awaiting Response'}
