@@ -250,11 +250,11 @@ const ServiceDetails = () => {
         <div className="bg-[#F9FAFA] rounded-[18px] p-6 h-fit sticky top-6">
           <div className="mb-6">
             <h2 className="text-[20px] font-bold text-[#181818] mb-2">
-              Experts Ready To Help
+              {(job.userDisplayTag == "ongoing" || job.userDisplayTag == "completed") ? "Hired for this Service" : "Experts Ready To Help"}
             </h2>
-            <p className="text-base font-bold text-[#181818] leading-[26px]">
+            {appliedProviders.length > 0 && <p className="text-base font-bold text-[#181818] leading-[26px]">
               Below are available Experts for your requests. Choose the Expert you'd like to work with.
-            </p>
+            </p>}
           </div>
 
           {appliedProviders.length > 0 ? (
@@ -274,58 +274,58 @@ const ServiceDetails = () => {
           ) : provider ? (
             <div className="bg-white rounded-[12px] p-5">
               <div>
-              <div
-                className="flex items-start gap-4 cursor-pointer"
-                onClick={handleProviderClick}
-              >
-                <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
-                  {provider.profilePicture?.location ? (
-                    <Image src={provider.profilePicture.location} alt={provider.name} fill className="object-cover" />
-                  ) : (
-                    <div className="flex size-full items-center justify-center text-lg font-semibold text-[#005864]">
-                      {provider.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-               
-                </div>
+                <div
+                  className="flex items-start gap-4 cursor-pointer"
+                  onClick={handleProviderClick}
+                >
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
+                    {provider.profilePicture?.location ? (
+                      <Image src={provider.profilePicture.location} alt={provider.name} fill className="object-cover" />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-lg font-semibold text-[#005864]">
+                        {provider.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
 
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-black truncate hover:text-[#005864] transition-colors">
-                    {provider.name}
-                  </h3>
-                  {(() => {
-                    const rating = provider.averageRating || 0;
-                    const fullStars = Math.floor(rating);
-                    const hasHalfStar = rating % 1 !== 0;
-                    return (
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              size={14}
-                              className={`${i < fullStars
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-black truncate hover:text-[#005864] transition-colors">
+                      {provider.name}
+                    </h3>
+                    {(() => {
+                      const rating = provider.averageRating || 0;
+                      const fullStars = Math.floor(rating);
+                      const hasHalfStar = rating % 1 !== 0;
+                      return (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={`${i < fullStars
                                   ? "fill-[#EDAF35] text-[#EDAF35]"
                                   : i === fullStars && hasHalfStar
                                     ? "fill-[#EDAF35] text-[#EDAF35]"
                                     : "text-[#E5E5E5]"
-                                }`}
-                            />
-                          ))}
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs font-medium text-[#1C1C1C]">{rating.toFixed(1)}</span>
                         </div>
-                        <span className="text-xs font-medium text-[#1C1C1C]">{rating.toFixed(1)}</span>
-                      </div>
-                    );
-                  })()}
-                  <p className="text-sm text-[rgba(24,24,24,0.8)] mt-1 truncate">
-                    {provider?.providerAddress?.state || ""} ,    {provider?.providerAddress?.country || ""}
-                  </p>
-                  
+                      );
+                    })()}
+                    <p className="text-sm text-[rgba(24,24,24,0.8)] mt-1 truncate">
+                      {provider?.providerAddress?.state || ""} ,    {provider?.providerAddress?.country || ""}
+                    </p>
+
+                  </div>
                 </div>
-              </div>
-              {!data?.data?.job?.isReviewSubmitted &&  <Button onClick={()=>setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
-               Give Feedback
-              </Button>}
+                {!data?.data?.job?.isReviewSubmitted && <Button onClick={() => setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+                  Give Feedback
+                </Button>}
               </div>
             </div>
           ) : (
@@ -336,7 +336,7 @@ const ServiceDetails = () => {
 
           <div className="mt-6">
             {job.status === "completed" ? (
-              <Button onClick={()=>router.push("/find-expert")} className="h-12 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+              <Button onClick={() => router.push("/find-expert")} className="h-12 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
                 Find Another Expert
               </Button>
             ) : job.userDisplayTag === "ongoing" ? (
