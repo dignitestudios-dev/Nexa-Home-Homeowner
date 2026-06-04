@@ -84,7 +84,7 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
             {/* Service Details */}
             <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8 space-y-4">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold line-clamp-2 text-[#181818] capitalize">{stepOneData.title}</h2>
+                <h2 className="text-2xl break-all font-bold line-clamp-2 text-[#181818] capitalize">{stepOneData.title}</h2>
                 <span className="rounded-full text-nowrap  bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864]">
                   {stepOneData.categoryName}
                 </span>

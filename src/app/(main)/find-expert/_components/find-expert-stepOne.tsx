@@ -14,10 +14,11 @@ import { useGetCategories, useGetAddresses } from "@/features/user/hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 import CustomSelect from "@/components/global/custom-select";
 import { StepOneData } from "../page";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const schema = z.object({
   categoryId: z.string().min(1, "Please select a service"),
-  title: z.string().min(1, "Title is required").max(100, "Title must be 100 characters or less"),
+  title: z.string().min(1, "Title is required").max(60, "Title must be 60 characters or less"),
   description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
   when: z.string().min(1, "Please select when"),
   addressId: z.string().min(1, "Please select a location"),
@@ -123,6 +124,17 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
     return days;
   }, [activeMonth]);
 
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
+
+  const isCurrentMonthOrEarlier = useMemo(() => {
+    return activeMonth.getFullYear() < today.getFullYear() ||
+      (activeMonth.getFullYear() === today.getFullYear() && activeMonth.getMonth() <= today.getMonth());
+  }, [activeMonth, today]);
+
   const formatDate = (d: Date) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -175,7 +187,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
           <div>
             {/* Category */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-[16px] font-medium leading-[18px]">Select Service</Label>
+              <Label className="text-[16px] font-medium leading-[18px]">Select Service <span className="text-red-500">*</span></Label>
               <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                 <PopoverTrigger asChild>
                   <button
@@ -199,7 +211,11 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
                   </div>
                   <div className="max-h-56 overflow-y-auto">
                     {isCategoriesLoading ? (
-                      <div className="py-4 text-center text-sm text-[rgba(24,24,24,0.5)]">Loading...</div>
+                      <div className="p-2 space-y-2">
+                        <Skeleton className="h-9 w-full rounded-md" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                      </div>
                     ) : categories.length === 0 ? (
                       <div className="py-4 text-center text-sm text-[rgba(24,24,24,0.5)]">No services found.</div>
                     ) : categories.map((cat) => (
@@ -235,22 +251,22 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
             {/* Title */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-sm font-medium text-black">Title</Label>
+              <Label className="text-sm font-medium text-black">Title <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <input
                   {...register("title")}
                   placeholder="e.g. Pool cleaning needed"
-                  maxLength={100}
+                  maxLength={60}
                   className={cn("h-12 pr-20 rounded-[12px] bg-[#F8F8F8] px-4 text-sm text-[#181818] placeholder:text-[rgba(24,24,24,0.5)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-none w-full", errors.title && "border border-red-400")}
                 />
-                <span className="absolute right-3 top-3.5 text-xs text-[#18181899]">{(titleVal ?? "").length}/100</span>
+                <span className="absolute right-3 top-3.5 text-xs text-[#18181899]">{(titleVal ?? "").length}/60</span>
               </div>
               {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
             </div>
 
             {/* Description */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-sm font-medium text-black">Description</Label>
+              <Label className="text-sm font-medium text-black">Description <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Textarea
                   {...register("description")}
@@ -400,7 +416,14 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
           <div className="mt-[28px] px-[30px] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold">{activeMonth.toLocaleString("en-US", { month: "long", year: "numeric" })}</h2>
-              <button type="button" onClick={() => setActiveMonth(new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1))}><ChevronLeft size={18} /></button>
+              <button
+                type="button"
+                disabled={isCurrentMonthOrEarlier}
+                onClick={() => setActiveMonth(new Date(activeMonth.getFullYear(), activeMonth.getMonth() - 1, 1))}
+                className="disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={18} />
+              </button>
             </div>
             <button type="button" onClick={() => setActiveMonth(new Date(activeMonth.getFullYear(), activeMonth.getMonth() + 1, 1))}><ChevronRight size={18} /></button>
           </div>
@@ -414,8 +437,22 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
               {calendarDays.map((day, index) => {
                 if (!day) return <div key={index} />;
                 const dv = formatDate(day);
+                const isPast = day < today;
                 return (
-                  <button type="button" key={dv} onClick={() => setPendingDate(dv)} className={cn("mx-auto flex h-[34px] w-[34px] items-center justify-center rounded-full text-[16px] transition-all", dv === pendingDate ? "bg-[#005864] text-white" : "text-black hover:bg-slate-100")}>
+                  <button
+                    type="button"
+                    key={dv}
+                    disabled={isPast}
+                    onClick={() => setPendingDate(dv)}
+                    className={cn(
+                      "mx-auto flex h-[34px] w-[34px] items-center justify-center rounded-full text-[16px] transition-all",
+                      dv === pendingDate
+                        ? "bg-[#005864] text-white"
+                        : isPast
+                          ? "text-black/30 cursor-not-allowed"
+                          : "text-black hover:bg-slate-100"
+                    )}
+                  >
                     {day.getDate()}
                   </button>
                 );

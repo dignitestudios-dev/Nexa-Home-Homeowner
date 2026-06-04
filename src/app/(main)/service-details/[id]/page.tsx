@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -67,8 +68,81 @@ const ServiceDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="size-6 animate-spin text-[#005864]" />
+      <div className="max-w-[1200px] mx-auto rounded-[24px] py-2">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-[#005864] hover:text-[#004750] transition-colors"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-[32px] tracking-tight font-semibold">Service Details</h1>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_487px] gap-6">
+          {/* LEFT CONTENT */}
+          <div className="space-y-6">
+            <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-2/3" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+            </div>
+
+            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+              <div className="space-y-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between gap-4">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-1/4" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+              <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-4 w-1/6" />
+                  <div className="flex items-start gap-1.5 w-full">
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+                <Skeleton className="h-[42px] w-[120px] rounded-md" />
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SIDEBAR */}
+          <div className="bg-[#F9FAFA] rounded-[18px] p-6 h-fit sticky top-6">
+            <div className="mb-6 space-y-3">
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+
+            <div className="space-y-4">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-[12px] p-5 flex items-start gap-4">
+                  <Skeleton className="w-16 h-16 rounded-full shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -116,7 +190,7 @@ const ServiceDetails = () => {
           <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl line-clamp-2 font-bold text-[#181818] capitalize">{job.title}</h2>
+                <h2 className="text-2xl break-all line-clamp-2 font-bold text-[#181818] capitalize">{job.title}</h2>
                 <span className="rounded-full text-nowrap bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864] capitalize">
                   {job.category.name}
                 </span>
@@ -199,6 +273,7 @@ const ServiceDetails = () => {
             </div>
           ) : provider ? (
             <div className="bg-white rounded-[12px] p-5">
+              <div>
               <div
                 className="flex items-start gap-4 cursor-pointer"
                 onClick={handleProviderClick}
@@ -211,6 +286,7 @@ const ServiceDetails = () => {
                       {provider.name.charAt(0).toUpperCase()}
                     </div>
                   )}
+               
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -244,7 +320,12 @@ const ServiceDetails = () => {
                   <p className="text-sm text-[rgba(24,24,24,0.8)] mt-1 truncate">
                     {provider?.providerAddress?.state || ""} ,    {provider?.providerAddress?.country || ""}
                   </p>
+                  
                 </div>
+              </div>
+              {!data?.data?.job?.isReviewSubmitted &&  <Button onClick={()=>setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+               Give Feedback
+              </Button>}
               </div>
             </div>
           ) : (
