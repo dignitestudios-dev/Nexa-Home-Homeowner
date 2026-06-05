@@ -122,12 +122,12 @@ export default function ViewProfile() {
               </svg>
             )} */}
           </div>
-          <div className="flex items-center gap-1">
+          {/* <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
               <Star key={s} className={`h-3.5 w-3.5 ${s <= 4 ? 'fill-[#FFC107] text-[#FFC107]' : 'text-[#D0D0D0]'}`} />
             ))}
             <span className="ml-1 text-xs font-medium text-[#FFC107]">4.5</span>
-          </div>
+          </div> */}
           {defaultAddress && (
             <p className="text-xs text-[rgba(24,24,24,0.5)] truncate">
               {defaultAddress.city}, {defaultAddress.country}
@@ -162,14 +162,14 @@ export default function ViewProfile() {
             </p>
           </div>
 
-          {defaultAddress && (
+          {/* {defaultAddress && (
             <div className="rounded-[12px] bg-white px-5 py-4">
               <p className="text-xs font-medium text-[rgba(24,24,24,0.5)] mb-1">Location</p>
               <p className="text-[15px] font-medium text-[#181818]">
                 {defaultAddress.city}, {defaultAddress.country}
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 

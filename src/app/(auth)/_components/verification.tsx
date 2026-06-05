@@ -72,6 +72,7 @@ export default function Verification() {
           router.replace("/dashboard");
         } else {
           router.replace("/profile");
+              document.cookie = `isProfileCompleted=${data.data.user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
         }
       } else {
         // For normal flow, data.data is { token: string, user: User }
@@ -89,10 +90,12 @@ export default function Verification() {
           if (data.data.user?.isProfileCompleted) {
             router.replace("/dashboard");
           } else {
+            document.cookie = `isProfileCompleted=${data.data.user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
             router.replace("/profile");
           }
         } else {
-          router.replace("/dashboard");
+          // Reset jobs-count popup flag so it can be shown after login/registration
+          router.replace('/dashboard');
         }
       }
     }

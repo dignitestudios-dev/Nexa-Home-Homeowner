@@ -177,8 +177,11 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
     });
   };
 
-  React.useEffect(() => {
-    if (!isLoaded || !open || !mapRef.current) return;
+React.useEffect(() => {
+  if (!isLoaded || !open) return;
+
+  const timer = setTimeout(() => {
+    if (!mapRef.current) return;
 
     const google = (window as any).google;
     if (!google) return;
@@ -202,6 +205,10 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
       draggable: true,
     });
     markerInstanceRef.current = marker;
+
+    // trigger resize so map fills container correctly
+    google.maps.event.trigger(map, 'resize');
+    map.setCenter(center);
 
     if (searchInputRef.current) {
       const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
@@ -247,7 +254,10 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
 
       geocodeLatLng(draggedLat, draggedLng);
     });
-  }, [isLoaded, open]);
+  }, 200); // ← wait for dialog animation to finish
+
+  return () => clearTimeout(timer);
+}, [isLoaded, open]);
 
   React.useEffect(() => {
     if (isLoaded && open && mapInstanceRef.current && markerInstanceRef.current && watchLat && watchLng && !initialSnappedRef.current) {
@@ -277,7 +287,7 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative w-full max-w-131.25 h-[80%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
+      <DialogContent className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[80%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <DialogTitle className="text-[28px] font-semibold text-[#181818]">{title}</DialogTitle>
         </div>
@@ -296,15 +306,18 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
 
           <div className="space-y-3">
             <div className="text-sm font-medium text-[#181818]">Select Location on Map</div>
-            <div className="relative h-72 overflow-hidden rounded-2xl border border-[#005864] bg-[#E8F7F7]">
-              {!isLoaded ? (
-                <div className="flex h-full w-full items-center justify-center text-sm text-[#005864] font-medium">
-                  Loading Google Maps...
-                </div>
-              ) : (
-                <div ref={mapRef} className="h-full w-full" />
-              )}
-            </div>
+           <div 
+  className="relative rounded-2xl border border-[#005864] bg-[#E8F7F7]"
+  style={{ height: "288px" }}  // ← remove overflow-hidden
+>
+  {!isLoaded ? (
+    <div className="flex h-full w-full items-center justify-center text-sm text-[#005864] font-medium">
+      Loading Google Maps...
+    </div>
+  ) : (
+    <div ref={mapRef} style={{ height: "288px", width: "100%" }} />
+  )}
+</div>
             {(errors.latitude || errors.longitude) && (
               <p className="text-red-500 text-xs">Please select a location on the map.</p>
             )}

@@ -187,6 +187,7 @@ const AddAddress = () => {
       />
       <SuccessDialog
         open={successDialog}
+        
         // onOpenChange={(open) => !open && setSuccessMessage('')}
         onClose={() => {
           setSuccessDialog(false);

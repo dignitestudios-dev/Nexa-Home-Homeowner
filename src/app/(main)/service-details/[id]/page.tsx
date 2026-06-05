@@ -323,7 +323,7 @@ const ServiceDetails = () => {
 
                   </div>
                 </div>
-                {!data?.data?.job?.isReviewSubmitted && <Button onClick={() => setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+                {!data?.data?.job?.isReviewSubmitted && job.status == "completed" && <Button onClick={() => setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
                   Give Feedback
                 </Button>}
               </div>
@@ -409,10 +409,12 @@ const ServiceDetails = () => {
         open={reviewOpen}
         onOpenChange={(open) => {
           setReviewOpen(open);
-          if (!open) router.push("/dashboard");
+          // if (!open) router.push("/dashboard");
         }}
-        onSubmit={({ rating, review }) =>
+        onSubmit={({ rating, review }) => {
           submitReview({ jobId: id, stars: rating, description: review })
+          router.push("/dashboard");
+        }
         }
         isPending={isReviewPending}
       />

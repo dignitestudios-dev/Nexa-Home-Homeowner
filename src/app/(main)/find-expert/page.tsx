@@ -21,6 +21,7 @@ export interface StepOneData {
   contactCall: boolean;
   contactEmail: boolean;
   uploadedImages: File[];
+    uploadedVideos: File[];
 }
 
 export interface StepTwoData {
@@ -38,20 +39,21 @@ const FindExpert = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: userData, isLoading: isUserLoading } = useGetOwnUser();
-
-  const step = (Number(searchParams.get("step")) || 1) as 1 | 2 | 3;
+  const [step, setStep] = useState(1);
+  // const step = (Number(searchParams.get("step")) || 1) as 1 | 2 | 3;
 
   const [stepOneData, setStepOneData] = useState<StepOneData>({
-    categoryId:     searchParams.get("categoryId")   ?? "",
-    categoryName:   searchParams.get("categoryName") ?? "",
-    title:          "",
-    description:    "",
-    when:           "",
-    addressId:      "",
-    jobType:        "one-time",
-    contactCall:    false,
-    contactEmail:   false,
+    categoryId: searchParams.get("categoryId") ?? "",
+    categoryName: searchParams.get("categoryName") ?? "",
+    title: "",
+    description: "",
+    when: "",
+    addressId: "",
+    jobType: "one-time",
+    contactCall: false,
+    contactEmail: false,
     uploadedImages: [],
+      uploadedVideos: [],
   });
 
   const [stepTwoData, setStepTwoData] = useState<StepTwoData>({
@@ -63,9 +65,7 @@ const FindExpert = () => {
   const [matchedProviders, setMatchedProviders] = useState<MatchingProvider[]>([]);
 
   const goTo = (s: number) => {
-    const next = new URLSearchParams(searchParams.toString());
-    next.set("step", String(s));
-    router.push(`?${next.toString()}`, { scroll: false } as any);
+    setStep(s);
   };
 
   const goNext = () => goTo(step + 1);
@@ -84,7 +84,12 @@ const FindExpert = () => {
       uploadedImages: prev.uploadedImages.filter((_, i) => i !== index),
     }));
   };
-
+const handleRemoveVideo = (index: number) => {
+  setStepOneData((prev) => ({
+    ...prev,
+    uploadedVideos: prev.uploadedVideos.filter((_, i) => i !== index),
+  }));
+};
   const handleToggleProvider = (id: string, allProviderIds: string[]) => {
     setStepTwoData((prev) => {
       const updated = prev.selectedProviderIds.includes(id)
@@ -125,6 +130,7 @@ const FindExpert = () => {
         <FindExpertStepOne
           data={stepOneData}
           onChange={handleStepOneChange}
+            onRemoveVideo={handleRemoveVideo}
           onImageUpload={(e) => {
             const files = e.target.files;
             if (!files) return;

@@ -11,6 +11,7 @@ import { useCompleteProfile } from '@/features/user/hooks'
 import { removeToken } from '@/lib/cookies'
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const profileSchema = z.object({
   name: z
@@ -109,15 +110,27 @@ const Profile = () => {
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
+                const file = e.target.files?.[0];
+
+                if (!file) return;
+
                 if (!VALID_IMAGE_TYPES.includes(file.type)) {
-                  setPhotoError('Please select a valid image format (JPEG, PNG, JPG, GIF, WEBP).')
-                  return
+                  setPhotoError(
+                    "Please select a valid image format (JPEG, PNG, JPG, WEBP)."
+                  );
+                  e.target.value = "";
+                  return;
                 }
-                setPhotoError('')
-                setPhotoFile(file)
-                setPhotoPreview(URL.createObjectURL(file))
+
+                if (file.size > MAX_FILE_SIZE) {
+                  setPhotoError("Image size must be less than 10 MB.");
+                  e.target.value = "";
+                  return;
+                }
+                
+                setPhotoError("");
+                setPhotoFile(file);
+                setPhotoPreview(URL.createObjectURL(file));
               }}
             />
             {photoError && <p className="text-red-500 text-xs text-center">{photoError}</p>}

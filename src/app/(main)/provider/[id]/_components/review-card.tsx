@@ -24,10 +24,10 @@ export default function ReviewCard({ name, date, review, image }: ReviewCardProp
       </div>
 
       {/* Card */}
-      <div className="rounded-[34px] bg-[#eaf0f1] px-5 pb-5 pt-6 text-black">
+      <div className="rounded-[34px] bg-[#eaf0f1] px-5 pb-5 pt-2 text-black">
         <div className="ml-[130px]">
           <h3 className="text-[20px] font-bold leading-[25px]">{name}</h3>
-          <p className="mt-1 text-[16px]  font-light text-black/70">{date}</p>
+          <p className="mt-1 text-[16px]   font-semibold  text-black/70">{date}</p>
         </div>
         <p className="mt-8 text-[16px] font-semibold leading-[26px] text-black/50">{review}</p>
       </div>

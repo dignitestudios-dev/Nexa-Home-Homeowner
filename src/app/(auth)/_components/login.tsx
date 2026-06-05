@@ -45,10 +45,13 @@ export default function LoginPage() {
       if (data.success && data.data) {
         setToken(data.data.token)
         if (!data.data.user.isPhoneVerified) {
-          router.push(`/social-phone?isProfileCompleted=${data.data.user.isProfileCompleted}`)
+          router.replace(`/social-phone?isProfileCompleted=${data.data.user.isProfileCompleted}`)
         } else if (data.data.user.isProfileCompleted) {
-          router.push('/dashboard')
+          router.push('/dashboard');
+          // Mark that jobs count should be fetched on next dashboard load
+          sessionStorage.setItem('jobs-count-popup-shown', 'false');
         } else {
+          document.cookie = `isProfileCompleted=${data.data.user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
           router.push('/profile')
         }
       }

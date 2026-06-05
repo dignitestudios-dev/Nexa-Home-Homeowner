@@ -9,6 +9,7 @@ import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet";
+import SearchInput from "../../_components/ui/search-input";
 
 const sliderStyles = `
   input[type="range"].slider::-webkit-slider-thumb {
@@ -112,9 +113,9 @@ export default function FindExpertStepTwo({
 }: StepTwoProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [localRadius, setLocalRadius] = useState(data.radius);
-
+  const [search, setSearch] = useState<string>("")
   const { data: providersData, isLoading } = useGetMatchingProviders(
-    { addressId, category: categoryId, radius: data.radius },
+    { addressId, category: categoryId, radius: data.radius, search },
     !!addressId && !!categoryId
   );
 
@@ -142,17 +143,19 @@ export default function FindExpertStepTwo({
           </button>
           <h1 className="text-[32px] font-semibold">Expert Matches</h1>
         </div>
+        <div className="flex items-center gap-4">
+          <SearchInput value={search} onChange={setSearch} placeholder="Search Here" />
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#005864] text-white"
+          >
+            <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M8.41935 11.931C8.44173 11.9509 8.46287 11.9696 8.484 11.992C9.82555 13.3671 10.5653 15.1886 10.5653 17.1219V22.0754L13.3454 20.561C13.5642 20.4416 13.6998 20.2079 13.6998 19.9505V17.107C13.6998 15.1811 14.4321 13.3658 15.7612 11.9982L21.7752 5.60126C22.1643 5.18723 22.3782 4.6439 22.3782 4.07072V2.90697C22.3782 2.33006 21.9231 1.86133 21.3661 1.86133H2.87659C2.31834 1.86133 1.86328 2.33006 1.86328 2.90697V4.07072C1.86328 4.6439 2.07713 5.18723 2.4663 5.60002L8.41935 11.931ZM10.1282 24.2461C9.877 24.2461 9.62833 24.179 9.40205 24.0447C8.9644 23.7836 8.70205 23.3224 8.70205 22.8101V17.1256C8.70205 15.7144 8.17613 14.3853 7.21752 13.367C7.18892 13.3434 7.16033 13.3173 7.13546 13.2899L1.11029 6.88306C0.394135 6.12215 0 5.12376 0 4.07439V2.91063C0 1.30549 1.29182 0 2.8783 0H21.3678C22.9531 0 24.2449 1.30549 24.2449 2.91063V4.07439C24.2449 5.12251 23.8508 6.11966 23.1371 6.88182L17.1107 13.2899C16.1123 14.3194 15.5665 15.6734 15.5665 17.1107V19.9542C15.5665 20.8941 15.0579 21.7545 14.2398 22.2021L10.807 24.0721C10.5932 24.1877 10.3607 24.2461 10.1282 24.2461Z" fill="#FBFBFB" />
+            </svg>
 
-        <button
-          type="button"
-          onClick={() => setShowFilters((v) => !v)}
-          className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#005864] text-white"
-        >
-          <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M8.41935 11.931C8.44173 11.9509 8.46287 11.9696 8.484 11.992C9.82555 13.3671 10.5653 15.1886 10.5653 17.1219V22.0754L13.3454 20.561C13.5642 20.4416 13.6998 20.2079 13.6998 19.9505V17.107C13.6998 15.1811 14.4321 13.3658 15.7612 11.9982L21.7752 5.60126C22.1643 5.18723 22.3782 4.6439 22.3782 4.07072V2.90697C22.3782 2.33006 21.9231 1.86133 21.3661 1.86133H2.87659C2.31834 1.86133 1.86328 2.33006 1.86328 2.90697V4.07072C1.86328 4.6439 2.07713 5.18723 2.4663 5.60002L8.41935 11.931ZM10.1282 24.2461C9.877 24.2461 9.62833 24.179 9.40205 24.0447C8.9644 23.7836 8.70205 23.3224 8.70205 22.8101V17.1256C8.70205 15.7144 8.17613 14.3853 7.21752 13.367C7.18892 13.3434 7.16033 13.3173 7.13546 13.2899L1.11029 6.88306C0.394135 6.12215 0 5.12376 0 4.07439V2.91063C0 1.30549 1.29182 0 2.8783 0H21.3678C22.9531 0 24.2449 1.30549 24.2449 2.91063V4.07439C24.2449 5.12251 23.8508 6.11966 23.1371 6.88182L17.1107 13.2899C16.1123 14.3194 15.5665 15.6734 15.5665 17.1107V19.9542C15.5665 20.8941 15.0579 21.7545 14.2398 22.2021L10.807 24.0721C10.5932 24.1877 10.3607 24.2461 10.1282 24.2461Z" fill="#FBFBFB"/>
-</svg>
-
-        </button>
+          </button>
+        </div>
       </div>
 
       <p className="text-[16px] text-[rgba(24,24,24,0.6)] leading-[20px] mt-1 px-8">
@@ -176,33 +179,43 @@ export default function FindExpertStepTwo({
               {/* Slider Container */}
               <div className="space-y-6">
                 {/* Slider */}
-                <div className="pt-4 pb-8">
-                  <div className="slider-wrapper w-full relative">
-                    <div className="slider-label">
-                      {localRadius} miles
-                    </div>
-                    <div className="slider-track w-full">
-                      <input
-                        type="range"
-                        min={1}
-                        max={75}
-                        value={localRadius}
-                        onChange={(e) => setLocalRadius(Number(e.target.value))}
-                        className="w-full h-[6px] rounded-[13.5px] bg-[rgba(0,88,100,0.36)] accent-[#005864] slider"
-                        style={{
-                          appearance: "none",
-                          WebkitAppearance: "none",
-                        }}
-                      />
-                    </div>
-                  </div>
+             <div className="pt-4 px-4 pb-8">
+  <div className="relative w-full">
+    {/* Floating Label */}
+    <div
+      className="absolute  -translate-x-1/2 -top-2 text-nowrap  pointer-events-none rounded-2xl bg-[#005864] px-3 py-3 text-sm font-medium text-white"
+      style={{
+        left: `${((localRadius - 1) / (75 - 1)) * 100}%`,
+      }}
+    >
+      {localRadius} miles
+    </div>
 
-                  {/* Min/Max Labels */}
-                  <div className="flex justify-between mt-4">
-                    <span className="text-[16px] font-medium text-[#1C1C1C]">01 Miles</span>
-                    <span className="text-[16px] font-medium text-[#1C1C1C]">75 Miles</span>
-                  </div>
-                </div>
+    {/* Slider */}
+    <input
+      type="range"
+      min={1}
+      max={75}
+      value={localRadius}
+      onChange={(e) => setLocalRadius(Number(e.target.value))}
+      className="w-full h-[6px] rounded-full bg-[rgba(0,88,100,0.36)] accent-[#005864]"
+      style={{
+        appearance: "none",
+        WebkitAppearance: "none",
+      }}
+    />
+  </div>
+
+  {/* Min/Max Labels */}
+  <div className="flex justify-between mt-4">
+    <span className="text-[16px] font-medium text-[#1C1C1C]">
+      01 Miles
+    </span>
+    <span className="text-[16px] font-medium text-[#1C1C1C]">
+      75 Miles
+    </span>
+  </div>
+</div>
               </div>
             </div>
           </div>
@@ -224,9 +237,8 @@ export default function FindExpertStepTwo({
       <div className="flex items-center gap-3 mb-6 mt-6">
         <button
           onClick={() => onToggleSendToAll(allProviderIds)}
-          className={`w-6 h-6 rounded-[4px] flex items-center justify-center border transition-colors ${
-            data.sendToAll ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300"
-          }`}
+          className={`w-6 h-6 rounded-[4px] flex items-center justify-center border transition-colors ${data.sendToAll ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300"
+            }`}
         >
           {data.sendToAll && <Check size={16} color="white" strokeWidth={2.5} />}
         </button>
@@ -253,18 +265,17 @@ export default function FindExpertStepTwo({
           <p className="mt-1 text-sm text-[rgba(24,24,24,0.5)]">Try increasing the search radius.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
+        <div className="grid grid-cols-1 grid-rows-5 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
           {providers.map((provider) => {
-            const isSelected = data.selectedProviderIds.includes(provider._id);
+            const isSelected = data.sendToAll || data.selectedProviderIds.includes(provider._id);
             return (
               <button
                 key={provider._id}
                 onClick={() => onToggleProvider(provider._id, allProviderIds)}
-                className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 ${
-                  isSelected
-                    ? "bg-[rgba(0,88,100,0.1)] border-[#005864]"
-                    : "bg-white border-gray-200 hover:border-[#005864]/40"
-                }`}
+                className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 ${isSelected
+                  ? "bg-[rgba(0,88,100,0.1)] border-[#005864]"
+                  : "bg-white border-gray-200 hover:border-[#005864]/40"
+                  }`}
               >
                 {isSelected && (
                   <div className="absolute top-2 right-2 w-5 h-5 rounded-[4px] bg-[#005864] flex items-center justify-center">

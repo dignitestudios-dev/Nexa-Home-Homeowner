@@ -26,4 +26,6 @@ export const removeToken = () => {
   if (typeof document === "undefined") return;
 
   document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
+  document.cookie =
+    "isProfileCompleted=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 };

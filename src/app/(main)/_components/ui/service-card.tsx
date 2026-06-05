@@ -11,11 +11,11 @@ type ServiceCardProps = {
 };
 
 const tagStyles: Record<string, string> = {
-  Ongoing: "bg-[#3D74FF]",
-  Completed: "bg-emerald-500",
-  Ready: "bg-amber-500",
-  "Confirm Expert": "bg-[#FF0000]",
-  "Awaiting Response": "bg-[#FFF300]",
+  Ongoing: "bg-[#3D74FF] text-white",
+  Completed: "bg-emerald-500 text-white",
+  Ready: "bg-amber-500 text-white",
+  "Confirm Expert": "bg-[#FF0000] text-white",
+  "Awaiting Response": "bg-[#FFF300] text-black",
 };
 
 function getBadgeStyle(actionText: string, status: string) {
@@ -37,18 +37,18 @@ export default function ServiceCard({
       <div
         className={`absolute right-2 top-2 flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(actionText, status)}`}
       >
-        <span className="text-[14px] font-bold leading-[22px] text-white">
+        <span className="text-[14px] font-bold leading-[22px] ">
           {actionText}
         </span>
       </div>
 
       {/* Title */}
-      <h3 className="text-[18px] line-clamp-1 w-[60%] truncate font-semibold leading-[23px] text-[#1C1C1C]">
+      <h3 className="text-[18px] line-clamp-1 w-[60%] break-all truncate font-semibold leading-[23px] text-[#1C1C1C]">
         {serviceName}
       </h3>
 
       {/* Description */}
-      <p className="mt-3 line-clamp-2 text-[16px] leading-[22px] text-[rgba(24,24,24,0.8)]">
+      <p className="mt-3 line-clamp-2 text-[16px] break-all leading-[22px] text-[rgba(24,24,24,0.8)]">
         {description}
       </p>
 

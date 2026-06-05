@@ -6,18 +6,19 @@ import { ChevronLeft, ChevronRight, Search, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
 import TopHeading from "./ui/top-heading";
-import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress } from "@/features/user/hooks";
+import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress, useGetJobsCount } from "@/features/user/hooks";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CategoriesTab from "./categories-tab";
 import OnGoingServicesTab from "./ongoing-services-tab";
 import CustomSelect from "@/components/global/custom-select";
 import { Skeleton } from "@/components/ui/skeleton";
+import SearchInput from "./ui/search-input";
 
 type Props = {};
 
@@ -53,16 +54,30 @@ const recentActivities = [
 
 const Dashboard = (props: Props) => {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const tabParam = searchParams.get("tab");
-  const initialTab = tabs.find((t) => t.toLowerCase() === tabParam?.toLowerCase()) ?? tabs[0];
 
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const activeTab =
+    tabs.find(
+      (t) => t.toLowerCase() === tabParam?.toLowerCase()
+    ) ?? "Home";
+
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("tab", tab.toLowerCase());
+
+    router.replace(`${pathname}?${params.toString()}`, {
+      scroll: false,
+    });
+  };
   const [emailPopupOpen, setEmailPopupOpen] = useState(false);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState("");
-
+  const [search, setSearch] = useState("");
+  const [jobsCountPopupOpen, setJobsCountPopupOpen] = useState(false);
   const { data: userData, isLoading: isUserLoading } = useGetOwnUser();
   const { data: addressData } = useGetAddresses();
   const { mutate: setDefaultAddress, isPending: isSettingDefault } = useSetDefaultAddress({
@@ -70,6 +85,10 @@ const Dashboard = (props: Props) => {
       setIsLocationDialogOpen(false);
     },
   });
+
+  // Fetch jobs count — enabled only once per session when user data is ready
+  const hasShownJobsPopup = typeof window !== 'undefined' && sessionStorage.getItem('jobs-count-popup-shown') === 'true';
+  const { data: jobsCountData } = useGetJobsCount(!isUserLoading && !!userData?.data && !hasShownJobsPopup);
 
   const addresses = addressData?.data?.addresses || [];
   const defaultAddress = addresses.find((addr) => addr.isDefault);
@@ -83,6 +102,8 @@ const Dashboard = (props: Props) => {
     page: categoryPage,
     limit: 15,
   });
+
+
 
   const categoryDocs = categoryData?.data || [];
   const totalPages = categoryData?.pagination?.totalPages || 1;
@@ -110,6 +131,30 @@ const Dashboard = (props: Props) => {
       setSelectedAddressId(defaultAddress._id);
     }
   }, [isLocationDialogOpen, defaultAddress]);
+
+  useEffect(() => {
+    if (isUserLoading || !userData?.data) return;
+
+    const hasShown = sessionStorage.getItem("email-popup-shown");
+    if (!userData.data.contactEmail && !hasShown) {
+      setEmailPopupOpen(true);
+      sessionStorage.setItem("email-popup-shown", "true");
+    }
+  }, [isUserLoading, userData]);
+
+  // Show jobs-count popup once per login session
+  useEffect(() => {
+    if (!jobsCountData) return;
+    const alreadyShown = sessionStorage.getItem('jobs-count-popup-shown') === 'true';
+    if (!alreadyShown && jobsCountData.data?.count > 0) {
+      setJobsCountPopupOpen(true);
+      sessionStorage.setItem('jobs-count-popup-shown', 'true');
+    } else if (!alreadyShown) {
+      // count is 0 — still mark as shown so we don't refetch
+      sessionStorage.setItem('jobs-count-popup-shown', 'true');
+    }
+  }, [jobsCountData, hasShownJobsPopup]);
+
 
   if (isUserLoading) {
     return (
@@ -181,13 +226,13 @@ const Dashboard = (props: Props) => {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <TopHeading title={`Welcome ${userData?.data.name}`} />
-  <p className="text-gray-400" >What do you need help with?</p>
+          <p className="text-gray-400" >What do you need help with?</p>
           <button
             onClick={() => setIsLocationDialogOpen(true)}
             className="flex items-center gap-1.5 text-xl text-slate-600 mt-1 hover:text-[#005864] transition-colors focus:outline-none"
@@ -199,10 +244,18 @@ const Dashboard = (props: Props) => {
             </span>
           </button>
         </div>
-        <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
-          <Search size={18} />
-          Find an Expert
-        </Button>
+        <div className="flex items-center gap-4">
+
+          {(activeTab == "Ongoing" || activeTab == "Completed") && <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search"
+          />}
+          <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
+            <Search size={18} />
+            Find an Expert
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -214,7 +267,7 @@ const Dashboard = (props: Props) => {
                 <button
                   key={tab}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabChange(tab)}
                   className={cn(
                     "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#005864]/20",
                     active
@@ -245,8 +298,8 @@ const Dashboard = (props: Props) => {
         )
 
       }
-      {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" />}
-      {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" />}
+      {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" search={search} />}
+      {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" search={search} />}
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
         <DialogContent className="sm:max-w-[400px] border-none p-6 rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}
@@ -277,8 +330,75 @@ const Dashboard = (props: Props) => {
         </DialogContent>
       </Dialog>
 
+      {/* Jobs Awaiting Completion Popup */}
+      <Dialog open={jobsCountPopupOpen} onOpenChange={setJobsCountPopupOpen}>
+        <DialogContent className="p-0 border-none shadow-xl rounded-[24px] bg-white w-[515px] max-w-[515px]! overflow-hidden">
+          {/* Icon circle */}
+          <div className="flex flex-col items-center px-[43px] pt-[34px] pb-[32px]">
+            <div
+              className="flex items-center justify-center rounded-full"
+              style={{ width: 80, height: 80, background: 'rgba(0, 88, 100, 0.06)' }}
+            >
+              {/* Tick icon */}
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8 21L16 29L32 13"
+                  stroke="#005864"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            {/* Text block */}
+            <div className="flex flex-col items-center gap-4 mt-[22px] w-full">
+              <DialogTitle
+                className="text-center font-semibold text-[#181818] capitalize leading-[40px] tracking-[-0.008em]"
+                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 32, lineHeight: '40px' }}
+              >
+                Mark Your Jobs As Completed
+              </DialogTitle>
+
+              <DialogDescription
+                className="text-center text-[#676767] font-normal"
+                style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: 18, lineHeight: '160.5%' }}
+              >
+                You have {String(jobsCountData?.data?.count ?? 0).padStart(2, '0')} job{(jobsCountData?.data?.count ?? 0) !== 1 ? 's' : ''} waiting to be marked as complete.
+              </DialogDescription>
+
+              {/* Buttons */}
+              <div className="flex flex-row gap-4 w-full mt-2">
+                {/* Later */}
+                <button
+                  type="button"
+                  onClick={() => setJobsCountPopupOpen(false)}
+                  className="flex-1 h-[55px] flex items-center justify-center rounded-[8px] font-semibold text-[13px] text-[#005864] transition-colors hover:opacity-80"
+                  style={{ background: 'rgba(0, 88, 100, 0.06)', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: '16px' }}
+                >
+                  Later
+                </button>
+
+                {/* View Jobs */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setJobsCountPopupOpen(false);
+                    handleTabChange('Ongoing');
+                  }}
+                  className="flex-1 h-[55px] flex items-center justify-center rounded-[8px] font-semibold text-[13px] text-white bg-[#005864] hover:bg-[#004d57] transition-colors"
+                  style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: '16px' }}
+                >
+                  View Jobs
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
-        <DialogContent className="w-[462px] max-w-[calc(100%-2rem)] h-[378px] rounded-[24px] bg-white px-[30px] pt-[34px] pb-[40px] relative flex flex-col justify-between select-none outline-none border-none">
+        <DialogContent className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[50%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
           <button
             type="button"
             onClick={() => setIsLocationDialogOpen(false)}
