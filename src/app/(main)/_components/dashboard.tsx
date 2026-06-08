@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Search, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
 import TopHeading from "./ui/top-heading";
-import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress, useGetJobsCount } from "@/features/user/hooks";
+import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress, useGetJobsCount, useGetRecentActivityCategories } from "@/features/user/hooks";
 import {
   Dialog,
   DialogContent,
@@ -105,11 +105,13 @@ const Dashboard = (props: Props) => {
 
 
 
+  const { data: recentActivityData, isLoading: isRecentActivityLoading } = useGetRecentActivityCategories();
+  const recentActivityCategories = recentActivityData?.data ?? [];
+
   const categoryDocs = categoryData?.data || [];
   const totalPages = categoryData?.pagination?.totalPages || 1;
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const recentCategoryDocs = categoryDocs.slice(0, 5);
-  const carouselItems = !isCategoriesLoading && recentCategoryDocs.length ? recentCategoryDocs : recentActivities;
+  const carouselItems = recentActivityCategories;
 
   const scrollCarousel = (direction: number) => {
     if (!scrollContainerRef.current) return;
@@ -134,11 +136,13 @@ const Dashboard = (props: Props) => {
 
   useEffect(() => {
     if (isUserLoading || !userData?.data) return;
-
     const hasShown = sessionStorage.getItem("email-popup-shown");
-    if (!userData.data.contactEmail && !hasShown) {
+    console.log(userData.data.contactEmail, hasShown)
+    if (userData.data.contactEmail === null && hasShown === "false") {
       setEmailPopupOpen(true);
+      console.log("insode ------------>")
       sessionStorage.setItem("email-popup-shown", "true");
+      console.log(emailPopupOpen)
     }
   }, [isUserLoading, userData]);
 

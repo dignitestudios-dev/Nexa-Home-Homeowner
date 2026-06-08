@@ -157,6 +157,16 @@ export function useGetCategories(params: { page: number; limit: number; search?:
   })
 }
 
+export function useGetRecentActivityCategories() {
+  return useQuery<GetCategoriesResponse>({
+    queryKey: ['categories-recent-activity'],
+    queryFn: async () => {
+      const res = await apiClient.get<GetCategoriesResponse>('/category/my-jobs')
+      return res.data
+    },
+  })
+}
+
 export function useGetJobs(params: { tab: JobTab; page: number; limit: number; search?: string }) {
   return useQuery<GetJobsResponse>({
     queryKey: ['jobs', params],

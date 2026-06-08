@@ -28,4 +28,6 @@ export const removeToken = () => {
   document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
   document.cookie =
     "isProfileCompleted=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  sessionStorage.setItem('jobs-count-popup-shown', 'false');
+  sessionStorage.setItem("email-popup-shown", "false");
 };

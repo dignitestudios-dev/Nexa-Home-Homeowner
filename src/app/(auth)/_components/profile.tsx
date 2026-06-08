@@ -46,6 +46,8 @@ const Profile = () => {
   const { mutate: completeProfile, isPending } = useCompleteProfile({
     onSuccess: (data) => {
       if (data.success) {
+        document.cookie =
+          "isProfileCompleted=; path=/; max-age=0; SameSite=Lax";
         router.replace('/profile/add-address')
       }
     },
@@ -127,7 +129,7 @@ const Profile = () => {
                   e.target.value = "";
                   return;
                 }
-                
+
                 setPhotoError("");
                 setPhotoFile(file);
                 setPhotoPreview(URL.createObjectURL(file));
