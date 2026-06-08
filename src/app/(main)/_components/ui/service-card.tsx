@@ -32,7 +32,7 @@ export default function ServiceCard({
   when
 }: ServiceCardProps) {
   return (
-    <Link href={`/service-details/${id}`} className="relative w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
+    <Link href={`/service-details/${id}`} className="relative w-full lg:w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
       {/* Badge */}
       <div
         className={`absolute right-2 top-2 flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(actionText, status)}`}
@@ -53,7 +53,7 @@ export default function ServiceCard({
       </p>
 
       {/* Bottom section */}
-      <div className="absolute bottom-[10px] left-1/2 flex h-[58px] w-[380px] -translate-x-1/2 items-center rounded-[12px] bg-[rgba(0,88,100,0.06)]">
+      <div className="absolute bottom-[10px] left-1/2 flex h-[58px]   w-full lg:w-[380px] -translate-x-1/2 items-center rounded-[12px] bg-[rgba(0,88,100,0.06)]">
         <div className="px-6">
           <p className="text-[12px] text-[#1C1C1C]">
             Date Posted

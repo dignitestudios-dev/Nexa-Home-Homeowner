@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { getMessaging, getToken, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -24,4 +25,24 @@ export async function signInWithGoogle(): Promise<string> {
   const result = await signInWithPopup(auth, googleProvider)
   const idToken = await result.user.getIdToken()
   return idToken
+}
+
+export async function getFcmToken(): Promise<string | null> {
+  try {
+    const supported = await isSupported()
+    if (!supported) return null
+
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') return null
+
+    const messaging = getMessaging(app)
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
+      serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js'),
+    })
+
+    return token ?? null
+  } catch {
+    return null
+  }
 }

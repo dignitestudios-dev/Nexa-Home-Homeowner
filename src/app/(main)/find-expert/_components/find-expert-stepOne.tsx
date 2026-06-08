@@ -15,6 +15,10 @@ import { useDebounce } from "@/hooks/use-debounce";
 import CustomSelect from "@/components/global/custom-select";
 import { StepOneData } from "../page";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_VIDEO_SIZE_MB = 20;
 
 const schema = z.object({
   categoryId: z.string().min(1, "Please select a service"),
@@ -160,45 +164,95 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     setIsDateDialogOpen(false);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const valid = Array.from(files).filter((f) => ["image/jpeg", "image/png", "image/webp"].includes(f.type));
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (!files) return;
+
+  const valid: File[] = [];
+  const errors: string[] = [];
+
+  Array.from(files).forEach((f) => {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+      errors.push(`${f.name} is not a supported image format (JPG, PNG, WebP only)`);
+    } else if (f.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      errors.push(`${f.name} is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB`);
+    } else {
+      valid.push(f);
+    }
+  });
+
+  if (errors.length > 0) {
+    errors.forEach((err) => toast.error(err));
+  }
+
+  if (valid.length > 0) {
     const next = [...data.uploadedImages, ...valid].slice(0, 10);
     onChange("uploadedImages", next);
     setValue("uploadedImages", next, { shouldValidate: true });
-    e.target.value = "";
-  };
+  }
 
+  e.target.value = ""; // Reset input
+};
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (!files) return;
 
-    const MAX_SIZE_MB = 20;
-    const valid: File[] = [];
-    const errors: string[] = [];
+  const valid: File[] = [];
+  const errors: string[] = [];
 
-    Array.from(files).forEach((f) => {
-      if (!f.type.startsWith("video/")) {
-        errors.push(`${f.name} is not a valid video file`);
-      } else if (f.size > MAX_SIZE_MB * 1024 * 1024) {
-        errors.push(`${f.name} exceeds 20MB limit`);
-      } else {
-        valid.push(f);
-      }
-    });
-
-    if (errors.length) {
-      // Optionally show a toast here
-      console.warn(errors.join(", "));
+  Array.from(files).forEach((f) => {
+    if (!f.type.startsWith("video/")) {
+      errors.push(`${f.name} is not a valid video file`);
+    } else if (f.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      errors.push(`${f.name} exceeds ${MAX_VIDEO_SIZE_MB}MB limit`);
+    } else {
+      valid.push(f);
     }
+  });
 
+  if (errors.length > 0) {
+    errors.forEach((err) => toast.error(err));
+  }
+
+  if (valid.length > 0) {
     const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
     onChange("uploadedVideos", next);
     setValue("uploadedVideos", next, { shouldValidate: true });
-    e.target.value = "";
-  };
+  }
+
+  e.target.value = "";
+};
+
+
+  // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = e.target.files;
+  //   if (!files) return;
+
+  //   const MAX_SIZE_MB = 20;
+  //   const valid: File[] = [];
+  //   const errors: string[] = [];
+
+  //   Array.from(files).forEach((f) => {
+  //     if (!f.type.startsWith("video/")) {
+  //       errors.push(`${f.name} is not a valid video file`);
+  //     } else if (f.size > MAX_SIZE_MB * 1024 * 1024) {
+  //       errors.push(`${f.name} exceeds 20MB limit`);
+  //     } else {
+  //       valid.push(f);
+  //     }
+  //   });
+
+  //   if (errors.length) {
+  //     // Optionally show a toast here
+  //     console.warn(errors.join(", "));
+  //   }
+
+  //   const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
+  //   onChange("uploadedVideos", next);
+  //   setValue("uploadedVideos", next, { shouldValidate: true });
+  //   e.target.value = "";
+  // };
 
   const handleRemoveVideoLocal = (index: number) => {
     onRemoveVideo(index);
