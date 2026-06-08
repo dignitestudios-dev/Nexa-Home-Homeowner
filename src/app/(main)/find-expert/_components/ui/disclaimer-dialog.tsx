@@ -22,7 +22,7 @@ export default function DisclaimerDialog({
 }: DisclaimerDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative w-[360px] max-w-[calc(100%-2rem)] h-[314px] rounded-[24px] bg-white p-0 shadow-[0_20px_40px_rgba(0,0,0,0.12)]">
+      <DialogContent className="relative fixed top-1/2 w-[360px]! max-w-[calc(100%-2rem)]! h-[320px] rounded-[24px] bg-white p-0 shadow-[0_20px_40px_rgba(0,0,0,0.12)]">
         <div className="absolute left-[20px] top-[33px] w-[320px] h-[251px]">
           <div className="flex flex-col items-center justify-center gap-8 w-full h-full">
             <div className="flex flex-col items-center gap-4 w-[308px] text-center">
@@ -30,9 +30,9 @@ export default function DisclaimerDialog({
                 Disclaimer
               </DialogTitle>
               <DialogDescription className="text-[15px] space-y-2 font-normal leading-[19px] text-[#181818CC]">
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum.</span ></div>
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum.</span ></div>
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatum.</span ></div>
+               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">Your job request will be shared with the selected service providers in your specified radius.</span ></div>
+               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">NexaHome does not guarantee immediate response or acceptance by providers.</span ></div>
+               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">Please ensure the job description and details are accurate before posting.</span ></div>
               </DialogDescription>
             </div>
             <div className="w-full px-2">

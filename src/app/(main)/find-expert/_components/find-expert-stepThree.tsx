@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, MapPin, Star } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Play } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useGetAddresses, useCreateJob } from "@/features/user/hooks";
@@ -8,6 +8,8 @@ import DisclaimerDialog from "./ui/disclaimer-dialog";
 import SuccessDialog from "./ui/success-dialog";
 import { StepOneData, StepTwoData } from "../page";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface StepThreeProps {
   stepOneData: StepOneData;
@@ -30,6 +32,11 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
 
+  // States for handling attachment previews
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [previewType, setPreviewType] = useState<"image" | "video" | null>(null);
+
+  const router = useRouter();
   const { data: addressData } = useGetAddresses();
   const addresses = addressData?.data?.addresses ?? [];
   const selectedAddress = addresses.find((a) => a._id === stepOneData.addressId);
@@ -42,31 +49,46 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
   const { mutate: createJob, isPending } = useCreateJob({
     onSuccess: (res) => {
       if (res.success) {
-        setIsDisclaimerOpen(true);
+          setIsDisclaimerOpen(false);
+      setIsSuccessOpen(true);
       }
     },
   });
+const handleNext = () => {
+  setIsDisclaimerOpen(true);
+};
 
-  const handleNext = () => {
-    createJob({
-      addressId: stepOneData.addressId,
-      category: stepOneData.categoryId,
-      title: stepOneData.title,
-      description: stepOneData.description,
-      when: stepOneData.when,
-      type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
-      radius: stepTwoData.radius,
-      sendToAll: stepTwoData.sendToAll,
-      providerIds: stepTwoData.sendToAll ? undefined : stepTwoData.selectedProviderIds,
-      contactPreference,
-      images: stepOneData.uploadedImages,
-    });
+const handleConfirmDisclaimer = () => {
+  createJob({
+    addressId: stepOneData.addressId,
+    category: stepOneData.categoryId,
+    title: stepOneData.title,
+    description: stepOneData.description,
+    when: stepOneData.when,
+    type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
+    radius: stepTwoData.radius,
+    sendToAll: stepTwoData.sendToAll,
+    providerIds: stepTwoData.sendToAll
+      ? undefined
+      : stepTwoData.selectedProviderIds,
+    contactPreference,
+    images: [
+      ...stepOneData.uploadedImages,
+      ...stepOneData.uploadedVideos,
+    ],
+  });
+};
+  const handleOpenPreview = (file: File, type: "image" | "video") => {
+    setPreviewFile(file);
+    setPreviewType(type);
   };
 
-  const handleConfirmDisclaimer = () => {
-    setIsDisclaimerOpen(false);
-    setIsSuccessOpen(true);
+  const handleClosePreview = () => {
+    setPreviewFile(null);
+    setPreviewType(null);
   };
+
+  const hasAttachments = stepOneData.uploadedImages.length > 0 || stepOneData.uploadedVideos.length > 0;
 
   return (
     <div className="min-h-screen">
@@ -94,24 +116,46 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
 
             {/* Info */}
             <div className="bg-[#F9FAFA] rounded-[12px] p-6 space-y-5">
-              <InfoRow label="When:" value={stepOneData.when} />
-              {/* {stepOneData.date && <InfoRow label="Date:" value={stepOneData.date} />} */}
-              <InfoRow label="Job Type:" value={stepOneData.jobType === "one-time" ? "One Time" : "Recurring"} />
+              <InfoRow label="Status:" value={stepOneData.when} />
+              <InfoRow label="Job Type:" value={stepOneData.jobType === "one-time" ? "One Time Job" : "Recurring Job"} />
               <InfoRow label="Contact Preferences:" value={contactPreference.join(", ") || "None"} />
               <InfoRow label="Radius:" value={`${stepTwoData.radius} miles`} />
               <InfoRow label="Sending To:" value={stepTwoData.sendToAll ? "All Experts" : `${stepTwoData.selectedProviderIds.length} Selected`} />
             </div>
 
-            {/* Attachments */}
-            {stepOneData.uploadedImages.length > 0 && (
+            {/* Attachments (Unified Section for Images & Videos) */}
+            {hasAttachments && (
               <div className="bg-[#F9FAFA] rounded-[12px] p-6">
                 <h3 className="text-base font-semibold text-black mb-4">Attachments</h3>
                 <div className="flex flex-wrap gap-4">
+
+                  {/* Render Images */}
                   {stepOneData.uploadedImages.map((file, index) => (
-                    <div key={index} className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]">
-                      <img src={URL.createObjectURL(file)} alt={`attachment-${index}`} className="w-full h-full object-cover" />
+                    <div
+                      key={`img-${index}`}
+                      onClick={() => handleOpenPreview(file, "image")}
+                      className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] cursor-pointer hover:opacity-90 transition-opacity"
+                    >
+                      <img src={URL.createObjectURL(file)} alt={`attachment-img-${index}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
+
+                  {/* Render Videos */}
+                  {stepOneData.uploadedVideos.map((file, index) => (
+                    <div
+                      key={`vid-${index}`}
+                      onClick={() => handleOpenPreview(file, "video")}
+                      className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] cursor-pointer hover:opacity-90 transition-opacity bg-black flex items-center justify-center"
+                    >
+                      <video src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-60" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="p-1 rounded-full bg-white/20 backdrop-blur-sm">
+                          <Play size={16} className="text-white fill-white ml-0.5" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
                 </div>
               </div>
             )}
@@ -158,6 +202,7 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
                   {matchedProviders.map((provider) => (
                     <Link
                       href={`/provider/${provider._id}`}
+                      target="_blank"
                       key={provider._id}
                       className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
                     >
@@ -190,7 +235,9 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
                 {matchedProviders
                   .filter((p) => stepTwoData.selectedProviderIds.includes(p._id))
                   .map((provider) => (
-                    <div
+                    <Link
+                      href={`/provider/${provider._id}`}
+                      target="_blank"
                       key={provider._id}
                       className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
                     >
@@ -210,7 +257,7 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
                         </div>
                         {provider.area && <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>}
                       </div>
-                    </div>
+                    </Link>
                   ))
                 }
               </div>
@@ -227,6 +274,31 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
           </div>
         </div>
       </div>
+
+      {/* Media Preview Dialog */}
+      <Dialog open={!!previewFile} onOpenChange={handleClosePreview}>
+        <DialogContent className="max-w-[800px]! p-1 bg-black/90 border-none overflow-hidden flex flex-col items-center justify-center sm:rounded-2xl">
+          <DialogTitle className="sr-only">Attachment Preview</DialogTitle>
+          {previewFile && (
+            <div className="relative w-full max-h-[80vh] flex items-center justify-center p-4">
+              {previewType === "image" ? (
+                <img
+                  src={URL.createObjectURL(previewFile)}
+                  alt="Preview"
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              ) : (
+                <video
+                  src={URL.createObjectURL(previewFile)}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <DisclaimerDialog
         open={isDisclaimerOpen}

@@ -42,7 +42,7 @@ const CategoriesTab = ({
   return (
     <>
       {/* Recent Activity Carousel */}
-      <div className="space-y-6">
+      {carouselItems.length > 0 && <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-semibold text-slate-950">
             Based on your recent activity
@@ -111,7 +111,7 @@ const CategoriesTab = ({
           </button>
         </div>
       </div>
-
+      }
       {/* Categories Grid */}
       <div className="space-y-6 mt-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

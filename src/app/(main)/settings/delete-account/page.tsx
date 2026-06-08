@@ -1,2 +1,13 @@
-import Placeholder from "../_components/placeholder"
-export default function Page() { return <Placeholder title="Delete Account" /> }
+import React from 'react'
+import DeleteAccount from "../_components/delete-account"
+type Props = {}
+
+const page = (props: Props) => {
+  return (
+ <>
+ <DeleteAccount/>
+ </>
+  )
+}
+
+export default page

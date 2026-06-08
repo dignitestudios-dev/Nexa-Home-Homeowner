@@ -51,7 +51,7 @@ export function useSetDefaultAddress(
   return useApiMutation<AddAddressResponse, { id: string }>({
     endpoint: (vars) => `/address/set-default/${vars.id}`,
     method: 'POST',
-    invalidateKeys: [ADDRESS_QUERY_KEY , ""],
+    invalidateKeys: [ADDRESS_QUERY_KEY, ""],
     mutationOptions: options,
   })
 }
@@ -85,7 +85,7 @@ export function useAddAddress(
   return useApiMutation<AddAddressResponse, AddAddressVars>({
     endpoint: '/address/add-address',
     method: 'POST',
-    invalidateKeys: [ADDRESS_QUERY_KEY , "userOwn"],
+    invalidateKeys: [ADDRESS_QUERY_KEY, "userOwn"],
     mutationOptions: options,
   })
 }
@@ -157,13 +157,51 @@ export function useGetCategories(params: { page: number; limit: number; search?:
   })
 }
 
-export function useGetJobs(params: { tab: JobTab; page: number; limit: number }) {
+export function useGetRecentActivityCategories() {
+  return useQuery<GetCategoriesResponse>({
+    queryKey: ['categories-recent-activity'],
+    queryFn: async () => {
+      const res = await apiClient.get<GetCategoriesResponse>('/category/my-jobs')
+      return res.data
+    },
+  })
+}
+
+export function useGetJobs(params: { tab: JobTab; page: number; limit: number; search?: string }) {
   return useQuery<GetJobsResponse>({
     queryKey: ['jobs', params],
     queryFn: async () => {
-      const res = await apiClient.get<GetJobsResponse>('/job/my-jobs', { params })
+      const res = await apiClient.get<GetJobsResponse>('/job/my-jobs',     {
+          params: {
+            tab: params.tab,
+            page: params.page,
+            limit: params.limit,
+            search: params.search,
+          },
+        })
       return res.data
     },
+  })
+}
+
+export interface GetJobsCountResponse {
+  success: boolean
+  message: string
+  data: {
+    count: number
+  }
+}
+
+export function useGetJobsCount(enabled: boolean = true) {
+  return useQuery<GetJobsCountResponse>({
+    queryKey: ['jobs-count'],
+    queryFn: async () => {
+      const res = await apiClient.get<GetJobsCountResponse>('/job/my-jobs/count')
+      return res.data
+    },
+    enabled,
+    staleTime: Infinity,
+    gcTime: 0,
   })
 }
 
@@ -179,7 +217,7 @@ export function useGetJobDetail(id: string) {
 }
 
 export function useGetMatchingProviders(
-  params: { addressId: string; category: string; radius: number },
+  params: { addressId: string; category: string; radius: number; search?:string },
   enabled: boolean
 ) {
   return useQuery<GetMatchingProvidersResponse>({
@@ -225,6 +263,22 @@ export interface ProviderMedia {
   updatedAt: string
 }
 
+export interface Coordinates {
+  type: "Point";
+  coordinates: [number, number]; // [longitude, latitude]
+}
+
+export interface DefaultAddress {
+  _id: string;
+  label: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  coordinates: Coordinates;
+}
+
 export interface ProviderDetail {
   _id: string
   name: string
@@ -234,6 +288,7 @@ export interface ProviderDetail {
   overview: string | null
   services: string[]
   portfolioMedia: ProviderMedia[]
+  defaultAddress: DefaultAddress;
   createdAt: string
   updatedAt: string
 }

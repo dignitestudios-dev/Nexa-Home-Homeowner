@@ -1,6 +1,8 @@
 "use client";
 
 import { Check, X } from "lucide-react";
+import { useEffect } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -21,19 +23,27 @@ export default function SuccessDialog({
   title = 'Success',
   description = '',
 }: SuccessDialogProps) {
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
-        className="w-[515px] max-w-[calc(100%-2rem)] rounded-[24px] bg-white p-0 border-0"
+        className="w-[515px]! max-w-[calc(100%-2rem)]! rounded-[24px] bg-white p-0 border-0"
       >
-        <button
+        {/* <button
           type="button"
           onClick={onClose}
           className="absolute right-5 top-5 w-10 h-10 inline-flex items-center justify-center rounded-full text-[#181818] hover:bg-black/5"
           aria-label="Close modal"
         >
           <X size={22} />
-        </button>
+        </button> */}
 
         <div className="px-[43px] py-[46px] flex flex-col items-center">
           <div className="w-20 h-20 rounded-full bg-[linear-gradient(136.41deg,#005864_39.74%,#D7DF23_307.09%)] flex items-center justify-center">

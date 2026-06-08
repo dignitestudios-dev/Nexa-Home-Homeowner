@@ -26,6 +26,7 @@ const schema = z.object({
   contactCall: z.boolean(),
   contactEmail: z.boolean(),
   uploadedImages: z.array(z.instanceof(File)).min(1, "At least one image is required").max(10, "Maximum 10 images allowed"),
+  uploadedVideos: z.array(z.instanceof(File)).max(5, "Maximum 5 videos allowed"),
 }).refine((d) => d.contactCall || d.contactEmail, {
   message: "Please select at least one contact preference",
   path: ["contactCall"],
@@ -45,11 +46,12 @@ interface StepOneProps {
   onChange: <K extends keyof StepOneData>(field: K, value: StepOneData[K]) => void;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: (index: number) => void;
+  onRemoveVideo: (index: number) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBack, onNext }: StepOneProps) {
+export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRemoveVideo, onBack, onNext }: StepOneProps) {
   const {
     register,
     handleSubmit,
@@ -69,6 +71,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
       contactCall: data.contactCall,
       contactEmail: data.contactEmail,
       uploadedImages: data.uploadedImages,
+      uploadedVideos: data.uploadedVideos ?? [],
     },
   });
 
@@ -80,7 +83,10 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
     onChange("jobType", watched.jobType ?? "one-time");
     onChange("contactCall", !!watched.contactCall);
     onChange("contactEmail", !!watched.contactEmail);
-  }, [watched.title, watched.description, watched.jobType, watched.contactCall, watched.contactEmail]);
+    onChange("when", watched.when ?? "");
+    onChange("categoryId", watched.categoryId ?? "");
+    onChange("addressId", watched.addressId ?? "");
+  }, [watched.title, watched.description, watched.jobType, watched.contactCall, watched.contactEmail, watched.when, watched.categoryId, watched.addressId]);
 
   // Sync parent category pre-selection (from URL) → RHF
   useEffect(() => {
@@ -90,6 +96,10 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
   useEffect(() => {
     if (data.when) setValue("when", data.when);
   }, [data.when]);
+
+  useEffect(() => {
+    setValue("uploadedVideos", data.uploadedVideos ?? []);
+  }, [data.uploadedVideos]);
 
   useEffect(() => {
     if (data.addressId) setValue("addressId", data.addressId);
@@ -139,7 +149,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
+    return `${m}-${day}-${y}`;
   };
 
 
@@ -160,6 +170,41 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
     e.target.value = "";
   };
 
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const MAX_SIZE_MB = 20;
+    const valid: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(files).forEach((f) => {
+      if (!f.type.startsWith("video/")) {
+        errors.push(`${f.name} is not a valid video file`);
+      } else if (f.size > MAX_SIZE_MB * 1024 * 1024) {
+        errors.push(`${f.name} exceeds 20MB limit`);
+      } else {
+        valid.push(f);
+      }
+    });
+
+    if (errors.length) {
+      // Optionally show a toast here
+      console.warn(errors.join(", "));
+    }
+
+    const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
+    onChange("uploadedVideos", next);
+    setValue("uploadedVideos", next, { shouldValidate: true });
+    e.target.value = "";
+  };
+
+  const handleRemoveVideoLocal = (index: number) => {
+    onRemoveVideo(index);
+    const next = (data.uploadedVideos ?? []).filter((_, i) => i !== index);
+    setValue("uploadedVideos", next, { shouldValidate: true });
+  };
   const handleRemove = (index: number) => {
     onRemoveImage(index);
     const next = data.uploadedImages.filter((_, i) => i !== index);
@@ -187,12 +232,12 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
           <div>
             {/* Category */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-[16px] font-medium leading-[18px]">Select Service <span className="text-red-500">*</span></Label>
+              <Label className="font-medium text-base leading-[18px]">Select Service <span className="text-red-500">*</span></Label>
               <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className={cn("flex h-12 w-full items-center justify-between rounded-[12px] bg-[#F8F8F8] px-4 text-sm text-[#181818] shadow-[0_1px_2px_rgba(0,0,0,0.05)] focus:outline-none", errors.categoryId && "border border-red-400")}
+                    className={cn("flex h-12 w-full items-center justify-between rounded-[12px] bg-[#F8F8F8] px-4 text-base text-[#181818] shadow-[0_1px_2px_rgba(0,0,0,0.05)] focus:outline-none", errors.categoryId && "border border-red-400")}
                   >
                     <span className={cn(!data.categoryName && "text-[rgba(24,24,24,0.5)]")}>
                       {data.categoryName || "Select Service"}
@@ -206,7 +251,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
                       placeholder="Search service..."
                       value={categorySearch}
                       onChange={(e) => { setCategorySearch(e.target.value); setCategoryPage(1); }}
-                      className="w-full rounded-lg bg-[#F8F8F8] px-3 py-2 text-sm outline-none"
+                      className="w-full rounded-lg bg-[#F8F8F8] px-3 py-2 text-base outline-none"
                     />
                   </div>
                   <div className="max-h-56 overflow-y-auto">
@@ -217,7 +262,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
                         <Skeleton className="h-9 w-full rounded-md" />
                       </div>
                     ) : categories.length === 0 ? (
-                      <div className="py-4 text-center text-sm text-[rgba(24,24,24,0.5)]">No services found.</div>
+                      <div className="py-4 text-center text-base text-[rgba(24,24,24,0.5)]">No services found.</div>
                     ) : categories.map((cat) => (
                       <button
                         key={cat._id}
@@ -229,7 +274,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
                           setCategoryOpen(false);
                           setCategorySearch("");
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#181818] hover:bg-[#F8F8F8] transition-colors"
+                        className="flex w-full items-center gap-2 px-3 py-2.5 text-base text-[#181818] hover:bg-[#F8F8F8] transition-colors"
                       >
                         <Check className={cn("size-4 text-[#005864]", data.categoryId === cat._id ? "opacity-100" : "opacity-0")} />
                         {cat.name}
@@ -251,13 +296,13 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
             {/* Title */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-sm font-medium text-black">Title <span className="text-red-500">*</span></Label>
+              <Label className="text-base font-medium text-black">Title <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <input
                   {...register("title")}
                   placeholder="e.g. Pool cleaning needed"
                   maxLength={60}
-                  className={cn("h-12 pr-20 rounded-[12px] bg-[#F8F8F8] px-4 text-sm text-[#181818] placeholder:text-[rgba(24,24,24,0.5)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-none w-full", errors.title && "border border-red-400")}
+                  className={cn("h-12 pr-20 normal-case first-letter:uppercase  rounded-[12px] bg-[#F8F8F8] px-4 text-base text-[#181818] placeholder:text-[rgba(24,24,24,0.5)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-none w-full", errors.title && "border border-red-400")}
                 />
                 <span className="absolute right-3 top-3.5 text-xs text-[#18181899]">{(titleVal ?? "").length}/60</span>
               </div>
@@ -266,7 +311,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
             {/* Description */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-sm font-medium text-black">Description <span className="text-red-500">*</span></Label>
+              <Label className="text-base font-medium text-black">Description <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Textarea
                   {...register("description")}
@@ -282,7 +327,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
             {/* Attachments */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-sm font-medium text-black">Add Attachment <span className="text-red-500">*</span></Label>
+              <Label className="text-base font-medium text-black">Add Attachment <span className="text-red-500">*</span></Label>
               <label className={cn("flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl bg-[#FBFBFB] cursor-pointer hover:bg-gray-50 transition", errors.uploadedImages ? "border-red-400" : "border-[#D9D9D9]")}>
                 <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" onChange={handleImageChange} className="hidden" />
                 <div className="flex flex-col items-center gap-2">
@@ -306,11 +351,62 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
                   </div>
                 </div>
               )}
+              {/* Videos */}
+              <div className="flex flex-col gap-2 my-4">
+                <Label className="text-base font-medium text-black">Add Videos <span className="text-[#18181899] font-normal text-sm">(Optional)</span></Label>
+                <label className={cn(
+                  "flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl bg-[#FBFBFB] cursor-pointer hover:bg-gray-50 transition",
+                  (data.uploadedVideos ?? []).length >= 5 ? "opacity-50 pointer-events-none" : "border-[#D9D9D9]"
+                )}>
+                  <input
+                    type="file"
+                    multiple
+                    accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                    onChange={handleVideoChange}
+                    className="hidden"
+                    disabled={(data.uploadedVideos ?? []).length >= 5}
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#005864" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
+                    <span className="text-center text-[13px] text-[#18181899]">MP4, WebM, MOV (Max 5 videos, 20MB each)</span>
+                  </div>
+                </label>
+
+                {(data.uploadedVideos ?? []).length > 0 && (
+                  <div>
+                    <p className="text-xs text-[#18181899] mb-2">{data.uploadedVideos.length}/5 videos</p>
+                    <div className="flex flex-col gap-2">
+                      {data.uploadedVideos.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between gap-3 rounded-xl bg-[#F8F8F8] px-4 py-3 group">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005864" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                              <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                            </svg>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-[#181818] truncate">{file.name}</p>
+                              <p className="text-xs text-[#18181899]">{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVideoLocal(index)}
+                            className="flex size-6 shrink-0 items-center justify-center rounded-full bg-black/10 text-[#181818] hover:bg-black/20 transition"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* When */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-[16px] font-medium leading-[18px]">When</Label>
+              <Label className="text-base font-medium leading-[18px]">When</Label>
               <Controller
                 control={control}
                 name="when"
@@ -343,7 +439,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
             {/* Where */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-[16px] font-medium leading-[18px]">Where</Label>
+              <Label className="text-base font-medium leading-[18px]">Where</Label>
               <CustomSelect
                 value={data.addressId}
                 onChange={(val) => {
@@ -361,12 +457,12 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
           <div>
             {/* Job Type */}
             <div>
-              <p className="text-[20px] font-semibold leading-14">Select Job Type</p>
+              <p className=" leading-14 font-medium text-base">Select Job Type</p>
               <p className="text-[#18181899]">Pick the job type that matches your service need.</p>
             </div>
             <div className="flex flex-col gap-9 py-4">
               <div className="flex flex-col gap-6">
-                <label className="flex cursor-pointer items-start gap-3">
+                <label className="flex  cursor-pointer items-start gap-3">
                   <input type="radio" value="one-time" {...register("jobType")} className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#005864] focus:ring-[#005864]" />
                   <span className="text-base font-normal leading-[22px] text-[#181818]">One Time Job</span>
                 </label>
@@ -378,12 +474,12 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
               {/* Contact Preferences */}
               <div className="flex flex-col gap-3.5">
-                <h3 className="text-xl font-semibold leading-[22px] text-black">Contact Preferences</h3>
+                <h3 className="font-medium text-base leading-[22px] text-black">Contact Preferences</h3>
                 <p className="text-[#18181899] text-base">Select your preferred way to be contacted.</p>
                 <div className="mt-2 flex flex-col gap-5">
                   <label className="flex cursor-pointer items-center gap-3">
                     <input type="checkbox" {...register("contactCall")} className="h-[18px] w-[18px] rounded text-[#005864] focus:ring-[#005864]" />
-                    <span className="text-lg font-normal text-[#181818]">Call/Text</span>
+                    <span className="text-base font-normal text-[#181818]">Call/Text</span>
                   </label>
                   <label className="flex cursor-pointer items-center gap-3">
                     <input type="checkbox" {...register("contactEmail")} className="h-[18px] w-[18px] rounded text-[#005864] focus:ring-[#005864]" />
@@ -408,9 +504,9 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
 
       {/* Date Dialog */}
       <Dialog open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
-        <DialogContent className="w-[515px] max-w-[515px] rounded-[24px] border-0 bg-white p-0 overflow-hidden">
+        <DialogContent className="w-[515px]! max-w-[515px]! rounded-[24px] border-0 bg-white p-0 overflow-hidden">
           <div className="relative px-[30px] pt-6">
-            <DialogTitle className="text-center text-[16px] font-bold text-black">Select Date</DialogTitle>
+            <DialogTitle className="text-center  font-bold text-black">Select Date</DialogTitle>
             <button type="button" onClick={() => setIsDateDialogOpen(false)} className="absolute right-[28px] top-6"><X className="h-4 w-4" /></button>
           </div>
           <div className="mt-[28px] px-[30px] flex items-center justify-between">
@@ -460,7 +556,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onBac
             </div>
           </div>
           <div className="px-[30px] mt-10 pb-6">
-            <button type="button" disabled={!pendingDate} onClick={handleSaveDate} className="h-12 w-full rounded-xl bg-[#005864] text-sm font-semibold text-white disabled:opacity-50">Save</button>
+            <button type="button" disabled={!pendingDate} onClick={handleSaveDate} className="h-12 w-full rounded-xl bg-[#005864] text-base font-semibold text-white disabled:opacity-50">Save</button>
           </div>
         </DialogContent>
       </Dialog>

@@ -8,15 +8,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 import ServiceCard from './ui/service-card'
 
 type Props = {
-  tab: JobTab
+  tab: JobTab;
+  search?:string
 }
 
 const LIMIT = 12
 
-export default function OnGoingServicesTab({ tab }: Props) {
+export default function OnGoingServicesTab({ tab ,search }: Props) {
   const [page, setPage] = useState(1)
 
-  const { data, isLoading } = useGetJobs({ tab, page, limit: LIMIT })
+  const { data, isLoading } = useGetJobs({ tab, page, limit: LIMIT,search })
 
   const jobs = data?.data?.jobs ?? []
   const pagination = data?.data?.pagination

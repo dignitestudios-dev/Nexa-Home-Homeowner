@@ -5,6 +5,10 @@ const PUBLIC_ROUTES = ['/login', '/sign-up', '/verification']
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
+  const profileIncompleteCookie =
+    request.cookies.get('isProfileCompleted')?.value;
+  const isProfileRoute = pathname.startsWith('/profile')
+  // console.log("first", profileCompleted)
 
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
 
@@ -19,6 +23,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
+  if (token && profileIncompleteCookie && !isProfileRoute) {
+    return NextResponse.redirect(
+      new URL('/profile', request.url)
+    )
+  }
   return NextResponse.next()
 }
 

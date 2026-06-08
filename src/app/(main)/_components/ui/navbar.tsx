@@ -62,6 +62,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     removeToken();
+    sessionStorage.setItem('jobs-count-popup-shown', 'false');
+    sessionStorage.setItem("email-popup-shown", "false");
     router.push("/login");
   };
 
@@ -129,7 +131,7 @@ export default function Navbar() {
               >
                 <Bell className="size-5" strokeWidth={1.8} />
 
-                <span className="absolute right-[8px] top-[8px] flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-medium text-white">
+                <span className="absolute right-[4px] top-[2px] flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-medium text-white">
                   2
                 </span>
               </button>
@@ -209,7 +211,7 @@ export default function Navbar() {
                       initials
                     )}
                   </span>
-                  <span className="hidden text-base truncate font-medium tracking-[-0.018em] text-[#181818] sm:inline">
+                  <span className="hidden w-[100px] text-base truncate font-medium tracking-[-0.018em] text-[#181818] sm:inline">
                     {displayName}
                   </span>
                   <ChevronDown

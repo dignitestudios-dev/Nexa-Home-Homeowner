@@ -14,7 +14,7 @@ interface ExperienceDialogProps {
 }
 
 export function ExperienceDialog({ open, onOpenChange, onSubmit, isPending }: ExperienceDialogProps) {
-  const [rating, setRating] = useState(3);
+  const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
 
   const handleSubmit = () => {
@@ -23,7 +23,7 @@ export function ExperienceDialog({ open, onOpenChange, onSubmit, isPending }: Ex
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[462px] rounded-3xl border-0 p-0 gap-0 overflow-hidden">
+      <DialogContent className="w-[462px]! max-w-[700px]! rounded-3xl border-0 p-0 gap-0 overflow-hidden">
         <DialogTitle className="sr-only">How Was Your Experience?</DialogTitle>
 
         <div className="relative px-[38px] pt-16 pb-6">
@@ -52,7 +52,9 @@ export function ExperienceDialog({ open, onOpenChange, onSubmit, isPending }: Ex
 
           <textarea
             value={review}
+            maxLength={200}
             onChange={(e) => setReview(e.target.value)}
+            required
             placeholder="Write here"
             className="mt-12 h-[142px] w-full resize-none rounded-2xl border-0 bg-[rgba(0,88,100,0.06)] p-4 text-base outline-none placeholder:text-[#18181899]"
           />

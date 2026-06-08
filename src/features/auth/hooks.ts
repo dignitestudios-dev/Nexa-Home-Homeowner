@@ -1,5 +1,20 @@
 import { useApiMutation } from '@/hooks/api/use-api-mutation'
 
+
+export interface DeleteAccountResponse {
+  success: boolean
+  message: string
+}
+
+export function useDeleteAccount(
+  options?: Parameters<typeof useApiMutation<DeleteAccountResponse, void>>[0]['mutationOptions']
+) {
+  return useApiMutation<DeleteAccountResponse, void>({
+    endpoint: '/user',
+    method: 'DELETE',
+    mutationOptions: options,
+  })
+}
 export function useSendPhoneOtp(
   options?: Parameters<typeof useApiMutation<SendPhoneOtpResponse, SendPhoneOtpVars>>[0]['mutationOptions']
 ) {
@@ -9,6 +24,8 @@ export function useSendPhoneOtp(
     mutationOptions: options,
   })
 }
+
+
 
 export function useSendChangePhoneOtp(
   options?: Parameters<typeof useApiMutation<SendPhoneOtpResponse, Omit<SendPhoneOtpVars, 'role'>>>[0]['mutationOptions']

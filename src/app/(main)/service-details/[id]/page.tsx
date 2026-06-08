@@ -6,7 +6,11 @@ import { ArrowLeft, Loader2, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useGetJobDetail, useCompleteJob, useSubmitReview } from "@/features/user/hooks";
+import {
+  useGetJobDetail,
+  useCompleteJob,
+  useSubmitReview,
+} from "@/features/user/hooks";
 import { ExpertCard } from "./_components/expert-card";
 import { ExperienceDialog } from "./_components/experience-dialog";
 import SuccessDialog from "@/components/ui/success-dialog";
@@ -17,6 +21,19 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+const tagStyles: Record<string, string> = {
+  Ongoing: "bg-[#3D74FF] text-white",
+  Completed: "bg-emerald-500 text-white",
+  Ready: "bg-amber-500 text-white",
+  "Confirm Expert": "bg-[#FF0000] text-white",
+  "Awaiting Response": "bg-[#FFF300] text-black",
+};
+
+function getBadgeStyle(actionText: string, status: string) {
+  return tagStyles[actionText] ?? tagStyles[status] ?? "bg-[#3D74FF]";
+}
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -32,20 +49,53 @@ const ServiceDetails = () => {
   const router = useRouter();
   const id = params.id as string;
 
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+    setPreviewOpen(true);
+  };
+
+  const nextImage = () => {
+    if (!job?.images?.length) return;
+
+    setSelectedImageIndex((prev) =>
+      prev === job.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    if (!job?.images?.length) return;
+
+    setSelectedImageIndex((prev) =>
+      prev === 0 ? job.images.length - 1 : prev - 1
+    );
+  };
 
   const { data, isLoading } = useGetJobDetail(id);
   const job = data?.data?.job;
   const appliedProviders = data?.data?.appliedProviders ?? [];
   const provider = job?.provider;
-
+  const displayTag =
+    job?.applyCount && job.applyCount > 0
+      ? job.userDisplayTag
+        ?.replace(/_/g, " ")
+        ?.replace(/\b\w/g, (c) => c.toUpperCase())
+      : job
+        ? "Awaiting Response"
+        : "";
   const handleProviderClick = () => {
     if (!provider) return;
     const qs = new URLSearchParams({
       name: provider.name,
-      ...(provider.profilePicture ? { picture: provider.profilePicture.location } : {}),
+      ...(provider.profilePicture
+        ? { picture: provider.profilePicture.location }
+        : {}),
     });
     router.push(`/provider/${provider._id}?${qs.toString()}`);
   };
@@ -78,8 +128,18 @@ const ServiceDetails = () => {
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-[32px] tracking-tight font-semibold">Service Details</h1>
+            <h1 className="text-[32px] tracking-tight font-semibold">
+              Service Details
+            </h1>
           </div>
+          {displayTag ? <div
+            className={` flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(displayTag!, "ongoing")}`}
+          >
+            <span className="text-[14px] font-bold leading-[22px] ">
+              {displayTag}
+            </span>
+          </div> : <Skeleton className="h-[34px] w-[80px] rounded-full" />}
+
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_487px] gap-6">
@@ -100,7 +160,10 @@ const ServiceDetails = () => {
             <div className="bg-[#F9FAFA] rounded-[12px] p-6">
               <div className="space-y-5">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex items-center justify-between gap-4">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-4"
+                  >
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-1/4" />
                   </div>
@@ -131,7 +194,10 @@ const ServiceDetails = () => {
 
             <div className="space-y-4">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-[12px] p-5 flex items-start gap-4">
+                <div
+                  key={i}
+                  className="bg-white rounded-[12px] p-5 flex items-start gap-4"
+                >
                   <Skeleton className="w-16 h-16 rounded-full shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-1/3" />
@@ -180,8 +246,17 @@ const ServiceDetails = () => {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-[32px] tracking-tight font-semibold">Service Details</h1>
+          <h1 className="text-[32px] tracking-tight font-semibold">
+            Service Details
+          </h1>
         </div>
+        {!isLoading && data?.data?.job ? <div
+          className={` flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(displayTag!, "ongoing")}`}
+        >
+          <span className="text-[14px] font-bold leading-[22px] ">
+            {displayTag}
+          </span>
+        </div> : <Skeleton className="h-[34px] w-[80px] rounded-full" />}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_487px] gap-6">
@@ -190,12 +265,16 @@ const ServiceDetails = () => {
           <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl break-all line-clamp-2 font-bold text-[#181818] capitalize">{job.title}</h2>
+                <h2 className="text-2xl break-all line-clamp-2 font-bold text-[#181818] capitalize">
+                  {job.title}
+                </h2>
                 <span className="rounded-full text-nowrap bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864] capitalize">
                   {job.category.name}
                 </span>
               </div>
-              <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">{job.description}</p>
+              <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">
+                {job.description}
+              </p>
             </div>
           </div>
 
@@ -203,24 +282,48 @@ const ServiceDetails = () => {
             <div className="space-y-5">
               <InfoRow label="Date Posted:" value={postedDate} />
               {/* <InfoRow label="Scheduled Date:" value={scheduledDate} /> */}
-              <InfoRow label="Status:" value={job.status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} />
-              <InfoRow label="Job Type:" value={job.type.replace(/\b\w/g, (c) => c.toUpperCase())} />
-              <InfoRow label="Time Preference:" value={job.when.replace(/\b\w/g, (c) => c.toUpperCase())} />
-              <InfoRow label="Contact Preferences:" value={job.contactPreference.join(", ")} />
+              <InfoRow
+                label="Status:"
+                value={job.status
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+              />
+              <InfoRow
+                label="Job Type:"
+                value={job.type.replace(/\b\w/g, (c) => c.toUpperCase())}
+              />
+              <InfoRow
+                label="Time Preference:"
+                value={job.when.replace(/\b\w/g, (c) => c.toUpperCase())}
+              />
+              <InfoRow
+                label="Contact Preferences:"
+                value={job.contactPreference.join(", ")}
+              />
               <InfoRow label="Applicants:" value={String(job.applyCount)} />
             </div>
           </div>
 
           {job.images.length > 0 && (
             <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-              <h3 className="text-base font-semibold text-black mb-4">Attachments</h3>
+              <h3 className="text-base font-semibold text-black mb-4">
+                Attachments
+              </h3>
               <div className="flex flex-wrap gap-4">
-                {job.images.map((img) => (
-                  <a key={img._id} href={img.location} target="_blank" rel="noreferrer">
-                    <div className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]">
-                      <Image src={img.location} alt={img.filename} fill className="object-cover" />
-                    </div>
-                  </a>
+                {job.images.map((img, index) => (
+                  <button
+                    key={img._id}
+                    type="button"
+                    onClick={() => handleImageClick(index)}
+                    className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]"
+                  >
+                    <Image
+                      src={img.location}
+                      alt={img.filename}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -229,11 +332,18 @@ const ServiceDetails = () => {
           <div className="bg-[#F9FAFA] rounded-[12px] p-6">
             <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
               <div>
-                <h3 className="text-base font-semibold text-black mb-4">Location</h3>
+                <h3 className="text-base font-semibold text-black mb-4">
+                  Location
+                </h3>
                 <div className="flex items-start gap-1.5">
-                  <MapPin className="mt-0.5 size-4 shrink-0 text-[#005864]" strokeWidth={2} />
+                  <MapPin
+                    className="mt-0.5 size-4 shrink-0 text-[#005864]"
+                    strokeWidth={2}
+                  />
                   <p className="text-base text-[#787878] max-w-[420px]">
-                    {job.addressDetails.address}, {job.addressDetails.city}, {job.addressDetails.state} {job.addressDetails.zipCode}, {job.addressDetails.country}
+                    {job.addressDetails.address}, {job.addressDetails.city},{" "}
+                    {job.addressDetails.state} {job.addressDetails.zipCode},{" "}
+                    {job.addressDetails.country}
                   </p>
                 </div>
               </div>
@@ -250,11 +360,17 @@ const ServiceDetails = () => {
         <div className="bg-[#F9FAFA] rounded-[18px] p-6 h-fit sticky top-6">
           <div className="mb-6">
             <h2 className="text-[20px] font-bold text-[#181818] mb-2">
-              {(job.userDisplayTag == "ongoing" || job.userDisplayTag == "completed") ? "Hired for this Service" : "Experts Ready To Help"}
+              {job.userDisplayTag == "ongoing" ||
+                job.userDisplayTag == "completed"
+                ? "Hired for this Service"
+                : "Experts Ready To Help"}
             </h2>
-            {appliedProviders.length > 0 && <p className="text-base font-bold text-[#181818] leading-[26px]">
-              Below are available Experts for your requests. Choose the Expert you'd like to work with.
-            </p>}
+            {appliedProviders.length > 0 && (
+              <p className="text-base font-bold text-[#181818] leading-[26px]">
+                Below are available Experts for your requests. Choose the Expert
+                you'd like to work with.
+              </p>
+            )}
           </div>
 
           {appliedProviders.length > 0 ? (
@@ -265,7 +381,11 @@ const ServiceDetails = () => {
                   id={prov._id}
                   jobId={id}
                   name={prov.name}
-                  location={prov.providerAddress ? `${prov.providerAddress.city}, ${prov.providerAddress.state}` : "Location not available"}
+                  location={
+                    prov.providerAddress
+                      ? `${prov.providerAddress.city}, ${prov.providerAddress.state}`
+                      : "Location not available"
+                  }
                   rating={prov.averageRating}
                   profilePicture={prov.profilePicture?.location || ""}
                 />
@@ -280,13 +400,17 @@ const ServiceDetails = () => {
                 >
                   <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
                     {provider.profilePicture?.location ? (
-                      <Image src={provider.profilePicture.location} alt={provider.name} fill className="object-cover" />
+                      <Image
+                        src={provider.profilePicture.location}
+                        alt={provider.name}
+                        fill
+                        className="object-cover"
+                      />
                     ) : (
                       <div className="flex size-full items-center justify-center text-lg font-semibold text-[#005864]">
                         {provider.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -313,30 +437,43 @@ const ServiceDetails = () => {
                               />
                             ))}
                           </div>
-                          <span className="text-xs font-medium text-[#1C1C1C]">{rating.toFixed(1)}</span>
+                          <span className="text-xs font-medium text-[#1C1C1C]">
+                            {rating.toFixed(1)}
+                          </span>
                         </div>
                       );
                     })()}
                     <p className="text-sm text-[rgba(24,24,24,0.8)] mt-1 truncate">
-                      {provider?.providerAddress?.state || ""} ,    {provider?.providerAddress?.country || ""}
+                      {provider?.providerAddress?.state || ""} ,{" "}
+                      {provider?.providerAddress?.country || ""}
                     </p>
-
                   </div>
                 </div>
-                {!data?.data?.job?.isReviewSubmitted && <Button onClick={() => setReviewOpen(true)} className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
-                  Give Feedback
-                </Button>}
+                {!data?.data?.job?.isReviewSubmitted &&
+                  job.status == "completed" && (
+                    <Button
+                      onClick={() => setReviewOpen(true)}
+                      className="h-12 mt-2 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold"
+                    >
+                      Give Feedback
+                    </Button>
+                  )}
               </div>
             </div>
           ) : (
             <div className="bg-white rounded-[12px] p-6 text-center">
-              <p className="text-sm text-[rgba(24,24,24,0.5)]">No experts have applied yet.</p>
+              <p className="text-sm text-[rgba(24,24,24,0.5)]">
+                No experts have applied yet.
+              </p>
             </div>
           )}
 
           <div className="mt-6">
             {job.status === "completed" ? (
-              <Button onClick={() => router.push("/find-expert")} className="h-12 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold">
+              <Button
+                onClick={() => router.push("/find-expert")}
+                className="h-12 cursor-pointer w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-base font-semibold"
+              >
                 Find Another Expert
               </Button>
             ) : job.userDisplayTag === "ongoing" ? (
@@ -351,15 +488,61 @@ const ServiceDetails = () => {
         </div>
       </div>
 
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <div className="relative flex items-center justify-center bg-black">
+            <Image
+              src={job?.images?.[selectedImageIndex]?.location || ""}
+              alt="Attachment"
+              width={1200}
+              height={800}
+              className="max-h-[80vh] w-auto object-contain"
+            />
+
+            {job?.images?.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="p-4 text-center text-sm text-gray-500">
+            {selectedImageIndex + 1} / {job?.images?.length}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Confirmation Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="w-[360px] max-w-[calc(100%-2rem)] rounded-[16px] bg-white p-0 border-0 shadow-lg">
           {/* Icon Container */}
           <div className="flex justify-center pt-8">
-            <svg width="35" height="32" viewBox="0 0 35 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M21.8352 2.52366L34.5555 24.6001C34.8355 25.2591 34.958 25.7949 34.993 26.3515C35.063 27.6521 34.608 28.9162 33.7157 29.889C32.8233 30.8584 31.616 31.4306 30.3038 31.5H4.68808C4.14567 31.4671 3.60326 31.3439 3.09585 31.1532C0.558778 30.1301 -0.666016 27.2515 0.36631 24.7562L13.1742 2.50805C13.6116 1.72599 14.2765 1.05143 15.0988 0.617914C17.4784 -0.701714 20.5054 0.165321 21.8352 2.52366ZM19.0182 17.0725C19.0182 17.9049 18.3358 18.6002 17.4959 18.6002C16.6561 18.6002 15.9562 17.9049 15.9562 17.0725V12.1668C15.9562 11.3327 16.6561 10.6582 17.4959 10.6582C18.3358 10.6582 19.0182 11.3327 19.0182 12.1668V17.0725ZM17.4958 24.5303C16.6559 24.5303 15.9561 23.8349 15.9561 23.0043C15.9561 22.1702 16.6559 21.4766 17.4958 21.4766C18.3357 21.4766 19.018 22.1546 19.018 22.9852C19.018 23.8349 18.3357 24.5303 17.4958 24.5303Z" fill="#005864" />
+            <svg
+              width="35"
+              height="32"
+              viewBox="0 0 35 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M21.8352 2.52366L34.5555 24.6001C34.8355 25.2591 34.958 25.7949 34.993 26.3515C35.063 27.6521 34.608 28.9162 33.7157 29.889C32.8233 30.8584 31.616 31.4306 30.3038 31.5H4.68808C4.14567 31.4671 3.60326 31.3439 3.09585 31.1532C0.558778 30.1301 -0.666016 27.2515 0.36631 24.7562L13.1742 2.50805C13.6116 1.72599 14.2765 1.05143 15.0988 0.617914C17.4784 -0.701714 20.5054 0.165321 21.8352 2.52366ZM19.0182 17.0725C19.0182 17.9049 18.3358 18.6002 17.4959 18.6002C16.6561 18.6002 15.9562 17.9049 15.9562 17.0725V12.1668C15.9562 11.3327 16.6561 10.6582 17.4959 10.6582C18.3358 10.6582 19.0182 11.3327 19.0182 12.1668V17.0725ZM17.4958 24.5303C16.6559 24.5303 15.9561 23.8349 15.9561 23.0043C15.9561 22.1702 16.6559 21.4766 17.4958 21.4766C18.3357 21.4766 19.018 22.1546 19.018 22.9852C19.018 23.8349 18.3357 24.5303 17.4958 24.5303Z"
+                fill="#005864"
+              />
             </svg>
-
           </div>
 
           {/* Content */}
@@ -409,11 +592,12 @@ const ServiceDetails = () => {
         open={reviewOpen}
         onOpenChange={(open) => {
           setReviewOpen(open);
-          if (!open) router.push("/dashboard");
+          // if (!open) router.push("/dashboard");
         }}
-        onSubmit={({ rating, review }) =>
-          submitReview({ jobId: id, stars: rating, description: review })
-        }
+        onSubmit={({ rating, review }) => {
+          submitReview({ jobId: id, stars: rating, description: review });
+          router.push("/dashboard");
+        }}
         isPending={isReviewPending}
       />
     </div>

@@ -2,13 +2,13 @@ import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDEuT-YrRoiTouezxyGHgZMMCcU5s4nTLU",
-  authDomain: "nexahome-5d42f.firebaseapp.com",
-  projectId: "nexahome-5d42f",
-  storageBucket: "nexahome-5d42f.firebasestorage.app",
-  messagingSenderId: "707682138709",
-  appId: "1:707682138709:web:a2691aa6f20948abd5b2dc",
-  measurementId: "G-YY2H2YG5TD"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 }
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
