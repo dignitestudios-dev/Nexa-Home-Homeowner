@@ -38,7 +38,7 @@ export default function SearchInput({
       className={cn(
         "h-12 rounded-full bg-[#F9FAFA] flex items-center px-4 overflow-hidden",
         "transition-all duration-300 ease-in-out",
-        isFocused ? "w-[400px]" : "w-[200px]"
+        isFocused ? "w-[350px]" : "w-[200px]"
       )}
     >
       <Search size={18} className="shrink-0 text-[#5C5C5C]" />

@@ -91,3 +91,13 @@ export function useSocialAuth(
     mutationOptions: options,
   })
 }
+
+export function useUpdateFcmToken(
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { fcmToken: string }>>[0]['mutationOptions']
+) {
+  return useApiMutation<{ success: boolean; message: string }, { fcmToken: string }>({
+    endpoint: '/auth/update-fcm',
+    method: 'POST',
+    mutationOptions: options,
+  })
+}

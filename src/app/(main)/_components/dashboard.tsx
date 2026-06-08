@@ -19,6 +19,8 @@ import OnGoingServicesTab from "./ongoing-services-tab";
 import CustomSelect from "@/components/global/custom-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchInput from "./ui/search-input";
+import { useUpdateFcmToken } from "@/features/auth/hooks";
+import { getFcmToken } from '@/lib/firebase'
 
 type Props = {};
 
@@ -80,6 +82,7 @@ const Dashboard = (props: Props) => {
   const [jobsCountPopupOpen, setJobsCountPopupOpen] = useState(false);
   const { data: userData, isLoading: isUserLoading } = useGetOwnUser();
   const { data: addressData } = useGetAddresses();
+  const { mutate: updateFcmToken } = useUpdateFcmToken()
   const { mutate: setDefaultAddress, isPending: isSettingDefault } = useSetDefaultAddress({
     onSuccess: () => {
       setIsLocationDialogOpen(false);
@@ -158,6 +161,25 @@ const Dashboard = (props: Props) => {
       sessionStorage.setItem('jobs-count-popup-shown', 'true');
     }
   }, [jobsCountData, hasShownJobsPopup]);
+
+  useEffect(() => {
+    if (isUserLoading || !userData?.data) return
+    const userId = userData.data._id
+    const alreadyRegistered = sessionStorage.getItem(`fcm-token-registered:${userId}`) === 'true'
+    if (alreadyRegistered) return
+
+    getFcmToken().then((token) => {
+      if (!token) return
+      updateFcmToken(
+        { fcmToken: token },
+        {
+          onSuccess: () => {
+            sessionStorage.setItem(`fcm-token-registered:${userId}`, 'true')
+          },
+        }
+      )
+    })
+  }, [isUserLoading, userData])
 
 
   if (isUserLoading) {
@@ -248,14 +270,14 @@ const Dashboard = (props: Props) => {
             </span>
           </button>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex lg:flex-row flex-col-reverse items-center gap-4">
 
           {(activeTab == "Ongoing" || activeTab == "Completed") && <SearchInput
             value={search}
             onChange={setSearch}
             placeholder="Search"
           />}
-          <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer gap-2 px-5" variant="primary">
+          <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer w-full lg:w-[172px] gap-2 px-5" variant="primary">
             <Search size={18} />
             Find an Expert
           </Button>
