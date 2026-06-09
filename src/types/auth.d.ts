@@ -70,7 +70,7 @@ interface User {
   businessDocsSubmitted: boolean
   portfolioMediaUploaded: boolean
   isDeactivatedByAdmin: boolean
-
+  hasAddress: boolean
   createdAt: string
   updatedAt: string
 }

@@ -55,46 +55,63 @@ export default function Verification() {
   }, [resendTimer]);
 
   const onSuccessCallback = (data: any) => {
-    console.log(data, "data");
+    // console.log(data, "data");
 
     if (data.success) {
       if (isSocialFlow) {
-        // For social flow, data.data is the user object directly, and token is already set.
-        const profileCompleted = data.data?.isProfileCompleted ?? isProfileCompleted;
-        if (data.data) {
+        // Social flow: data.data is the user object directly
+        const user = data.data;
+
+        if (user) {
           queryClient.setQueryData(['userOwn'], {
             success: true,
             message: data.message || '',
-            data: data.data,
+            data: user,
           });
-        }
-        if (profileCompleted) {
-          router.replace("/dashboard");
-        } else {
-          router.replace("/profile");
-              document.cookie = `isProfileCompleted=${data.data.user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
+          console.log(user, "check")
+
+          if (!user.isProfileCompleted) {
+            document.cookie = `isProfileCompleted=${user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
+
+            router.replace('/profile');
+          } else if (!user.hasAddress) {
+            document.cookie = `hasAddress=${user.hasAddress}; path=/; max-age=86400; SameSite=Lax`;
+            router.replace('/profile/add-address');
+          } else {
+            router.replace('/dashboard');
+          }
         }
       } else {
-        // For normal flow, data.data is { token: string, user: User }
-        if (data.data && data.data.token) {
+        // Normal flow: data.data = { token, user }
+        if (data.data?.token) {
           setToken(data.data.token);
-          if (data.data.user) {
+
+          const user = data.data.user;
+
+          if (user) {
             queryClient.setQueryData(['userOwn'], {
               success: true,
               message: data.message || '',
-              data: data.data.user,
+              data: user,
             });
-          }
-          // still invalidate to ensure any server-side differences are refreshed
-          queryClient.invalidateQueries({ queryKey: ['userOwn'] });
-          if (data.data.user?.isProfileCompleted) {
-            router.replace("/dashboard");
-          } else {
-            document.cookie = `isProfileCompleted=${data.data.user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
-            router.replace("/profile");
+
+            queryClient.invalidateQueries({
+              queryKey: ['userOwn'],
+            });
+
+
+            if (!user.isProfileCompleted) {
+              document.cookie = `isProfileCompleted=${user.isProfileCompleted}; path=/; max-age=86400; SameSite=Lax`;
+
+              router.replace('/profile');
+            } else if (!user.hasAddress) {
+              document.cookie = `hasAddress=${user.hasAddress}; path=/; max-age=86400; SameSite=Lax`;
+              router.replace('/profile/address');
+            } else {
+              router.replace('/dashboard');
+            }
           }
         } else {
-          // Reset jobs-count popup flag so it can be shown after login/registration
           router.replace('/dashboard');
         }
       }

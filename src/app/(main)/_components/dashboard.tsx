@@ -140,7 +140,6 @@ const Dashboard = (props: Props) => {
   useEffect(() => {
     if (isUserLoading || !userData?.data) return;
     const hasShown = sessionStorage.getItem("email-popup-shown");
-    console.log(userData.data.contactEmail, hasShown)
     if (userData.data.contactEmail === null && hasShown === "false") {
       setEmailPopupOpen(true);
       console.log("insode ------------>")
@@ -295,7 +294,7 @@ const Dashboard = (props: Props) => {
                   type="button"
                   onClick={() => handleTabChange(tab)}
                   className={cn(
-                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#005864]/20",
+                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:ring-[#005864]/20",
                     active
                       ? "bg-[#005864] text-white shadow-sm"
                       : "bg-white text-[#005864] hover:bg-slate-100",

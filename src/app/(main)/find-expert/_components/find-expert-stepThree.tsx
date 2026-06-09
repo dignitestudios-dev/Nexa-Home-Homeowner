@@ -10,6 +10,7 @@ import { StepOneData, StepTwoData } from "../page";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import AttachmentDialog from "@/components/ui/attachment-dialog";
 
 interface StepThreeProps {
   stepOneData: StepOneData;
@@ -28,6 +29,9 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+const isVideoFile = (url: string) => {
+  return /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
+};
 export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedProviders, onBack, onSuccess }: StepThreeProps) {
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
@@ -35,6 +39,39 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
   // States for handling attachment previews
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewType, setPreviewType] = useState<"image" | "video" | null>(null);
+  const [selectedAttachmentIndex, setSelectedAttachmentIndex] = useState(0);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const nextAttachment = () => {
+    setSelectedAttachmentIndex((prev) =>
+      prev === attachments.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevAttachment = () => {
+    setSelectedAttachmentIndex((prev) =>
+      prev === 0 ? attachments.length - 1 : prev - 1
+    );
+  };
+
+const attachments = [
+  ...stepOneData.uploadedImages.map((file, index) => ({
+    _id: `img-${index}`,
+    location: URL.createObjectURL(file),
+    filename: file.name,
+    type: "image",
+  })),
+  ...stepOneData.uploadedVideos.map((file, index) => ({
+    _id: `vid-${index}`,
+    location: URL.createObjectURL(file),
+    filename: file.name,
+    type: "video",
+  })),
+];
+
+  const handleAttachmentClick = (index: number) => {
+    setSelectedAttachmentIndex(index);
+    setPreviewOpen(true);
+  };
 
   const router = useRouter();
   const { data: addressData } = useGetAddresses();
@@ -49,35 +86,35 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
   const { mutate: createJob, isPending } = useCreateJob({
     onSuccess: (res) => {
       if (res.success) {
-          setIsDisclaimerOpen(false);
-      setIsSuccessOpen(true);
+        setIsDisclaimerOpen(false);
+        setIsSuccessOpen(true);
       }
     },
   });
-const handleNext = () => {
-  setIsDisclaimerOpen(true);
-};
+  const handleNext = () => {
+    setIsDisclaimerOpen(true);
+  };
 
-const handleConfirmDisclaimer = () => {
-  createJob({
-    addressId: stepOneData.addressId,
-    category: stepOneData.categoryId,
-    title: stepOneData.title,
-    description: stepOneData.description,
-    when: stepOneData.when,
-    type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
-    radius: stepTwoData.radius,
-    sendToAll: stepTwoData.sendToAll,
-    providerIds: stepTwoData.sendToAll
-      ? undefined
-      : stepTwoData.selectedProviderIds,
-    contactPreference,
-    images: [
-      ...stepOneData.uploadedImages,
-      ...stepOneData.uploadedVideos,
-    ],
-  });
-};
+  const handleConfirmDisclaimer = () => {
+    createJob({
+      addressId: stepOneData.addressId,
+      category: stepOneData.categoryId,
+      title: stepOneData.title,
+      description: stepOneData.description,
+      when: stepOneData.when,
+      type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
+      radius: stepTwoData.radius,
+      sendToAll: stepTwoData.sendToAll,
+      providerIds: stepTwoData.sendToAll
+        ? undefined
+        : stepTwoData.selectedProviderIds,
+      contactPreference,
+      images: [
+        ...stepOneData.uploadedImages,
+        ...stepOneData.uploadedVideos,
+      ],
+    });
+  };
   const handleOpenPreview = (file: File, type: "image" | "video") => {
     setPreviewFile(file);
     setPreviewType(type);
@@ -124,41 +161,33 @@ const handleConfirmDisclaimer = () => {
             </div>
 
             {/* Attachments (Unified Section for Images & Videos) */}
-            {hasAttachments && (
-              <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-                <h3 className="text-base font-semibold text-black mb-4">Attachments</h3>
-                <div className="flex flex-wrap gap-4">
-
-                  {/* Render Images */}
-                  {stepOneData.uploadedImages.map((file, index) => (
-                    <div
-                      key={`img-${index}`}
-                      onClick={() => handleOpenPreview(file, "image")}
-                      className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] cursor-pointer hover:opacity-90 transition-opacity"
-                    >
-                      <img src={URL.createObjectURL(file)} alt={`attachment-img-${index}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-
-                  {/* Render Videos */}
-                  {stepOneData.uploadedVideos.map((file, index) => (
-                    <div
-                      key={`vid-${index}`}
-                      onClick={() => handleOpenPreview(file, "video")}
-                      className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] cursor-pointer hover:opacity-90 transition-opacity bg-black flex items-center justify-center"
-                    >
-                      <video src={URL.createObjectURL(file)} className="w-full h-full object-cover opacity-60" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="p-1 rounded-full bg-white/20 backdrop-blur-sm">
-                          <Play size={16} className="text-white fill-white ml-0.5" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                </div>
-              </div>
-            )}
+           {attachments.map((file, index) => (
+  <button
+    key={file._id}
+    type="button"
+    onClick={() => handleAttachmentClick(index)}
+    className="relative w-[70px] mx-1 h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]"
+  >
+    {file.type === "video" ? (
+      <>
+        <video
+          src={file.location}
+          className="h-full w-full object-cover"
+          muted
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <Play size={18} className="text-white fill-white" />
+        </div>
+      </>
+    ) : (
+      <img
+        src={file.location}
+        alt=""
+        className="h-full w-full object-cover"
+      />
+    )}
+  </button>
+))}
 
             {/* Location */}
             {selectedAddress && (
@@ -276,30 +305,14 @@ const handleConfirmDisclaimer = () => {
       </div>
 
       {/* Media Preview Dialog */}
-      <Dialog open={!!previewFile} onOpenChange={handleClosePreview}>
-        <DialogContent className="max-w-[800px]! p-1 bg-black/90 border-none overflow-hidden flex flex-col items-center justify-center sm:rounded-2xl">
-          <DialogTitle className="sr-only">Attachment Preview</DialogTitle>
-          {previewFile && (
-            <div className="relative w-full max-h-[80vh] flex items-center justify-center p-4">
-              {previewType === "image" ? (
-                <img
-                  src={URL.createObjectURL(previewFile)}
-                  alt="Preview"
-                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
-                />
-              ) : (
-                <video
-                  src={URL.createObjectURL(previewFile)}
-                  controls
-                  autoPlay
-                  className="max-w-full max-h-[70vh] object-contain rounded-lg"
-                />
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
+      <AttachmentDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        attachments={attachments}
+        selectedIndex={selectedAttachmentIndex}
+        onNext={nextAttachment}
+        onPrev={prevAttachment}
+      />
       <DisclaimerDialog
         open={isDisclaimerOpen}
         onOpenChange={setIsDisclaimerOpen}

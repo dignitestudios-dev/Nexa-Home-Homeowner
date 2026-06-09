@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/features/user/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 
 type RecentActivity = {
   title: string;
@@ -168,49 +169,12 @@ const CategoriesTab = ({
         )}
 
         {/* Pagination */}
-        <div className="flex justify-end pt-2">
-          <div className="flex items-center ">
-            <button
-              type="button"
-              disabled={categoryPage === 1}
-              onClick={() =>
-                setCategoryPage((prev) =>
-                  Math.max(prev - 1, 1)
-                )
-              }
-              className={cn(
-                "inline-flex h-12 w-12 z-20 items-center justify-center rounded-full transition-colors",
-                categoryPage === 1
-                  ? "bg-[#0058640F] text-[#005864]/40 cursor-not-allowed"
-                  : "bg-[#005864] text-white hover:bg-[#004d57]"
-              )}
-            >
-              <ChevronLeft size={30} strokeWidth={2.5} />
-            </button>
-
-            <div className="inline-flex h-12 items-center justify-center  bg-[#F9FAFA] px-6 text-base -mx-4 font-bold text-[#181818] border border-slate-100 min-w-[54px]">
-              {categoryPage.toString().padStart(2, "0")}
-            </div>
-
-            <button
-              type="button"
-              disabled={categoryPage >= totalPages}
-              onClick={() =>
-                setCategoryPage((prev) =>
-                  Math.min(prev + 1, totalPages)
-                )
-              }
-              className={cn(
-                "inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors",
-                categoryPage >= totalPages
-                  ? "bg-[#005864]/5 text-[#005864]/40 cursor-not-allowed"
-                  : "bg-[#005864] text-white hover:bg-[#004d57]"
-              )}
-            >
-              <ChevronRight size={30} strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
+        
+        <Pagination
+          page={categoryPage}
+          totalPages={totalPages}
+          onPageChange={setCategoryPage}
+        />
       </div>
     </>
   );

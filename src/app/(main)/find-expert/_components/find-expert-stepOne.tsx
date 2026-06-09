@@ -164,65 +164,65 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     setIsDateDialogOpen(false);
   };
 
-const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files) return;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-  const valid: File[] = [];
-  const errors: string[] = [];
+    const valid: File[] = [];
+    const errors: string[] = [];
 
-  Array.from(files).forEach((f) => {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
-      errors.push(`${f.name} is not a supported image format (JPG, PNG, WebP only)`);
-    } else if (f.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-      errors.push(`${f.name} is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB`);
-    } else {
-      valid.push(f);
+    Array.from(files).forEach((f) => {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+        errors.push(`${f.name} is not a supported image format (JPG, PNG, WebP only)`);
+      } else if (f.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        errors.push(`${f.name} is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB`);
+      } else {
+        valid.push(f);
+      }
+    });
+
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.error(err));
     }
-  });
 
-  if (errors.length > 0) {
-    errors.forEach((err) => toast.error(err));
-  }
-
-  if (valid.length > 0) {
-    const next = [...data.uploadedImages, ...valid].slice(0, 10);
-    onChange("uploadedImages", next);
-    setValue("uploadedImages", next, { shouldValidate: true });
-  }
-
-  e.target.value = ""; // Reset input
-};
-
-const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files) return;
-
-  const valid: File[] = [];
-  const errors: string[] = [];
-
-  Array.from(files).forEach((f) => {
-    if (!f.type.startsWith("video/")) {
-      errors.push(`${f.name} is not a valid video file`);
-    } else if (f.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
-      errors.push(`${f.name} exceeds ${MAX_VIDEO_SIZE_MB}MB limit`);
-    } else {
-      valid.push(f);
+    if (valid.length > 0) {
+      const next = [...data.uploadedImages, ...valid].slice(0, 10);
+      onChange("uploadedImages", next);
+      setValue("uploadedImages", next, { shouldValidate: true });
     }
-  });
 
-  if (errors.length > 0) {
-    errors.forEach((err) => toast.error(err));
-  }
+    e.target.value = ""; // Reset input
+  };
 
-  if (valid.length > 0) {
-    const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
-    onChange("uploadedVideos", next);
-    setValue("uploadedVideos", next, { shouldValidate: true });
-  }
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-  e.target.value = "";
-};
+    const valid: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(files).forEach((f) => {
+      if (!f.type.startsWith("video/")) {
+        errors.push(`${f.name} is not a valid video file`);
+      } else if (f.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+        errors.push(`${f.name} exceeds ${MAX_VIDEO_SIZE_MB}MB limit`);
+      } else {
+        valid.push(f);
+      }
+    });
+
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.error(err));
+    }
+
+    if (valid.length > 0) {
+      const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
+      onChange("uploadedVideos", next);
+      setValue("uploadedVideos", next, { shouldValidate: true });
+    }
+
+    e.target.value = "";
+  };
 
 
   // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -371,7 +371,12 @@ const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   {...register("description")}
                   placeholder="Write here"
                   maxLength={500}
-                  className={cn("rounded-[12px] h-28 outline-0 bg-[#F8F8F8] shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-[16px] font-normal text-[#18181899] border-0 px-4 resize-none", errors.description && "border border-red-400")}
+                  className={cn(
+                    "h-28 resize-none rounded-[12px] bg-[#F8F8F8] px-4 border-0 outline-none text-[16px]! shadow-[0_1px_2px_rgba(0,0,0,0.05)]",
+                    "focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-transparent",
+                    "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-transparent",
+                    errors.description && "border border-red-400"
+                  )}
                 />
                 <span className="absolute right-3 bottom-3 text-xs text-[#18181899]">{(descVal ?? "").length}/500</span>
               </div>
@@ -460,7 +465,7 @@ const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* When */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-base font-medium leading-[18px]">When</Label>
+              <Label className="text-base font-medium leading-[18px]">When <span className="text-red-500">*</span></Label>
               <Controller
                 control={control}
                 name="when"
@@ -493,7 +498,7 @@ const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Where */}
             <div className="flex flex-col gap-2 w-full my-4">
-              <Label className="text-base font-medium leading-[18px]">Where</Label>
+              <Label className="text-base font-medium leading-[18px]">Where <span className="text-red-500">*</span></Label>
               <CustomSelect
                 value={data.addressId}
                 onChange={(val) => {
@@ -511,7 +516,7 @@ const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <div>
             {/* Job Type */}
             <div>
-              <p className=" leading-14 font-medium text-base">Select Job Type</p>
+              <p className=" leading-14 font-medium text-base">Select Job Type <span className="text-red-500">*</span></p>
               <p className="text-[#18181899]">Pick the job type that matches your service need.</p>
             </div>
             <div className="flex flex-col gap-9 py-4">
@@ -528,7 +533,7 @@ const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
               {/* Contact Preferences */}
               <div className="flex flex-col gap-3.5">
-                <h3 className="font-medium text-base leading-[22px] text-black">Contact Preferences</h3>
+                <h3 className="font-medium text-base leading-[22px] text-black">Contact Preferences <span className="text-red-500">*</span></h3>
                 <p className="text-[#18181899] text-base">Select your preferred way to be contacted.</p>
                 <div className="mt-2 flex flex-col gap-5">
                   <label className="flex cursor-pointer items-center gap-3">

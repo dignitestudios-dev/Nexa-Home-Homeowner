@@ -22,7 +22,7 @@ export default function SuccessDialog({ open, onOpenChange, onClose }: SuccessDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative top-1/2 fixed w-[615px]! max-w-[calc(100%-2rem)]! h-[318px] rounded-[24px] bg-white p-0 overflow-hidden">
+      <DialogContent className="relative top-1/2 fixed w-[415px]! max-w-[calc(100%-2rem)]! h-[318px] rounded-[24px] bg-white p-0 overflow-hidden">
         <button
           type="button"
           onClick={() => {

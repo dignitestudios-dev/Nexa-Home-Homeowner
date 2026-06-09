@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_ROUTES = ['/login', '/sign-up', '/verification']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
   const profileIncompleteCookie =
     request.cookies.get('isProfileCompleted')?.value;
+  const hasAddress = request.cookies.get('hasAddress')?.value;
   const isProfileRoute = pathname.startsWith('/profile')
   // console.log("first", profileCompleted)
 
@@ -27,6 +28,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(
       new URL('/profile', request.url)
     )
+  }
+
+  if (
+    token &&
+    hasAddress &&
+    pathname !== '/profile/add-address'
+  ) {
+    return NextResponse.redirect(
+      new URL('/profile/add-address', request.url)
+    );
   }
   return NextResponse.next()
 }

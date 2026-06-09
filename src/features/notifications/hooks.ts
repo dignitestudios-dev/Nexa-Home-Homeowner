@@ -1,6 +1,6 @@
 import { useApiMutation } from "@/hooks/api/use-api-mutation"
 import { apiClient } from "@/lib/api-client"
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 export interface Notification {
   _id: string
@@ -10,17 +10,31 @@ export interface Notification {
   createdAt: string
 }
 
+
+export interface NotificationMetadata {
+  type: 'job' | 'review' | string
+  _id: string
+  cta: string | null
+}
+
+export interface Notification {
+  id: string
+  title: string
+  description: string
+  isRead: boolean
+  createdAt: string
+  metadata: NotificationMetadata
+}
+
 export interface GetNotificationsResponse {
   success: boolean
   message: string
-  data: {
-    notifications: Notification[]
-    pagination: {
-      currentPage: number
-      totalPages: number
-      totalItems: number
-      itemsPerPage: number
-    }
+  data: Notification[]
+  pagination: {
+    currentPage: number
+    totalPages: number
+    totalItems: number
+    itemsPerPage: number
   }
 }
 
@@ -30,13 +44,23 @@ export interface GetNotificationsCountResponse {
   data: { count: number }
 }
 
+const NOTIFICATIONS_LIMIT = 10
+
 export function useGetNotifications() {
-  return useQuery<GetNotificationsResponse>({
+  return useInfiniteQuery<GetNotificationsResponse>({
     queryKey: ['notifications'],
-    queryFn: async () => {
-      const res = await apiClient.get<GetNotificationsResponse>('/notification/me')
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await apiClient.get<GetNotificationsResponse>('/notification/me', {
+        params: { page: pageParam, limit: NOTIFICATIONS_LIMIT },
+      })
       return res.data
     },
+    // return next page number or undefined when no more pages
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage.pagination
+      return currentPage < totalPages ? currentPage + 1 : undefined
+    },
+    initialPageParam: 1,
   })
 }
 

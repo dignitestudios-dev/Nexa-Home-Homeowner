@@ -171,14 +171,14 @@ export function useGetJobs(params: { tab: JobTab; page: number; limit: number; s
   return useQuery<GetJobsResponse>({
     queryKey: ['jobs', params],
     queryFn: async () => {
-      const res = await apiClient.get<GetJobsResponse>('/job/my-jobs',     {
-          params: {
-            tab: params.tab,
-            page: params.page,
-            limit: params.limit,
-            search: params.search,
-          },
-        })
+      const res = await apiClient.get<GetJobsResponse>('/job/my-jobs', {
+        params: {
+          tab: params.tab,
+          page: params.page,
+          limit: params.limit,
+          search: params.search,
+        },
+      })
       return res.data
     },
   })
@@ -217,7 +217,7 @@ export function useGetJobDetail(id: string) {
 }
 
 export function useGetMatchingProviders(
-  params: { addressId: string; category: string; radius: number; search?:string },
+  params: { addressId: string; category: string; radius: number; search?: string },
   enabled: boolean
 ) {
   return useQuery<GetMatchingProvidersResponse>({
@@ -378,7 +378,7 @@ export function useCreateJob(
     endpoint: '/job/create',
     method: 'POST',
     isMultiPart: true,
-    invalidateKeys: ['jobs'],
+    invalidateKeys: ['jobs', "notifications"],
     toBody: (vars) => {
       const fd = new FormData()
       fd.append('addressId', vars.addressId)
