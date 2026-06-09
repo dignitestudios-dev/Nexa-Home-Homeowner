@@ -1,2 +1,9 @@
 import Placeholder from "../_components/placeholder"
-export default function Page() { return <Placeholder title="Report An Issue" /> }
+import ReportIssue from "../_components/report-issue"
+
+export default function Page() {
+    return (
+
+        <> <ReportIssue /></>)
+
+}

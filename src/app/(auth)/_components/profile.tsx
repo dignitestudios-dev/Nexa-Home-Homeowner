@@ -49,6 +49,7 @@ const Profile = () => {
         document.cookie =
           "isProfileCompleted=; path=/; max-age=0; SameSite=Lax";
         router.replace('/profile/add-address')
+        document.cookie = `hasAddress=false; path=/; max-age=86400; SameSite=Lax`;
       }
     },
   })

@@ -35,7 +35,9 @@ const AddAddress = () => {
     onSuccess: (res) => {
       if (res.success) {
         setIsDialogOpen(false);
-      
+        document.cookie =
+          "hasAddress=; path=/; max-age=0; SameSite=Lax";
+        router.replace('/profile/add-address')
         setAddressError("");
       }
     },
@@ -53,7 +55,7 @@ const AddAddress = () => {
       return;
     }
     query.invalidateQueries({ queryKey: ["userOwn"] }); // Invalidate user data to ensure fresh data is fetched
-      setSuccessDialog(true);
+    setSuccessDialog(true);
   };
 
   return (
@@ -170,24 +172,24 @@ const AddAddress = () => {
         initialData={
           editTarget
             ? {
-                label: editTarget.label,
-                address: editTarget.address,
-                country: editTarget.country,
-                state: editTarget.state,
-                city: editTarget.city,
-                zipCode: editTarget.zipCode,
-                longitude: String(editTarget.coordinates.coordinates[0]),
-                latitude: String(editTarget.coordinates.coordinates[1]),
-                lat: editTarget.coordinates.coordinates[1],
-                lng: editTarget.coordinates.coordinates[0],
-              }
+              label: editTarget.label,
+              address: editTarget.address,
+              country: editTarget.country,
+              state: editTarget.state,
+              city: editTarget.city,
+              zipCode: editTarget.zipCode,
+              longitude: String(editTarget.coordinates.coordinates[0]),
+              latitude: String(editTarget.coordinates.coordinates[1]),
+              lat: editTarget.coordinates.coordinates[1],
+              lng: editTarget.coordinates.coordinates[0],
+            }
             : undefined
         }
         title="Edit Address"
       />
       <SuccessDialog
         open={successDialog}
-        
+
         // onOpenChange={(open) => !open && setSuccessMessage('')}
         onClose={() => {
           setSuccessDialog(false);

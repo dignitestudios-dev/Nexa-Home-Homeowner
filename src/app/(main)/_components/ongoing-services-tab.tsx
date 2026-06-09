@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { useGetJobs } from '@/features/user/hooks'
 import { Skeleton } from '@/components/ui/skeleton'
 import ServiceCard from './ui/service-card'
+import { Pagination } from '@/components/ui/pagination'
 
 type Props = {
   tab: JobTab;
@@ -68,7 +69,7 @@ export default function OnGoingServicesTab({ tab ,search }: Props) {
         ))}
       </div>
 
-      {totalPages > 1 && (
+      {/* {totalPages > 1 && (
         <div className="flex justify-end pt-2">
           <div className="flex items-center">
             <button
@@ -102,7 +103,11 @@ export default function OnGoingServicesTab({ tab ,search }: Props) {
             </button>
           </div>
         </div>
-      )}
+      )} */}
+      {totalPages > 1 &&
+
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      }
     </div>
   )
 }

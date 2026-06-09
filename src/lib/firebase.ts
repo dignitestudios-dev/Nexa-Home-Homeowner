@@ -27,6 +27,16 @@ export async function signInWithGoogle(): Promise<string> {
   return idToken
 }
 
+
+
+export async function getFirebaseMessaging() {
+  const supported = await isSupported();
+
+  if (!supported) return null;
+
+  return getMessaging(app);
+}
+
 export async function getFcmToken(): Promise<string | null> {
   try {
     const supported = await isSupported()

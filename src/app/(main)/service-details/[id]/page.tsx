@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import AttachmentDialog from "@/components/ui/attachment-dialog";
 
 const tagStyles: Record<string, string> = {
   Ongoing: "bg-[#3D74FF] text-white",
@@ -29,6 +30,10 @@ const tagStyles: Record<string, string> = {
   Ready: "bg-amber-500 text-white",
   "Confirm Expert": "bg-[#FF0000] text-white",
   "Awaiting Response": "bg-[#FFF300] text-black",
+};
+
+const isVideoFile = (url: string) => {
+  return /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
 };
 
 function getBadgeStyle(actionText: string, status: string) {
@@ -56,7 +61,7 @@ const ServiceDetails = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const handleImageClick = (index: number) => {
+  const handleAttachmentClick = (index: number) => {
     setSelectedImageIndex(index);
     setPreviewOpen(true);
   };
@@ -304,30 +309,52 @@ const ServiceDetails = () => {
             </div>
           </div>
 
-          {job.images.length > 0 && (
-            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-              <h3 className="text-base font-semibold text-black mb-4">
-                Attachments
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                {job.images.map((img, index) => (
-                  <button
-                    key={img._id}
-                    type="button"
-                    onClick={() => handleImageClick(index)}
-                    className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]"
-                  >
-                    <Image
-                      src={img.location}
-                      alt={img.filename}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+         {job.images.length > 0 && (
+  <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+    <h3 className="text-base font-semibold text-black mb-4">
+      Attachments
+    </h3>
+
+    <div className="flex flex-wrap gap-4">
+      {job.images.map((file, index) => (
+        <button
+          key={file._id}
+          type="button"
+          onClick={() => handleAttachmentClick(index)}
+          className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] bg-black"
+        >
+          {isVideoFile(file.location) ? (
+            <>
+              <video
+                src={file.location}
+                className="h-full w-full object-cover"
+                muted
+              />
+
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </div>
-            </div>
+            </>
+          ) : (
+            <Image
+              src={file.location}
+              alt={file.filename}
+              fill
+              className="object-cover"
+            />
           )}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
           <div className="bg-[#F9FAFA] rounded-[12px] p-6">
             <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
@@ -488,29 +515,41 @@ const ServiceDetails = () => {
         </div>
       </div>
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden">
-          <div className="relative flex items-center justify-center bg-black">
-            <Image
-              src={job?.images?.[selectedImageIndex]?.location || ""}
-              alt="Attachment"
-              width={1200}
-              height={800}
-              className="max-h-[80vh] w-auto object-contain"
-            />
+      {/* <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-5xl! p-0 overflow-hidden">
+          <div className="relative flex items-center justify-center bg-black min-h-[500px]">
+            {job?.images?.[selectedImageIndex] &&
+              (isVideoFile(job.images[selectedImageIndex].location) ? (
+                <video
+                  src={job.images[selectedImageIndex].location}
+                  controls
+                  autoPlay
+                  className="max-h-[80vh] max-w-full"
+                />
+              ) : (
+                <Image
+                  src={job.images[selectedImageIndex].location}
+                  alt="Attachment"
+                  width={1400}
+                  height={1000}
+                  className="max-h-[80vh] w-auto object-contain"
+                />
+              ))}
 
             {job?.images?.length > 1 && (
               <>
                 <button
+                  type="button"
                   onClick={prevImage}
-                  className="absolute left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow"
+                  className="absolute left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow"
                 >
                   <ChevronLeft size={20} />
                 </button>
 
                 <button
+                  type="button"
                   onClick={nextImage}
-                  className="absolute right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow"
+                  className="absolute right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -518,15 +557,23 @@ const ServiceDetails = () => {
             )}
           </div>
 
-          <div className="p-4 text-center text-sm text-gray-500">
+          <div className="flex items-center justify-center p-4 text-sm text-[#565656]">
             {selectedImageIndex + 1} / {job?.images?.length}
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+      <AttachmentDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        attachments={job?.images}
+        onNext={nextImage}
+        onPrev={prevImage}
+        selectedIndex={selectedImageIndex}
+      />
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="w-[360px] max-w-[calc(100%-2rem)] rounded-[16px] bg-white p-0 border-0 shadow-lg">
+        <DialogContent className="w-[360px]! max-w-[calc(100%-2rem)]! rounded-[16px] bg-white p-0 border-0 shadow-lg">
           {/* Icon Container */}
           <div className="flex justify-center pt-8">
             <svg
