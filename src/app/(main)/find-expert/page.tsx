@@ -13,7 +13,7 @@ export type JobType = "one-time" | "recurring";
 export interface StepOneData {
   categoryId: string;
   categoryName: string;
-  title: string;
+  // title: string;
   description: string;
   when: string;
   addressId: string;
@@ -45,7 +45,7 @@ const FindExpert = () => {
   const [stepOneData, setStepOneData] = useState<StepOneData>({
     categoryId: searchParams.get("categoryId") ?? "",
     categoryName: searchParams.get("categoryName") ?? "",
-    title: "",
+    // title: "",
     description: "",
     when: "",
     addressId: "",
@@ -125,7 +125,7 @@ const handleRemoveVideo = (index: number) => {
   }
 
   return (
-    <div className="pb-6 px-10 lg:px-20">
+    <div className="pb-6 px-5 lg:px-20">
       {step === 1 && (
         <FindExpertStepOne
           data={stepOneData}

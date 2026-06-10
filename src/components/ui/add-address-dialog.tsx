@@ -17,7 +17,7 @@ interface AddAddressDialogProps {
 }
 
 const addressSchema = z.object({
-  label: z.string().min(1, 'Label is required').max(15, 'Label must be at most 15 characters'),
+  label: z.string().min(1, 'Label is required').max(30, 'Label must be at most 30 characters'),
   address: z.string().min(1, 'Address is required').max(50, 'Address must be at most 50 characters'),
   country: z.string().min(1, 'Country is required'),
   state: z.string().optional().or(z.literal('')),
@@ -177,87 +177,87 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
     });
   };
 
-React.useEffect(() => {
-  if (!isLoaded || !open) return;
+  React.useEffect(() => {
+    if (!isLoaded || !open) return;
 
-  const timer = setTimeout(() => {
-    if (!mapRef.current) return;
+    const timer = setTimeout(() => {
+      if (!mapRef.current) return;
 
-    const google = (window as any).google;
-    if (!google) return;
+      const google = (window as any).google;
+      if (!google) return;
 
-    const initialLat = watchLat ?? 40.74;
-    const initialLng = watchLng ?? -73.98;
-    const center = { lat: initialLat, lng: initialLng };
+      const initialLat = watchLat ?? 40.74;
+      const initialLng = watchLng ?? -73.98;
+      const center = { lat: initialLat, lng: initialLng };
 
-    const map = new google.maps.Map(mapRef.current, {
-      center,
-      zoom: watchLat ? 16 : 12,
-      mapTypeControl: false,
-      fullscreenControl: false,
-      streetViewControl: false,
-    });
-    mapInstanceRef.current = map;
-
-    const marker = new google.maps.Marker({
-      position: center,
-      map,
-      draggable: true,
-    });
-    markerInstanceRef.current = marker;
-
-    // trigger resize so map fills container correctly
-    google.maps.event.trigger(map, 'resize');
-    map.setCenter(center);
-
-    if (searchInputRef.current) {
-      const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
-        types: ['address'],
+      const map = new google.maps.Map(mapRef.current, {
+        center,
+        zoom: watchLat ? 16 : 12,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        streetViewControl: false,
       });
-      autocompleteInstanceRef.current = autocomplete;
+      mapInstanceRef.current = map;
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) return;
-
-        const newLat = place.geometry.location.lat();
-        const newLng = place.geometry.location.lng();
-
-        map.setCenter({ lat: newLat, lng: newLng });
-        map.setZoom(16);
-        marker.setPosition({ lat: newLat, lng: newLng });
-
-        updateFromPlace(place, newLat, newLng);
+      const marker = new google.maps.Marker({
+        position: center,
+        map,
+        draggable: true,
       });
-    }
+      markerInstanceRef.current = marker;
 
-    map.addListener('click', (e: any) => {
-      if (!e.latLng) return;
-      const clickedLat = e.latLng.lat();
-      const clickedLng = e.latLng.lng();
+      // trigger resize so map fills container correctly
+      google.maps.event.trigger(map, 'resize');
+      map.setCenter(center);
 
-      setValue('latitude', clickedLat.toFixed(6), { shouldValidate: true });
-      setValue('longitude', clickedLng.toFixed(6), { shouldValidate: true });
+      if (searchInputRef.current) {
+        const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current, {
+          types: ['address'],
+        });
+        autocompleteInstanceRef.current = autocomplete;
 
-      marker.setPosition({ lat: clickedLat, lng: clickedLng });
-      geocodeLatLng(clickedLat, clickedLng);
-    });
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (!place.geometry || !place.geometry.location) return;
 
-    marker.addListener('dragend', () => {
-      const pos = marker.getPosition();
-      if (!pos) return;
-      const draggedLat = pos.lat();
-      const draggedLng = pos.lng();
+          const newLat = place.geometry.location.lat();
+          const newLng = place.geometry.location.lng();
 
-      setValue('latitude', draggedLat.toFixed(6), { shouldValidate: true });
-      setValue('longitude', draggedLng.toFixed(6), { shouldValidate: true });
+          map.setCenter({ lat: newLat, lng: newLng });
+          map.setZoom(16);
+          marker.setPosition({ lat: newLat, lng: newLng });
 
-      geocodeLatLng(draggedLat, draggedLng);
-    });
-  }, 200); // ← wait for dialog animation to finish
+          updateFromPlace(place, newLat, newLng);
+        });
+      }
 
-  return () => clearTimeout(timer);
-}, [isLoaded, open]);
+      map.addListener('click', (e: any) => {
+        if (!e.latLng) return;
+        const clickedLat = e.latLng.lat();
+        const clickedLng = e.latLng.lng();
+
+        setValue('latitude', clickedLat.toFixed(6), { shouldValidate: true });
+        setValue('longitude', clickedLng.toFixed(6), { shouldValidate: true });
+
+        marker.setPosition({ lat: clickedLat, lng: clickedLng });
+        geocodeLatLng(clickedLat, clickedLng);
+      });
+
+      marker.addListener('dragend', () => {
+        const pos = marker.getPosition();
+        if (!pos) return;
+        const draggedLat = pos.lat();
+        const draggedLng = pos.lng();
+
+        setValue('latitude', draggedLat.toFixed(6), { shouldValidate: true });
+        setValue('longitude', draggedLng.toFixed(6), { shouldValidate: true });
+
+        geocodeLatLng(draggedLat, draggedLng);
+      });
+    }, 200); // ← wait for dialog animation to finish
+
+    return () => clearTimeout(timer);
+  }, [isLoaded, open]);
 
   React.useEffect(() => {
     if (isLoaded && open && mapInstanceRef.current && markerInstanceRef.current && watchLat && watchLng && !initialSnappedRef.current) {
@@ -306,18 +306,18 @@ React.useEffect(() => {
 
           <div className="space-y-3">
             <div className="text-sm font-medium text-[#181818]">Select Location on Map</div>
-           <div 
-  className="relative rounded-2xl border border-[#005864] bg-[#E8F7F7]"
-  style={{ height: "288px" }}  // ← remove overflow-hidden
->
-  {!isLoaded ? (
-    <div className="flex h-full w-full items-center justify-center text-sm text-[#005864] font-medium">
-      Loading Google Maps...
-    </div>
-  ) : (
-    <div ref={mapRef} style={{ height: "288px", width: "100%" }} />
-  )}
-</div>
+            <div
+              className="relative rounded-2xl border border-[#005864] bg-[#E8F7F7]"
+              style={{ height: "288px" }}  // ← remove overflow-hidden
+            >
+              {!isLoaded ? (
+                <div className="flex h-full w-full items-center justify-center text-sm text-[#005864] font-medium">
+                  Loading Google Maps...
+                </div>
+              ) : (
+                <div ref={mapRef} style={{ height: "288px", width: "100%" }} />
+              )}
+            </div>
             {(errors.latitude || errors.longitude) && (
               <p className="text-red-500 text-xs">Please select a location on the map.</p>
             )}
@@ -339,7 +339,7 @@ React.useEffect(() => {
             <label className="block text-sm font-medium text-[#181818]">Label</label>
             <Input
               {...register('label')}
-              maxLength={15}
+              maxLength={30}
               placeholder="e.g., Home, Office"
               className={inputClass}
             />

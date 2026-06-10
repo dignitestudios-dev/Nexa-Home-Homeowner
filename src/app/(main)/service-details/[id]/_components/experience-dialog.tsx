@@ -16,10 +16,19 @@ interface ExperienceDialogProps {
 export function ExperienceDialog({ open, onOpenChange, onSubmit, isPending }: ExperienceDialogProps) {
   const [rating, setRating] = useState(1);
   const [review, setReview] = useState("");
+  const [reviewError, setReviewError] = useState("");
 
-  const handleSubmit = () => {
-    onSubmit({ rating, review });
-  };
+ const handleSubmit = () => {
+  const trimmedReview = review.trim();
+
+  if (!trimmedReview) {
+    setReviewError("Please enter a review.");
+    return;
+  }
+
+  setReviewError("");
+  onSubmit({ rating, review: trimmedReview });
+};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,12 +62,22 @@ export function ExperienceDialog({ open, onOpenChange, onSubmit, isPending }: Ex
           <textarea
             value={review}
             maxLength={200}
-            onChange={(e) => setReview(e.target.value)}
+            onChange={(e) => {
+  setReview(e.target.value);
+
+  if (e.target.value.trim()) {
+    setReviewError("");
+  }
+}}
             required
             placeholder="Write here"
             className="mt-12 h-[142px] w-full resize-none rounded-2xl border-0 bg-[rgba(0,88,100,0.06)] p-4 text-base outline-none placeholder:text-[#18181899]"
           />
-
+{reviewError && (
+  <p className="mt-2 text-sm text-red-500">
+    {reviewError}
+  </p>
+)}
           <Button
             onClick={handleSubmit}
             disabled={isPending}

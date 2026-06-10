@@ -13,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSendPhoneOtp, useSendChangePhoneOtp } from "@/features/auth/hooks";
 import { setToken } from "@/lib/cookies";
 import { toast } from "sonner";
+import Spinner from "@/components/ui/spinner";
 
 const verificationSchema = z.object({
   code: z
@@ -269,7 +270,9 @@ export default function Verification() {
             disabled={isPending || code.join("").length !== 5}
             className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? "Verifying..." : "Verify"}
+            {isPending ? (
+                 <Spinner title='Verifying...' />
+            ) : "Verify"}
           </button>
         </form>
       </div>

@@ -11,6 +11,8 @@ import {
 } from "@/features/user/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import SuccessDialog from "@/components/ui/success-dialog";
+import { usePreventBack } from "@/hooks/use-prevent-back";
+import Spinner from "@/components/ui/spinner";
 
 const AddAddressDialog = dynamic(
   () =>
@@ -27,7 +29,7 @@ const AddAddress = () => {
   const [successDialog, setSuccessDialog] = useState(false);
   const [editTarget, setEditTarget] = useState<SavedAddress | null>(null);
   const [addressError, setAddressError] = useState("");
-
+  usePreventBack('/profile/add-address')
   const { data, isLoading } = useGetAddresses();
   const addresses = data?.data?.addresses ?? [];
 
@@ -82,7 +84,7 @@ const AddAddress = () => {
               </button>
               <div className="mt-4 rounded-[16px] border border-dashed border-[#005864] bg-white p-4 text-center text-sm text-[rgba(24,24,24,0.7)]">
                 {isLoading ? (
-                  <p>Loading...</p>
+                  <Spinner title='Loading...' />
                 ) : addresses.length === 0 ? (
                   <p>No addresses added yet.</p>
                 ) : (

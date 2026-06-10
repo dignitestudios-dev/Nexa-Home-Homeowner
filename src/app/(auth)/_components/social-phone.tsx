@@ -33,7 +33,7 @@ export default function SocialPhonePage() {
   const { mutate: sendOtp, isPending } = useSendChangePhoneOtp({
     onSuccess: (data, variables) => {
       if (data.success) {
-        router.push(`/verification?flow=social-phone&phone=${encodeURIComponent(variables.phone)}&isProfileCompleted=${isProfileCompleted}`)
+        router.replace(`/verification?flow=social-phone&phone=${encodeURIComponent(variables.phone)}&isProfileCompleted=${isProfileCompleted}`)
       }
     },
   })

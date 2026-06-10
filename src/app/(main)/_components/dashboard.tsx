@@ -142,7 +142,7 @@ const Dashboard = (props: Props) => {
     const hasShown = sessionStorage.getItem("email-popup-shown");
     if (userData.data.contactEmail === null && hasShown === "false") {
       setEmailPopupOpen(true);
-      console.log("insode ------------>")
+
       sessionStorage.setItem("email-popup-shown", "true");
       console.log(emailPopupOpen)
     }
@@ -326,32 +326,35 @@ const Dashboard = (props: Props) => {
       {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" search={search} />}
       {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" search={search} />}
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
-        <DialogContent className="sm:max-w-[400px] border-none p-6 rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
+        <DialogContent className="sm:max-w-[400px] border-none p-0  rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#005864] text-white mt-4 shadow-sm">
+          <div className="w-full bg-[#005864]/10 p-5 rounded-t-[24px] flex items-center justify-center" >
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#005864] text-white  shadow-sm">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
+          </div>
 
-          <DialogTitle className="text-[24px] font-bold text-[#181818] text-center mt-6 tracking-tight">
+          <DialogTitle className="text-[24px] -mb-4 px-6 font-bold text-[#181818] text-center tracking-tight">
             Add Email
           </DialogTitle>
 
-          <DialogDescription className="text-[15px] leading-6 text-center text-[rgba(24,24,24,0.6)] mt-2 mb-8 max-w-[280px]">
+          <DialogDescription className="text-[15px] px-2 leading-6 text-center text-[rgba(24,24,24,0.6)]  max-w-[280px]">
             Please add your email to secure your account and receive updates.
           </DialogDescription>
-
+<div className="w-[90%] pb-4">
           <Button
             type="button"
             onClick={() => {
               setEmailPopupOpen(false);
               router.push("/settings/email");
             }}
-            className="w-full h-12 bg-[#005864] hover:bg-[#004d57] text-white text-[16px] font-semibold rounded-[12px] transition-colors"
+            className="w-full h-12 cursor-pointer bg-[#005864] hover:bg-[#004d57] text-white text-[16px] font-semibold rounded-[12px] transition-colors"
           >
             OK
           </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
