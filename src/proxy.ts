@@ -39,6 +39,14 @@ export function proxy(request: NextRequest) {
       new URL('/profile/add-address', request.url)
     );
   }
+
+
+  if (token && !profileIncompleteCookie && !hasAddress && isProfileRoute) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+  if (token && !profileIncompleteCookie && !hasAddress && pathname == '/profile/add-address') {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
   const response = NextResponse.next()
 
   response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')

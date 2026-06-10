@@ -80,10 +80,10 @@ const Profile = () => {
         <button
           type="button"
           onClick={handleLogout}
-          className="absolute right-6 top-6 z-10 inline-flex items-center gap-2 rounded-full border border-[#DC2626] bg-white px-4 py-2 text-sm font-semibold text-[#DC2626] shadow-sm transition hover:bg-[#fee2e2]"
+          className="fixed top-5 right-5 z-50 flex items-center gap-2 rounded-full border border-[#E5E5E5] bg-white px-4 py-2 text-[13px] font-medium text-[#181818] shadow-sm transition hover:bg-[#F5F5F5] hover:text-red-500 hover:border-red-200"
         >
-          <LogOut className="h-4 w-4" />
-          Log out
+          <LogOut className="size-4" strokeWidth={1.8} />
+          Logout
         </button>
 
         <div className="w-[70%] mx-auto">

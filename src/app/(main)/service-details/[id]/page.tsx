@@ -277,7 +277,7 @@ const ServiceDetails = () => {
                   {job.category.name}
                 </span> */}
               </div>
-              <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">
+              <p className="text-base break-all leading-[26px] text-[rgba(24,24,24,0.6)]">
                 {job.description}
               </p>
             </div>
