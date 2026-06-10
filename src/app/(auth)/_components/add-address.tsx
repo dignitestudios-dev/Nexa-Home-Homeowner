@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { PencilLine } from "lucide-react";
+import { LogOut, PencilLine } from "lucide-react";
 import {
   useAddAddress,
   useGetAddresses,
@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import SuccessDialog from "@/components/ui/success-dialog";
 import { usePreventBack } from "@/hooks/use-prevent-back";
 import Spinner from "@/components/ui/spinner";
+import { removeToken } from "@/lib/cookies";
 
 const AddAddressDialog = dynamic(
   () =>
@@ -45,6 +46,10 @@ const AddAddress = () => {
     },
   });
 
+  // useEffect(() => {
+  //   query.removeQueries({ queryKey: ['addresses'] })
+  // }, [])
+
   const { mutate: editAddress, isPending: isEditing } = useEditAddress({
     onSuccess: (res) => {
       if (res.success) setEditTarget(null);
@@ -59,9 +64,21 @@ const AddAddress = () => {
     query.invalidateQueries({ queryKey: ["userOwn"] }); // Invalidate user data to ensure fresh data is fetched
     setSuccessDialog(true);
   };
-
+  const handleLogout = () => {
+    removeToken()
+    // remove any other cookies you set during onboarding
+    router.replace('/login')
+  }
   return (
     <div className="min-h-screen w-full relative text-[13px]">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="fixed top-5 right-5 z-50 flex items-center gap-2 rounded-full border border-[#E5E5E5] bg-white px-4 py-2 text-[13px] font-medium text-[#181818] shadow-sm transition hover:bg-[#F5F5F5] hover:text-red-500 hover:border-red-200"
+      >
+        <LogOut className="size-4" strokeWidth={1.8} />
+        Logout
+      </button>
       <div className="mx-auto flex justify-center items-center min-h-screen w-full overflow-hidden rounded-[32px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)]">
         <div className="w-[70%] mx-auto">
           <div className="text-center">

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import NotificationsPopover from "./notification-popover";
+import { useQueryClient } from "@tanstack/react-query";
 
 const navItems = [{ href: "/dashboard", label: "Home" }];
 const notifications = [
@@ -60,8 +61,10 @@ const menuItems = [
 
 export default function Navbar() {
   const router = useRouter();
+  const query = useQueryClient();
 
   const handleLogout = () => {
+    query.clear()
     removeToken();
     sessionStorage.setItem('jobs-count-popup-shown', 'false');
     sessionStorage.setItem("email-popup-shown", "false");
@@ -124,7 +127,7 @@ export default function Navbar() {
             </ul>
           </nav>
 
-          <NotificationsPopover/>
+          <NotificationsPopover />
 
           {isLoading ? (
             <div className="flex items-center gap-3 h-11 pr-1 select-none animate-pulse">
