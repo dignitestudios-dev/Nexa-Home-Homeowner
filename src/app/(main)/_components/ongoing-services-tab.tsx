@@ -28,7 +28,7 @@ export default function OnGoingServicesTab({ tab ,search }: Props) {
     return (
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="relative w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
+          <div key={i} className="relative w-full lg:w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
             <Skeleton className="absolute right-2 top-2 h-[34px] w-[100px] rounded-full" />
             <Skeleton className="h-5 w-2/3 mt-1" />
             <Skeleton className="h-4 w-full mt-3" />
