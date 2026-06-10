@@ -32,7 +32,7 @@ export default function ServiceCard({
   when
 }: ServiceCardProps) {
   return (
-    <Link href={`/service-details/${id}`} className="relative w-full lg:w-[396px] h-[168px] rounded-[12px] bg-[#F8F8F8] p-4">
+    <Link href={`/service-details/${id}`} className="relative w-full lg:w-[396px] h-[168px] rounded-[12px] bg-[#fffbfb] p-4">
       {/* Badge */}
       <div
         className={`absolute right-2 top-2 flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(actionText, status)}`}
