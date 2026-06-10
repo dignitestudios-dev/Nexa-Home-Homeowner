@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import ReviewCard from "./_components/review-card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Pagination } from "@/components/ui/pagination";
 
 type Tab = "basic" | "portfolio" | "reviews";
 
@@ -117,8 +118,8 @@ export default function ProviderProfile() {
   };
 
   const isVideo = (url: string) => {
-  return /\.(mp4|webm|ogg|mov)$/i.test(url);
-};
+    return /\.(mp4|webm|ogg|mov)$/i.test(url);
+  };
   return (
     <div className="max-w-[1200px] mx-auto py-2 px-4 lg:px-0">
       {/* Header */}
@@ -206,39 +207,39 @@ export default function ProviderProfile() {
 
         {activeTab === "portfolio" && (
           <div className="grid grid-cols-4 gap-4">
-           {provider.portfolioMedia.map((media, index) => (
-  <button
-    key={media._id}
-    type="button"
-    onClick={() => openImage(index)}
-    className="w-full"
-  >
-    <div className="relative aspect-square rounded-[12px] overflow-hidden bg-[#E5E5E5]">
-      {isVideo(media.location) ? (
-        <>
-          <video
-            src={media.location}
-            className="h-full w-full object-cover"
-            muted
-          />
+            {provider.portfolioMedia.map((media, index) => (
+              <button
+                key={media._id}
+                type="button"
+                onClick={() => openImage(index)}
+                className="w-full"
+              >
+                <div className="relative aspect-square rounded-[12px] overflow-hidden bg-[#E5E5E5]">
+                  {isVideo(media.location) ? (
+                    <>
+                      <video
+                        src={media.location}
+                        className="h-full w-full object-cover"
+                        muted
+                      />
 
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60">
-              ▶
-            </div>
-          </div>
-        </>
-      ) : (
-        <Image
-          src={media.location}
-          alt={media.fileName}
-          fill
-          className="object-cover hover:scale-105 transition-transform duration-200"
-        />
-      )}
-    </div>
-  </button>
-))}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60">
+                          ▶
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Image
+                      src={media.location}
+                      alt={media.fileName}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-200"
+                    />
+                  )}
+                </div>
+              </button>
+            ))}
           </div>
         )}
 
@@ -264,35 +265,12 @@ export default function ProviderProfile() {
 
             {/* Pagination */}
             {totalReviewPages > 1 && (
-              <div className="flex justify-end pt-2">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    disabled={reviewPage === 1}
-                    onClick={() => setReviewPage((p) => p - 1)}
-                    className={cn(
-                      "inline-flex h-12 w-12 z-20 items-center justify-center rounded-full transition-colors",
-                      reviewPage === 1 ? "bg-[#0058640F] text-[#005864]/40 cursor-not-allowed" : "bg-[#005864] text-white hover:bg-[#004d57]"
-                    )}
-                  >
-                    <ChevronLeft size={30} strokeWidth={2.5} />
-                  </button>
-                  <div className="inline-flex h-12 items-center justify-center bg-[#F9FAFA] px-6 text-base -mx-4 font-bold text-[#181818] border border-slate-100 min-w-[54px]">
-                    {reviewPage.toString().padStart(2, "0")}
-                  </div>
-                  <button
-                    type="button"
-                    disabled={reviewPage >= totalReviewPages}
-                    onClick={() => setReviewPage((p) => p + 1)}
-                    className={cn(
-                      "inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors",
-                      reviewPage >= totalReviewPages ? "bg-[#005864]/5 text-[#005864]/40 cursor-not-allowed" : "bg-[#005864] text-white hover:bg-[#004d57]"
-                    )}
-                  >
-                    <ChevronRight size={30} strokeWidth={2.5} />
-                  </button>
-                </div>
-              </div>
+             
+              <Pagination
+                page={reviewPage}
+                totalPages={totalReviewPages}
+                onPageChange={setReviewPage}
+              />
             )}
           </div>
         )}
@@ -308,59 +286,59 @@ export default function ProviderProfile() {
             Portfolio Image
           </DialogTitle>
 
-         {selectedImageIndex !== null && (
-  <div className="relative flex items-center justify-center">
-    <div className="relative flex h-[80vh] w-full items-center justify-center bg-black">
-      {isVideo(
-        provider.portfolioMedia[selectedImageIndex].location
-      ) ? (
-        <video
-          src={
-            provider.portfolioMedia[selectedImageIndex].location
-          }
-          controls
-          autoPlay
-          className="max-h-full max-w-full"
-        />
-      ) : (
-        <Image
-          src={
-            provider.portfolioMedia[selectedImageIndex].location
-          }
-          alt={
-            provider.portfolioMedia[selectedImageIndex].fileName
-          }
-          fill
-          className="object-contain"
-        />
-      )}
-    </div>
+          {selectedImageIndex !== null && (
+            <div className="relative flex items-center justify-center">
+              <div className="relative flex h-[80vh] w-full items-center justify-center bg-black">
+                {isVideo(
+                  provider.portfolioMedia[selectedImageIndex].location
+                ) ? (
+                  <video
+                    src={
+                      provider.portfolioMedia[selectedImageIndex].location
+                    }
+                    controls
+                    autoPlay
+                    className="max-h-full max-w-full"
+                  />
+                ) : (
+                  <Image
+                    src={
+                      provider.portfolioMedia[selectedImageIndex].location
+                    }
+                    alt={
+                      provider.portfolioMedia[selectedImageIndex].fileName
+                    }
+                    fill
+                    className="object-contain"
+                  />
+                )}
+              </div>
 
-    {provider.portfolioMedia.length > 1 && (
-      <>
-        <button
-          type="button"
-          onClick={showPrevImage}
-          className="absolute left-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-        >
-          <ChevronLeft size={28} />
-        </button>
+              {provider.portfolioMedia.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={showPrevImage}
+                    className="absolute left-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                  >
+                    <ChevronLeft size={28} />
+                  </button>
 
-        <button
-          type="button"
-          onClick={showNextImage}
-          className="absolute right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-        >
-          <ChevronRight size={28} />
-        </button>
-      </>
-    )}
+                  <button
+                    type="button"
+                    onClick={showNextImage}
+                    className="absolute right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                  >
+                    <ChevronRight size={28} />
+                  </button>
+                </>
+              )}
 
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 text-sm text-white">
-      {selectedImageIndex + 1} / {provider.portfolioMedia.length}
-    </div>
-  </div>
-)}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 text-sm text-white">
+                {selectedImageIndex + 1} / {provider.portfolioMedia.length}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -17,24 +17,37 @@ import { StepOneData } from "../page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_VIDEO_SIZE_MB = 20;
+const MEDIA_MAX_FILES = 10
+const IMAGE_MAX_MB = 5
+const VIDEO_MAX_MB = 20
+const ACCEPTED_TYPES = {
+  'image/jpeg': true,
+  'image/png': true,
+  'image/webp': true,
+  'video/mp4': true,
+  'video/webm': true,
+  'video/quicktime': true,
+  'video/x-msvideo': true,
+}
 
 const schema = z.object({
   categoryId: z.string().min(1, "Please select a service"),
-  title: z.string().min(1, "Title is required").max(60, "Title must be 60 characters or less"),
   description: z.string().min(1, "Description is required").max(500, "Description must be 500 characters or less"),
   when: z.string().min(1, "Please select when"),
   addressId: z.string().min(1, "Please select a location"),
   jobType: z.enum(["one-time", "recurring"]),
   contactCall: z.boolean(),
   contactEmail: z.boolean(),
-  uploadedImages: z.array(z.instanceof(File)).min(1, "At least one image is required").max(10, "Maximum 10 images allowed"),
-  uploadedVideos: z.array(z.instanceof(File)).max(5, "Maximum 5 videos allowed"),
+  uploadedImages: z
+    .array(z.instanceof(File))
+    .min(1, "At least one file is required")
+    .max(10, "Maximum 10 files allowed"),
 }).refine((d) => d.contactCall || d.contactEmail, {
   message: "Please select at least one contact preference",
   path: ["contactCall"],
 });
+
+
 
 type FormValues = z.infer<typeof schema>;
 
@@ -67,22 +80,22 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     resolver: zodResolver(schema),
     defaultValues: {
       categoryId: data.categoryId,
-      title: data.title,
+      // title: data.title,
       description: data.description,
       when: data.when,
       addressId: data.addressId,
       jobType: data.jobType,
       contactCall: data.contactCall,
       contactEmail: data.contactEmail,
-      uploadedImages: data.uploadedImages,
-      uploadedVideos: data.uploadedVideos ?? [],
+      uploadedImages: data.uploadedImages ?? [],
+      // uploadedVideos: data.uploadedVideos ?? [],
     },
   });
 
   // Sync RHF → parent state on every change
   const watched = watch();
   useEffect(() => {
-    onChange("title", watched.title ?? "");
+    // onChange("title", watched.title ?? "");
     onChange("description", watched.description ?? "");
     onChange("jobType", watched.jobType ?? "one-time");
     onChange("contactCall", !!watched.contactCall);
@@ -90,7 +103,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     onChange("when", watched.when ?? "");
     onChange("categoryId", watched.categoryId ?? "");
     onChange("addressId", watched.addressId ?? "");
-  }, [watched.title, watched.description, watched.jobType, watched.contactCall, watched.contactEmail, watched.when, watched.categoryId, watched.addressId]);
+  }, [watched.description, watched.jobType, watched.contactCall, watched.contactEmail, watched.when, watched.categoryId, watched.addressId]);
 
   // Sync parent category pre-selection (from URL) → RHF
   useEffect(() => {
@@ -101,9 +114,9 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     if (data.when) setValue("when", data.when);
   }, [data.when]);
 
-  useEffect(() => {
-    setValue("uploadedVideos", data.uploadedVideos ?? []);
-  }, [data.uploadedVideos]);
+  // useEffect(() => {
+  //   setValue("uploadedVideos", data.uploadedVideos ?? []);
+  // }, [data.uploadedVideos]);
 
   useEffect(() => {
     if (data.addressId) setValue("addressId", data.addressId);
@@ -164,65 +177,50 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
     setIsDateDialogOpen(false);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
 
-    const valid: File[] = [];
-    const errors: string[] = [];
+    const valid: File[] = []
+    const errs: string[] = []
+    const current = data.uploadedImages ?? []
+    const remaining = MEDIA_MAX_FILES - current.length
 
-    Array.from(files).forEach((f) => {
-      if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
-        errors.push(`${f.name} is not a supported image format (JPG, PNG, WebP only)`);
-      } else if (f.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-        errors.push(`${f.name} is too large. Maximum size is ${MAX_IMAGE_SIZE_MB}MB`);
+    Array.from(files).slice(0, remaining).forEach((f) => {
+      const isImage = f.type.startsWith('image/')
+      const isVideo = f.type.startsWith('video/')
+
+      if (!ACCEPTED_TYPES[f.type as keyof typeof ACCEPTED_TYPES]) {
+        errs.push(`${f.name}: unsupported format`)
+      } else if (isImage && f.size > IMAGE_MAX_MB * 1024 * 1024) {
+        errs.push(`${f.name}: images must be under ${IMAGE_MAX_MB}MB`)
+      } else if (isVideo && f.size > VIDEO_MAX_MB * 1024 * 1024) {
+        errs.push(`${f.name}: videos must be under ${VIDEO_MAX_MB}MB`)
       } else {
-        valid.push(f);
+        valid.push(f)
       }
-    });
+    })
 
-    if (errors.length > 0) {
-      errors.forEach((err) => toast.error(err));
+    if (Array.from(files).length > remaining) {
+      errs.push(`Only ${remaining} more file(s) can be added (max ${MEDIA_MAX_FILES} total)`)
     }
+
+    errs.forEach((err) => toast.error(err))
 
     if (valid.length > 0) {
-      const next = [...data.uploadedImages, ...valid].slice(0, 10);
-      onChange("uploadedImages", next);
-      setValue("uploadedImages", next, { shouldValidate: true });
+      const next = [...current, ...valid]
+      onChange('uploadedImages', next)
+      setValue('uploadedImages', next, { shouldValidate: true })
     }
 
-    e.target.value = ""; // Reset input
-  };
+    e.target.value = ''
+  }
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const valid: File[] = [];
-    const errors: string[] = [];
-
-    Array.from(files).forEach((f) => {
-      if (!f.type.startsWith("video/")) {
-        errors.push(`${f.name} is not a valid video file`);
-      } else if (f.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
-        errors.push(`${f.name} exceeds ${MAX_VIDEO_SIZE_MB}MB limit`);
-      } else {
-        valid.push(f);
-      }
-    });
-
-    if (errors.length > 0) {
-      errors.forEach((err) => toast.error(err));
-    }
-
-    if (valid.length > 0) {
-      const next = [...(data.uploadedVideos ?? []), ...valid].slice(0, 5);
-      onChange("uploadedVideos", next);
-      setValue("uploadedVideos", next, { shouldValidate: true });
-    }
-
-    e.target.value = "";
-  };
+  const handleRemoveFile = (index: number) => {
+    const next = (data.uploadedImages ?? []).filter((_, i) => i !== index)
+    onChange('uploadedImages', next)
+    setValue('uploadedImages', next, { shouldValidate: true })
+  }
 
 
   // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -254,22 +252,22 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
   //   e.target.value = "";
   // };
 
-  const handleRemoveVideoLocal = (index: number) => {
-    onRemoveVideo(index);
-    const next = (data.uploadedVideos ?? []).filter((_, i) => i !== index);
-    setValue("uploadedVideos", next, { shouldValidate: true });
-  };
-  const handleRemove = (index: number) => {
-    onRemoveImage(index);
-    const next = data.uploadedImages.filter((_, i) => i !== index);
-    setValue("uploadedImages", next, { shouldValidate: true });
-  };
+  // const handleRemoveVideoLocal = (index: number) => {
+  //   onRemoveVideo(index);
+  //   const next = (data.uploadedVideos ?? []).filter((_, i) => i !== index);
+  //   setValue("uploadedImages", next, { shouldValidate: true });
+  // };
+  // const handleRemove = (index: number) => {
+  //   onRemoveImage(index);
+  //   const next = data.uploadedImages.filter((_, i) => i !== index);
+  //   setValue("uploadedImages", next, { shouldValidate: true });
+  // };
 
 
 
   const onSubmit = () => onNext();
 
-  const titleVal = watch("title");
+  // const titleVal = watch("title");
   const descVal = watch("description");
 
   return (
@@ -349,7 +347,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
             </div>
 
             {/* Title */}
-            <div className="flex flex-col gap-2 my-4">
+            {/* <div className="flex flex-col gap-2 my-4">
               <Label className="text-base font-medium text-black">Title <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <input
@@ -361,7 +359,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 <span className="absolute right-3 top-3.5 text-xs text-[#18181899]">{(titleVal ?? "").length}/60</span>
               </div>
               {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
-            </div>
+            </div> */}
 
             {/* Description */}
             <div className="flex flex-col gap-2 my-4">
@@ -385,82 +383,113 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
             </div>
 
             {/* Attachments */}
+            {/* Attachments — images & videos, shared 10-file limit */}
             <div className="flex flex-col gap-2 my-4">
-              <Label className="text-base font-medium text-black">Add Attachment <span className="text-red-500">*</span></Label>
-              <label className={cn("flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl bg-[#FBFBFB] cursor-pointer hover:bg-gray-50 transition", errors.uploadedImages ? "border-red-400" : "border-[#D9D9D9]")}>
-                <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" onChange={handleImageChange} className="hidden" />
+              <Label className="text-base font-medium text-black">
+                Add Attachments <span className="text-red-500">*</span>
+              </Label>
+
+              <label
+                className={cn(
+                  "flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl bg-[#FBFBFB] cursor-pointer hover:bg-gray-50 transition",
+                  (data.uploadedImages ?? []).length >= MEDIA_MAX_FILES
+                    ? "opacity-50 pointer-events-none"
+                    : errors.uploadedImages
+                      ? "border-red-400"
+                      : "border-[#D9D9D9]"
+                )}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp,video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                  onChange={handleFileChange}
+                  disabled={(data.uploadedImages ?? []).length >= MEDIA_MAX_FILES}
+                  className="hidden"
+                />
                 <div className="flex flex-col items-center gap-2">
                   <FileImage size={30} className="text-[#005864]" />
-                  <span className="text-center text-[13px] text-[#18181899]">JPG, PNG, or WebP (Max 10 images)</span>
+                  <span className="text-center text-[13px] text-[#18181899]">
+                    Images (JPG, PNG, WebP · max 5MB) or Videos (MP4, WebM, MOV · max 20MB)
+                  </span>
+                  <span className="text-[12px] text-[#18181899]">
+                    Up to {MEDIA_MAX_FILES} files total · at least 1 required
+                  </span>
                 </div>
               </label>
-              {errors.uploadedImages && <p className="text-xs text-red-500">{errors.uploadedImages.message as string}</p>}
-              {data.uploadedImages.length > 0 && (
+
+              {errors.uploadedImages && (
+                <p className="text-xs text-red-500">{errors.uploadedImages.message as string}</p>
+              )}
+
+              {(data.uploadedImages ?? []).length > 0 && (
                 <div>
-                  <p className="text-xs text-[#18181899] mb-2">{data.uploadedImages.length}/10 images</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {data.uploadedImages.map((file, index) => (
-                      <div key={index} className="relative w-full flex items-center justify-center lg:w-[200px] lg:h-[200px] rounded-[7px] overflow-hidden bg-gray-200 group">
-                        <img src={URL.createObjectURL(file)} alt={`preview-${index}`} className="object-contain" />
-                        <button type="button" onClick={() => handleRemove(index)} className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-xs text-[#18181899] mb-2">
+                    {data.uploadedImages.length}/{MEDIA_MAX_FILES} files
+                  </p>
+
+                  {/* Image grid */}
+                  {data.uploadedImages.some((f) => f.type.startsWith('image/')) && (
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {data.uploadedImages
+                        .map((file, originalIndex) => ({ file, originalIndex }))
+                        .filter(({ file }) => file.type.startsWith('image/'))
+                        .map(({ file, originalIndex }) => (
+                          <div
+                            key={originalIndex}
+                            className="relative w-full lg:w-[200px] lg:h-[200px] rounded-[7px] overflow-hidden bg-gray-200 group"
+                          >
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="object-contain w-full h-full"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFile(originalIndex)}
+                              className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Video list */}
+                  {data.uploadedImages.some((f) => f.type.startsWith('video/')) && (
+                    <div className="flex flex-col gap-2">
+                      {data.uploadedImages
+                        .map((file, originalIndex) => ({ file, originalIndex }))
+                        .filter(({ file }) => file.type.startsWith('video/'))
+                        .map(({ file, originalIndex }) => (
+                          <div
+                            key={originalIndex}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-[#F8F8F8] px-4 py-3"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005864" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                <polygon points="23 7 16 12 23 17 23 7" />
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                              </svg>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-[#181818] truncate">{file.name}</p>
+                                <p className="text-xs text-[#18181899]">{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFile(originalIndex)}
+                              className="flex size-6 shrink-0 items-center justify-center rounded-full bg-black/10 text-[#181818] hover:bg-black/20 transition"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               )}
-              {/* Videos */}
-              <div className="flex flex-col gap-2 my-4">
-                <Label className="text-base font-medium text-black">Add Videos <span className="text-[#18181899] font-normal text-sm">(Optional)</span></Label>
-                <label className={cn(
-                  "flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl bg-[#FBFBFB] cursor-pointer hover:bg-gray-50 transition",
-                  (data.uploadedVideos ?? []).length >= 5 ? "opacity-50 pointer-events-none" : "border-[#D9D9D9]"
-                )}>
-                  <input
-                    type="file"
-                    multiple
-                    accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
-                    onChange={handleVideoChange}
-                    className="hidden"
-                    disabled={(data.uploadedVideos ?? []).length >= 5}
-                  />
-                  <div className="flex flex-col items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#005864" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                    <span className="text-center text-[13px] text-[#18181899]">MP4, WebM, MOV (Max 5 videos, 20MB each)</span>
-                  </div>
-                </label>
-
-                {(data.uploadedVideos ?? []).length > 0 && (
-                  <div>
-                    <p className="text-xs text-[#18181899] mb-2">{data.uploadedVideos.length}/5 videos</p>
-                    <div className="flex flex-col gap-2">
-                      {data.uploadedVideos.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between gap-3 rounded-xl bg-[#F8F8F8] px-4 py-3 group">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005864" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                              <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                            </svg>
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-[#181818] truncate">{file.name}</p>
-                              <p className="text-xs text-[#18181899]">{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVideoLocal(index)}
-                            className="flex size-6 shrink-0 items-center justify-center rounded-full bg-black/10 text-[#181818] hover:bg-black/20 transition"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* When */}

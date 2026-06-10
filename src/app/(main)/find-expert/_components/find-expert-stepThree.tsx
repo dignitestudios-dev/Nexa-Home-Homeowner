@@ -9,8 +9,8 @@ import SuccessDialog from "./ui/success-dialog";
 import { StepOneData, StepTwoData } from "../page";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import AttachmentDialog from "@/components/ui/attachment-dialog";
+import { Loader } from "./ui/loader";
 
 interface StepThreeProps {
   stepOneData: StepOneData;
@@ -29,49 +29,30 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const isVideoFile = (url: string) => {
-  return /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
-};
 export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedProviders, onBack, onSuccess }: StepThreeProps) {
   const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
-
-  // States for handling attachment previews
-  const [previewFile, setPreviewFile] = useState<File | null>(null);
-  const [previewType, setPreviewType] = useState<"image" | "video" | null>(null);
   const [selectedAttachmentIndex, setSelectedAttachmentIndex] = useState(0);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const nextAttachment = () => {
-    setSelectedAttachmentIndex((prev) =>
-      prev === attachments.length - 1 ? 0 : prev + 1
-    );
-  };
 
-  const prevAttachment = () => {
-    setSelectedAttachmentIndex((prev) =>
-      prev === 0 ? attachments.length - 1 : prev - 1
-    );
-  };
-
-const attachments = [
-  ...stepOneData.uploadedImages.map((file, index) => ({
-    _id: `img-${index}`,
+  // Build unified attachments list from uploadedImages (which holds both images & videos)
+  const attachments = (stepOneData.uploadedImages ?? []).map((file, index) => ({
+    _id: `file-${index}`,
     location: URL.createObjectURL(file),
     filename: file.name,
-    type: "image",
-  })),
-  ...stepOneData.uploadedVideos.map((file, index) => ({
-    _id: `vid-${index}`,
-    location: URL.createObjectURL(file),
-    filename: file.name,
-    type: "video",
-  })),
-];
+    type: file.type.startsWith("video/") ? "video" : "image",
+  }));
 
   const handleAttachmentClick = (index: number) => {
     setSelectedAttachmentIndex(index);
     setPreviewOpen(true);
   };
+
+  const nextAttachment = () =>
+    setSelectedAttachmentIndex((prev) => (prev === attachments.length - 1 ? 0 : prev + 1));
+
+  const prevAttachment = () =>
+    setSelectedAttachmentIndex((prev) => (prev === 0 ? attachments.length - 1 : prev - 1));
 
   const router = useRouter();
   const { data: addressData } = useGetAddresses();
@@ -91,44 +72,36 @@ const attachments = [
       }
     },
   });
-  const handleNext = () => {
-    setIsDisclaimerOpen(true);
-  };
+
+  const handleNext = () => setIsDisclaimerOpen(true);
 
   const handleConfirmDisclaimer = () => {
+    const images = (stepOneData.uploadedImages ?? []).filter((f) => f.type.startsWith("image/"));
+    const videos = (stepOneData.uploadedImages ?? []).filter((f) => f.type.startsWith("video/"));
+
     createJob({
       addressId: stepOneData.addressId,
       category: stepOneData.categoryId,
-      title: stepOneData.title,
+      title: stepOneData.categoryName,
       description: stepOneData.description,
       when: stepOneData.when,
       type: stepOneData.jobType === "one-time" ? "one-time" : "recurring",
       radius: stepTwoData.radius,
       sendToAll: stepTwoData.sendToAll,
-      providerIds: stepTwoData.sendToAll
-        ? undefined
-        : stepTwoData.selectedProviderIds,
+      providerIds: stepTwoData.sendToAll ? undefined : stepTwoData.selectedProviderIds,
       contactPreference,
-      images: [
-        ...stepOneData.uploadedImages,
-        ...stepOneData.uploadedVideos,
-      ],
+      images: [...images, ...videos],
     });
   };
-  const handleOpenPreview = (file: File, type: "image" | "video") => {
-    setPreviewFile(file);
-    setPreviewType(type);
-  };
-
-  const handleClosePreview = () => {
-    setPreviewFile(null);
-    setPreviewType(null);
-  };
-
-  const hasAttachments = stepOneData.uploadedImages.length > 0 || stepOneData.uploadedVideos.length > 0;
 
   return (
     <div className="min-h-screen">
+      {isPending && (
+        <div className="fixed backdrop-blur-sm z-[9999999] inset-0 flex items-center justify-center">
+          <Loader />
+        </div>
+      )}
+
       <div className="max-w-[1400px] mx-auto rounded-[24px] py-2">
         <div className="flex items-center gap-4 mb-6">
           <button onClick={onBack} className="flex items-center text-[#005864] hover:text-[#004750] transition-colors">
@@ -142,13 +115,12 @@ const attachments = [
           <div className="space-y-6">
             {/* Service Details */}
             <div className="bg-[#F9FAFA] rounded-[18px] p-6 lg:p-8 space-y-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl break-all font-bold line-clamp-2 text-[#181818] capitalize">{stepOneData.title}</h2>
-                <span className="rounded-full text-nowrap  bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864]">
-                  {stepOneData.categoryName}
-                </span>
-              </div>
-              <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">{stepOneData.description}</p>
+              <h2 className="text-2xl break-all font-bold line-clamp-2 text-[#181818] capitalize">
+                {stepOneData.categoryName}
+              </h2>
+              <p className="text-base break-all leading-[26px] text-[rgba(24,24,24,0.6)]">
+                {stepOneData.description}
+              </p>
             </div>
 
             {/* Info */}
@@ -160,34 +132,44 @@ const attachments = [
               <InfoRow label="Sending To:" value={stepTwoData.sendToAll ? "All Experts" : `${stepTwoData.selectedProviderIds.length} Selected`} />
             </div>
 
-            {/* Attachments (Unified Section for Images & Videos) */}
-           {attachments.map((file, index) => (
-  <button
-    key={file._id}
-    type="button"
-    onClick={() => handleAttachmentClick(index)}
-    className="relative w-[70px] mx-1 h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5]"
-  >
-    {file.type === "video" ? (
-      <>
-        <video
-          src={file.location}
-          className="h-full w-full object-cover"
-          muted
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <Play size={18} className="text-white fill-white" />
-        </div>
-      </>
-    ) : (
-      <img
-        src={file.location}
-        alt=""
-        className="h-full w-full object-cover"
-      />
-    )}
-  </button>
-))}
+            {/* Attachments — inside its own card, shows images and videos */}
+            {attachments.length > 0 && (
+              <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+                <h3 className="text-base font-semibold text-black mb-4">
+                  Attachments ({attachments.length})
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {attachments.map((file, index) => (
+                    <button
+                      key={file._id}
+                      type="button"
+                      onClick={() => handleAttachmentClick(index)}
+                      className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] shrink-0"
+                    >
+                      {file.type === "video" ? (
+                        <>
+                          <video
+                            src={file.location}
+                            className="h-full w-full object-cover"
+                            muted
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <Play size={18} className="text-white fill-white" />
+                          </div>
+                        </>
+                      ) : (
+                        <img
+                          src={file.location}
+                          alt={file.filename}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Location */}
             {selectedAddress && (
@@ -198,7 +180,8 @@ const attachments = [
                     <div className="flex items-start gap-1.5">
                       <MapPin className="mt-0.5 size-4 shrink-0 text-[#005864]" strokeWidth={2} />
                       <p className="text-base text-[#787878] max-w-[420px]">
-                        {selectedAddress.address}, {selectedAddress.city}, {selectedAddress.state} {selectedAddress.zipCode}, {selectedAddress.country}
+                        {selectedAddress.address}, {selectedAddress.city}, {selectedAddress.state}{" "}
+                        {selectedAddress.zipCode}, {selectedAddress.country}
                       </p>
                     </div>
                   </div>
@@ -229,29 +212,7 @@ const attachments = [
                 </p>
                 <div className="flex-1 space-y-3 overflow-y-auto">
                   {matchedProviders.map((provider) => (
-                    <Link
-                      href={`/provider/${provider._id}`}
-                      target="_blank"
-                      key={provider._id}
-                      className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
-                    >
-                      <div className="w-[46px] h-[46px] rounded-full shrink-0 bg-[#005864]/10 flex items-center justify-center text-sm font-semibold text-[#005864] overflow-hidden">
-                        {provider.profilePicture?.location
-                          ? <img src={provider.profilePicture.location} alt={provider.name} className="w-full h-full object-cover" />
-                          : provider.name?.slice(0, 2).toUpperCase()
-                        }
-                      </div>
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={11} className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"} />
-                          ))}
-                          <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
-                        </div>
-                        {provider.area && <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>}
-                      </div>
-                    </Link>
+                    <ProviderCard key={provider._id} provider={provider} />
                   ))}
                 </div>
               </>
@@ -264,31 +225,8 @@ const attachments = [
                 {matchedProviders
                   .filter((p) => stepTwoData.selectedProviderIds.includes(p._id))
                   .map((provider) => (
-                    <Link
-                      href={`/provider/${provider._id}`}
-                      target="_blank"
-                      key={provider._id}
-                      className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
-                    >
-                      <div className="w-[46px] h-[46px] rounded-full shrink-0 bg-[#005864]/10 flex items-center justify-center text-sm font-semibold text-[#005864] overflow-hidden">
-                        {provider.profilePicture?.location
-                          ? <img src={provider.profilePicture.location} alt={provider.name} className="w-full h-full object-cover" />
-                          : provider.name?.slice(0, 2).toUpperCase()
-                        }
-                      </div>
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={11} className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"} />
-                          ))}
-                          <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
-                        </div>
-                        {provider.area && <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>}
-                      </div>
-                    </Link>
-                  ))
-                }
+                    <ProviderCard key={provider._id} provider={provider} />
+                  ))}
               </div>
             )}
 
@@ -304,7 +242,6 @@ const attachments = [
         </div>
       </div>
 
-      {/* Media Preview Dialog */}
       <AttachmentDialog
         open={previewOpen}
         onOpenChange={setPreviewOpen}
@@ -324,5 +261,42 @@ const attachments = [
         onClose={onSuccess}
       />
     </div>
+  );
+}
+
+// Extracted to avoid repetition in send-to-all vs selected branches
+function ProviderCard({ provider }: { provider: MatchingProvider }) {
+  return (
+    <Link
+      href={`/provider/${provider._id}`}
+      target="_blank"
+      className="flex items-start gap-3 rounded-2xl border border-[#005864] bg-[rgba(0,88,100,0.06)] px-3 py-4"
+    >
+      <div className="w-[46px] h-[46px] rounded-full shrink-0 bg-[#005864]/10 flex items-center justify-center text-sm font-semibold text-[#005864] overflow-hidden">
+        {provider.profilePicture?.location ? (
+          <img src={provider.profilePicture.location} alt={provider.name} className="w-full h-full object-cover" />
+        ) : (
+          provider.name?.slice(0, 2).toUpperCase()
+        )}
+      </div>
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
+        <div className="flex items-center gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              size={11}
+              className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"}
+            />
+          ))}
+          <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">
+            {provider.averageRating.toFixed(1)}
+          </span>
+        </div>
+        {provider.area && (
+          <span className="text-[13px] text-[rgba(24,24,24,0.7)] truncate">{provider.area}</span>
+        )}
+      </div>
+    </Link>
   );
 }

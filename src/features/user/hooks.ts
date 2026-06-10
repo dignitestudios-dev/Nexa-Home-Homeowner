@@ -31,6 +31,7 @@ export function useGetAddresses() {
       const res = await apiClient.get<GetAllAddressesResponse>('/address/get-all')
       return res.data
     },
+    staleTime: 0,
   })
 }
 
@@ -352,7 +353,7 @@ export function useGetProviderReviews(userId: string, page: number) {
     queryKey: ['provider-reviews', userId, page],
     queryFn: async () => {
       const res = await apiClient.get<GetProviderReviewsResponse>('/review', {
-        params: { type: 'received', userId, page, limit: 10 },
+        params: { type: 'received', userId, page, limit: 6 },
       })
       return res.data
     },

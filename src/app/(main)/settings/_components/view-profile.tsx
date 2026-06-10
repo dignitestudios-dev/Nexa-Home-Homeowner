@@ -6,7 +6,7 @@ import { useGetOwnUser, useGetAddresses, useUpdateProfile } from '@/features/use
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
 
 export default function ViewProfile() {
@@ -56,16 +56,24 @@ export default function ViewProfile() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!VALID_IMAGE_TYPES.includes(file.type)) {
-      setPhotoError('Please select a valid image format (JPEG, PNG, JPG, WEBP).')
-      return
-    }
-    setPhotoError('')
-    setPicFile(file)
-    setPreviewUrl(URL.createObjectURL(file))
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!VALID_IMAGE_TYPES.includes(file.type)) {
+    setPhotoError('Please select a valid image format (JPEG, PNG, JPG, WEBP).');
+    return;
   }
+
+  if (file.size > MAX_FILE_SIZE) {
+    setPhotoError('Profile picture must be less than 10 MB.');
+    e.target.value = '';
+    return;
+  }
+
+  setPhotoError('');
+  setPicFile(file);
+  setPreviewUrl(URL.createObjectURL(file));
+};
 
   const handleSave = () => {
     const trimmedName = name.trim()

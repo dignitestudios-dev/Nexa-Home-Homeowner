@@ -57,7 +57,7 @@ const ServiceDetails = () => {
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -117,7 +117,7 @@ const ServiceDetails = () => {
   const { mutate: submitReview, isPending: isReviewPending } = useSubmitReview({
     onSuccess: () => {
       setReviewOpen(false);
-      router.push("/dashboard");
+      setShowSuccessDialog(true)
     },
   });
 
@@ -273,9 +273,9 @@ const ServiceDetails = () => {
                 <h2 className="text-2xl break-all line-clamp-2 font-bold text-[#181818] capitalize">
                   {job.title}
                 </h2>
-                <span className="rounded-full text-nowrap bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864] capitalize">
+                {/* <span className="rounded-full text-nowrap bg-[#005864]/10 px-3 py-1 text-xs font-semibold text-[#005864] capitalize">
                   {job.category.name}
-                </span>
+                </span> */}
               </div>
               <p className="text-base leading-[26px] text-[rgba(24,24,24,0.6)]">
                 {job.description}
@@ -295,7 +295,7 @@ const ServiceDetails = () => {
               />
               <InfoRow
                 label="Job Type:"
-                value={job.type.replace(/\b\w/g, (c) => c.toUpperCase())}
+                value={job.type.replace(/\b\w/g, (c) => c.toUpperCase()) + " " + "Job"}
               />
               <InfoRow
                 label="Time Preference:"
@@ -305,56 +305,56 @@ const ServiceDetails = () => {
                 label="Contact Preferences:"
                 value={job.contactPreference.join(", ")}
               />
-              <InfoRow label="Applicants:" value={String(job.applyCount)} />
+              {/* <InfoRow label="Applicants:" value={String(job.applyCount)} /> */}
             </div>
           </div>
 
-         {job.images.length > 0 && (
-  <div className="bg-[#F9FAFA] rounded-[12px] p-6">
-    <h3 className="text-base font-semibold text-black mb-4">
-      Attachments
-    </h3>
+          {job.images.length > 0 && (
+            <div className="bg-[#F9FAFA] rounded-[12px] p-6">
+              <h3 className="text-base font-semibold text-black mb-4">
+                Attachments
+              </h3>
 
-    <div className="flex flex-wrap gap-4">
-      {job.images.map((file, index) => (
-        <button
-          key={file._id}
-          type="button"
-          onClick={() => handleAttachmentClick(index)}
-          className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] bg-black"
-        >
-          {isVideoFile(file.location) ? (
-            <>
-              <video
-                src={file.location}
-                className="h-full w-full object-cover"
-                muted
-              />
+              <div className="flex flex-wrap gap-4">
+                {job.images.map((file, index) => (
+                  <button
+                    key={file._id}
+                    type="button"
+                    onClick={() => handleAttachmentClick(index)}
+                    className="relative w-[70px] h-[70px] rounded-xl overflow-hidden border border-[#E5E5E5] bg-black"
+                  >
+                    {isVideoFile(file.location) ? (
+                      <>
+                        <video
+                          src={file.location}
+                          className="h-full w-full object-cover"
+                          muted
+                        />
 
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="white"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="white"
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </>
+                    ) : (
+                      <Image
+                        src={file.location}
+                        alt={file.filename}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
-            </>
-          ) : (
-            <Image
-              src={file.location}
-              alt={file.filename}
-              fill
-              className="object-cover"
-            />
+            </div>
           )}
-        </button>
-      ))}
-    </div>
-  </div>
-)}
 
           <div className="bg-[#F9FAFA] rounded-[12px] p-6">
             <div className="flex items-start justify-between gap-6 flex-col sm:flex-row">
@@ -643,9 +643,18 @@ const ServiceDetails = () => {
         }}
         onSubmit={({ rating, review }) => {
           submitReview({ jobId: id, stars: rating, description: review });
-          router.push("/dashboard");
+          // router.push("/dashboard");
         }}
         isPending={isReviewPending}
+      />
+      <SuccessDialog
+        open={showSuccessDialog}
+        // onOpenChange={setShowSuccessDialog}
+        title="Your review has been submitted successfully."
+        // description=""
+        onClose={() => {
+          setShowSuccessDialog(false);
+        }}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import { useSendPhoneOtp, useSocialAuth } from '@/features/auth/hooks'
 import { signInWithGoogle } from '@/lib/firebase'
 import { setToken } from '@/lib/cookies'
 import Image from 'next/image'
+import Spinner from '@/components/ui/spinner'
 
 // User enters digits only (10 digits), we prepend +1
 const loginSchema = z.object({
@@ -122,8 +123,12 @@ export default function LoginPage() {
               disabled={isPending}
               className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Sending Code...' : 'Continue'}
-            </button>
+               {isPending ? (
+   <Spinner title='Sending Code...' />
+  ) : (
+    'Continue'
+  )}
+              </button>
           </form>
 
           <div className="flex items-center my-8">

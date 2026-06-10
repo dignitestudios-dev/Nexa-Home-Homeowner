@@ -9,6 +9,8 @@ import { LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useCompleteProfile } from '@/features/user/hooks'
 import { removeToken } from '@/lib/cookies'
+import { usePreventBack } from '@/hooks/use-prevent-back'
+import Spinner from '@/components/ui/spinner'
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -34,7 +36,7 @@ const Profile = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState('')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-
+  usePreventBack('/profile')
   const {
     register,
     handleSubmit,
@@ -56,7 +58,7 @@ const Profile = () => {
 
   const handleLogout = () => {
     removeToken()
-    router.push('/login')
+    router.replace('/login')
   }
 
   const onSubmit = (data: ProfileFormData) => {
@@ -171,7 +173,7 @@ const Profile = () => {
               disabled={isPending}
               className="mt-4 w-full rounded-[12px] bg-[#005864] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#004550] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isPending ? 'Saving...' : 'Next'}
+              {isPending ? (<Spinner title='Saving...' />) : 'Next'}
             </button>
           </form>
         </div>
