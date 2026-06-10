@@ -40,7 +40,7 @@ const AddAddress = () => {
         setIsDialogOpen(false);
         document.cookie =
           "hasAddress=; path=/; max-age=0; SameSite=Lax";
-        router.replace('/profile/add-address')
+        // router.replace('/profile/add-address')
         setAddressError("");
       }
     },
