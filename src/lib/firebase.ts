@@ -1,5 +1,10 @@
 import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import {
+  getAuth,
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth'
 import { getMessaging, getToken, isSupported } from 'firebase/messaging'
 
 const firebaseConfig = {
@@ -12,47 +17,88 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 }
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-const auth = getAuth(app)
+const app =
+  getApps().length === 0
+    ? initializeApp(firebaseConfig)
+    : getApps()[0]
+
+export const auth = getAuth(app)
+
 auth.useDeviceLanguage()
 
+// ====================
+// Google Provider
+// ====================
+
 const googleProvider = new GoogleAuthProvider()
+
 googleProvider.addScope('email')
 googleProvider.addScope('profile')
-googleProvider.setCustomParameters({ prompt: 'select_account' })
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+})
 
 export async function signInWithGoogle(): Promise<string> {
   const result = await signInWithPopup(auth, googleProvider)
+
   const idToken = await result.user.getIdToken()
+
   return idToken
 }
 
+// ====================
+// Apple Provider
+// ====================
 
+const appleProvider = new OAuthProvider('apple.com')
+
+appleProvider.addScope('email')
+appleProvider.addScope('name')
+
+export async function signInWithApple(): Promise<string> {
+  const result = await signInWithPopup(auth, appleProvider)
+
+  const idToken = await result.user.getIdToken()
+
+  return idToken
+}
+
+// ====================
+// Firebase Messaging
+// ====================
 
 export async function getFirebaseMessaging() {
-  const supported = await isSupported();
+  const supported = await isSupported()
 
-  if (!supported) return null;
+  if (!supported) return null
 
-  return getMessaging(app);
+  return getMessaging(app)
 }
 
 export async function getFcmToken(): Promise<string | null> {
   try {
     const supported = await isSupported()
+
     if (!supported) return null
 
     const permission = await Notification.requestPermission()
+
     if (permission !== 'granted') return null
 
     const messaging = getMessaging(app)
+
+    const registration = await navigator.serviceWorker.register(
+      '/firebase-messaging-sw.js'
+    )
+
     const token = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
-      serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js'),
+      serviceWorkerRegistration: registration,
     })
 
     return token ?? null
-  } catch {
+  } catch (error) {
+    console.error('FCM Error:', error)
     return null
   }
 }
