@@ -7,7 +7,7 @@ import * as z from 'zod'
 import { Apple } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useSendPhoneOtp, useSocialAuth } from '@/features/auth/hooks'
-import { signInWithGoogle } from '@/lib/firebase'
+import { signInWithApple, signInWithGoogle } from '@/lib/firebase'
 import { setToken } from '@/lib/cookies'
 import Image from 'next/image'
 import Spinner from '@/components/ui/spinner'
@@ -74,6 +74,32 @@ export default function LoginPage() {
       }
     }
   }
+
+  const handleAppleLogin = async () => {
+  try {
+    setGoogleError('') // or setAppleError('') if you have a separate state
+
+    const idToken = await signInWithApple()
+
+    socialAuth({
+      idToken,
+      method: 'apple',
+      role: 'user',
+    })
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code
+
+    console.error('Apple sign-in error:', err)
+
+    if (
+      code !== 'auth/popup-closed-by-user' &&
+      code !== 'auth/cancelled-popup-request'
+    ) {
+      setGoogleError(`Apple sign-in failed: ${code ?? 'unknown error'}`)
+      // or setAppleError(...)
+    }
+  }
+}
 
   const onSubmit = (data: LoginFormData) => {
     // Prepend +1 before sending to API
@@ -151,6 +177,8 @@ export default function LoginPage() {
             </button>
 
             <button
+            onClick={handleAppleLogin}
+              disabled={isSocialPending}
               className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors"
               type="button"
             >
