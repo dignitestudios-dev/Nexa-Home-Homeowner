@@ -70,8 +70,6 @@ interface StepOneProps {
 }
 
 export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRemoveVideo, onBack, onNext }: StepOneProps) {
-  const { data: adData } = useGetAdFeed()
-  const ad = adData?.data?.advertisement
 
   const {
     register,
@@ -98,6 +96,10 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
 
   // Sync RHF → parent state on every change
   const watched = watch();
+  
+  const categoryId = watch("categoryId");
+  const { data: adData } = useGetAdFeed(categoryId);
+  const ad = adData?.data?.advertisement;
   useEffect(() => {
     // onChange("title", watched.title ?? "");
     onChange("description", watched.description ?? "");
@@ -582,6 +584,27 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
               </div>
             </div>
 
+            {/* Advertisement Banner */}
+            {ad && (
+              <a
+                href={ad.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative block mt-6 rounded-xl overflow-hidden hover:opacity-90 transition-opacity group"
+              >
+                <img
+                  src={ad.media.location}
+                  alt="Advertisement"
+                  className="w-full h-auto object-cover rounded-xl"
+                />
+                <div className="absolute bottom-4 left-4">
+                  <p className="text-white text-sm font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate max-w-full">
+                    {ad.link}
+                  </p>
+                </div>
+              </a>
+            )}
+
             <div className="flex justify-end mt-6">
               <button
                 type="submit"
@@ -590,22 +613,6 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 Next
               </button>
             </div>
-
-            {/* Advertisement Banner */}
-            {ad && (
-              <a
-                href={ad.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block mt-6 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
-              >
-                <img
-                  src={ad.media.location}
-                  alt="Advertisement"
-                  className="w-full h-auto object-cover rounded-xl"
-                />
-              </a>
-            )}
           </div>
         </div>
       </form>
