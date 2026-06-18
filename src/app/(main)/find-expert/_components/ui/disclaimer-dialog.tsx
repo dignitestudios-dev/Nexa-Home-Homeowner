@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,25 +21,64 @@ export default function DisclaimerDialog({
   onOpenChange,
   onConfirm,
 }: DisclaimerDialogProps) {
+  const [consentChecked, setConsentChecked] = useState(false);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) setConsentChecked(false);
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative fixed top-1/2 w-[360px]! max-w-[calc(100%-2rem)]! h-[320px] rounded-[24px] bg-white p-0 shadow-[0_20px_40px_rgba(0,0,0,0.12)]">
-        <div className="absolute left-[20px] top-[33px] w-[320px] h-[251px]">
-          <div className="flex flex-col items-center justify-center gap-8 w-full h-full">
-            <div className="flex flex-col items-center gap-4 w-[308px] text-center">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="relative fixed top-1/2 w-[420px]! max-w-[calc(100%-2rem)]! rounded-[24px] bg-white p-0 shadow-[0_20px_40px_rgba(0,0,0,0.12)]">
+        <div className="px-6 pt-8 pb-6">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 text-center">
               <DialogTitle className="text-[24px] font-semibold leading-[30px] tracking-[-0.008em] text-[#181818]">
                 Disclaimer
               </DialogTitle>
-              <DialogDescription className="text-[15px] space-y-2 font-normal leading-[19px] text-[#181818CC]">
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">Your job request will be shared with the selected service providers in your specified radius.</span ></div>
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">NexaHome does not guarantee immediate response or acceptance by providers.</span ></div>
-               <div className="flex items-start"><Dot size="40" /> <span className="font-semibold text-start">Please ensure the job description and details are accurate before posting.</span ></div>
+              <DialogDescription asChild>
+                <div className="text-[14px] space-y-3 font-normal leading-[20px] text-[#181818CC] text-left">
+                  <div className="flex items-start">
+                    <Dot size="36" className="shrink-0 -ml-2" />
+                    <span className="font-medium">
+                      Your job request will be shared with the providers you select — or, if you choose &quot;Send to All,&quot; it will be visible to all providers offering that service in your area.
+                    </span>
+                  </div>
+                  <div className="flex items-start">
+                    <Dot size="36" className="shrink-0 -ml-2" />
+                    <span className="font-medium">
+                      NexaHome doesn&apos;t guarantee a response or acceptance by any provider.
+                    </span>
+                  </div>
+                  <div className="flex items-start">
+                    <Dot size="36" className="shrink-0 -ml-2" />
+                    <span className="font-medium">
+                      Please make sure your job details are accurate before posting.
+                    </span>
+                  </div>
+                </div>
               </DialogDescription>
             </div>
-            <div className="w-full px-2">
+
+            {/* Consent checkbox */}
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#005864] accent-[#005864] cursor-pointer"
+              />
+              <span className="text-[13px] leading-[18px] text-[rgba(24,24,24,0.7)]">
+                I expressly consent to be contacted about my project by up to five (5) service providers at the number or email I provided — by call, text (msg &amp; data rates may apply), or email, including automated calls or texts. Consent is not a condition of using NexaHome.
+              </span>
+            </label>
+
+            <div className="w-full">
               <Button
                 type="button"
-                className="h-[48px] w-full rounded-[12px] bg-[#005864] text-[16px] text-white font-semibold"
+                disabled={!consentChecked}
+                className="h-[48px] w-full rounded-[12px] bg-[#005864] text-[16px] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={onConfirm}
               >
                 OK

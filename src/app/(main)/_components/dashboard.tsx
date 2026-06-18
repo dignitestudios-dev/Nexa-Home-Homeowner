@@ -426,7 +426,7 @@ const Dashboard = (props: Props) => {
       </Dialog>
 
       <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
-        <DialogContent className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[50%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
+        <DialogContent className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[50%] overflow-y-auto overflow-x-hidden rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
           <button
             type="button"
             onClick={() => setIsLocationDialogOpen(false)}
@@ -442,7 +442,7 @@ const Dashboard = (props: Props) => {
             </DialogTitle>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center mt-4">
+          <div className="flex-1 flex flex-col w-[95%] mx-auto justify-center mt-4">
             <label className="text-base font-medium leading-[22px] text-black mb-2">
               Select Location
             </label>
@@ -455,7 +455,7 @@ const Dashboard = (props: Props) => {
                 value={selectedAddressId}
                 onChange={setSelectedAddressId}
                 options={addresses.map((addr) => ({
-                  label: `${addr.label}: ${addr.address}, ${addr.city}`,
+                  label: `${addr.label}: ${addr.address}, ${addr.city}`.slice(0,40),
                   value: addr._id,
                 }))}
                 placeholder="Select Location"
