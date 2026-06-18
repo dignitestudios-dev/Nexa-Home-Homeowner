@@ -33,7 +33,7 @@ export default function IssueCard({
       </h3>
 
       {/* Description */}
-      <p className="mt-3 line-clamp-2 break-all text-[16px] leading-[26px] text-[rgba(24,24,24,0.6)]">
+      <p className="mt-3  break-all text-[16px] leading-[26px] text-[rgba(24,24,24,0.6)]">
         {description}
       </p>
     </div>
