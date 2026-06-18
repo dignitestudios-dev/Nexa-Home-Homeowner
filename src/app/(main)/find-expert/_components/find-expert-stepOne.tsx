@@ -16,9 +16,10 @@ import CustomSelect from "@/components/global/custom-select";
 import { StepOneData } from "../page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useGetAdFeed } from "@/features/advertisement/hooks";
 
 const MEDIA_MAX_FILES = 10
-const IMAGE_MAX_MB = 5
+const IMAGE_MAX_MB = 20
 const VIDEO_MAX_MB = 20
 const ACCEPTED_TYPES = {
   'image/jpeg': true,
@@ -40,8 +41,8 @@ const schema = z.object({
   contactEmail: z.boolean(),
   uploadedImages: z
     .array(z.instanceof(File))
-    .min(1, "At least one file is required")
-    .max(10, "Maximum 10 files allowed"),
+    .max(10, "Maximum 10 files allowed")
+    .optional(),
 }).refine((d) => d.contactCall || d.contactEmail, {
   message: "Please select at least one contact preference",
   path: ["contactCall"],
@@ -69,6 +70,9 @@ interface StepOneProps {
 }
 
 export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRemoveVideo, onBack, onNext }: StepOneProps) {
+  const { data: adData } = useGetAdFeed()
+  const ad = adData?.data?.advertisement
+
   const {
     register,
     handleSubmit,
@@ -386,7 +390,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
             {/* Attachments — images & videos, shared 10-file limit */}
             <div className="flex flex-col gap-2 my-4">
               <Label className="text-base font-medium text-black">
-                Add Attachments <span className="text-red-500">*</span>
+                Add Attachments <span className="text-gray-400 font-normal text-sm">(Optional)</span>
               </Label>
 
               <label
@@ -410,10 +414,10 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 <div className="flex flex-col items-center gap-2">
                   <FileImage size={30} className="text-[#005864]" />
                   <span className="text-center text-[13px] text-[#18181899]">
-                    Images (JPG, PNG, WebP · max 5MB) or Videos (MP4, WebM, MOV · max 20MB)
+                    Images (JPG, PNG, WebP · max 20MB) or Videos (MP4, WebM, MOV · max 20MB)
                   </span>
                   <span className="text-[12px] text-[#18181899]">
-                    Up to {MEDIA_MAX_FILES} files total · at least 1 required
+                    Up to {MEDIA_MAX_FILES} files total · optional
                   </span>
                 </div>
               </label>
@@ -545,7 +549,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
           <div>
             {/* Job Type */}
             <div>
-              <p className=" leading-14 font-medium text-base">Select Job Type <span className="text-red-500">*</span></p>
+              <p className=" leading-14 font-medium text-base">Job Type <span className="text-red-500">*</span></p>
               <p className="text-[#18181899]">Pick the job type that matches your service need.</p>
             </div>
             <div className="flex flex-col gap-9 py-4">
@@ -586,6 +590,22 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 Next
               </button>
             </div>
+
+            {/* Advertisement Banner */}
+            {ad && (
+              <a
+                href={ad.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-6 rounded-xl overflow-hidden hover:opacity-90 transition-opacity"
+              >
+                <img
+                  src={ad.media.location}
+                  alt="Advertisement"
+                  className="w-full h-auto object-cover rounded-xl"
+                />
+              </a>
+            )}
           </div>
         </div>
       </form>

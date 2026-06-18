@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, MapPin, Star, Play } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Play, BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useGetAddresses, useCreateJob } from "@/features/user/hooks";
@@ -280,7 +280,14 @@ function ProviderCard({ provider }: { provider: MatchingProvider }) {
         )}
       </div>
       <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-[15px] font-semibold text-black truncate">{provider.name}</span>
+        <span className="flex items-center gap-1 text-[15px] font-semibold text-black leading-[20px] truncate">
+          <span className="max-w-[90%] truncate">
+            {provider.name}
+          </span>
+          {provider.isVerifiedBadge && (
+            <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+          )}
+        </span>
         <div className="flex items-center gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star

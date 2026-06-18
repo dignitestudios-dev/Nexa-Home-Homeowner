@@ -60,6 +60,7 @@ export default function LoginPage() {
   })
 
   const [googleError, setGoogleError] = React.useState('')
+  const [termsAccepted, setTermsAccepted] = React.useState(false)
 
   const handleGoogleLogin = async () => {
     try {
@@ -144,13 +145,30 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Terms & Conditions checkbox */}
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 rounded border-[#005864] accent-[#005864] cursor-pointer"
+              />
+              <span className="text-xs leading-[18px] text-[rgba(24,24,24,0.7)]">
+                I agree to NexaHome&apos;s{' '}
+                <a href="/terms" className="text-[#005864] underline underline-offset-2 font-medium">Terms &amp; Conditions</a>{' '}
+                and{' '}
+                <a href="/privacy" className="text-[#005864] underline underline-offset-2 font-medium">Privacy Policy</a>,
+                and consent to receive account-related texts (msg &amp; data rates may apply) and emails from NexaHome.
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || !termsAccepted}
               className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                {isPending ? (
-   <Spinner title='Sending Code...' />
+    <Spinner title='Sending Code...' />
   ) : (
     'Continue'
   )}
@@ -166,7 +184,7 @@ export default function LoginPage() {
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={handleGoogleLogin}
-              disabled={isSocialPending}
+              disabled={isSocialPending || !termsAccepted}
               type="button"
               className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -178,8 +196,8 @@ export default function LoginPage() {
 
             <button
             onClick={handleAppleLogin}
-              disabled={isSocialPending}
-              className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors"
+              disabled={isSocialPending || !termsAccepted}
+              className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               type="button"
             >
               <Image src={"/images/apple.png"} alt="Apple" width={20} height={20} />

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Star } from "lucide-react";
+import { Star, BadgeCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUpdateJobStatus } from "@/features/user/hooks";
 
@@ -13,9 +13,10 @@ interface ExpertCardProps {
   location: string;
   rating: number;
   profilePicture?: string;
+  isVerifiedBadge?: boolean;
 }
 
-export function ExpertCard({ id, jobId, name, location, rating, profilePicture }: ExpertCardProps) {
+export function ExpertCard({ id, jobId, name, location, rating, profilePicture, isVerifiedBadge }: ExpertCardProps) {
   const router = useRouter();
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 !== 0;
@@ -50,7 +51,12 @@ export function ExpertCard({ id, jobId, name, location, rating, profilePicture }
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-black truncate hover:text-[#005864] transition-colors">{name}</h3>
+          <h3 className="flex items-center gap-1 text-base font-semibold text-black hover:text-[#005864] transition-colors">
+            <span className="truncate max-w-[90%]">{name}</span>
+            {isVerifiedBadge && (
+              <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+            )}
+          </h3>
           <div className="flex items-center gap-1.5 mt-1">
             <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (

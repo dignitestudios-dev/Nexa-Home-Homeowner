@@ -31,7 +31,7 @@ interface JobAddressDetails {
     coordinates: [number, number]
   }
 }
- interface ProviderProfilePicture {
+interface ProviderProfilePicture {
   _id: string;
   filename: string;
   key: string;
@@ -49,14 +49,14 @@ interface Job {
   _id: string
   user: string
   provider: {
-  _id: string;
-  name: string;
-  email: string;
-  contactEmail: string | null;
-  phone: string;
-  profilePicture: ProviderProfilePicture;
-  overview: string;
-}
+    _id: string;
+    name: string;
+    email: string;
+    contactEmail: string | null;
+    phone: string;
+    profilePicture: ProviderProfilePicture;
+    overview: string;
+  }
   category: JobCategory
   title: string
   description: string
@@ -151,14 +151,15 @@ interface AppliedProvider {
   appliedAt: string
   leadCost: number
   providerAddress: AppliedProviderAddress | null
+  isVerifiedBadge: boolean
 }
 
- interface ProviderCoordinates {
+interface ProviderCoordinates {
   type: "Point";
   coordinates: [number, number];
 }
 
- interface ProviderAddress {
+interface ProviderAddress {
   _id: string;
   label: string;
   address: string;
@@ -169,7 +170,7 @@ interface AppliedProvider {
   coordinates: ProviderCoordinates;
 }
 
- interface ProviderProfilePicture {
+interface ProviderProfilePicture {
   _id: string;
   filename: string;
   key: string;
@@ -195,6 +196,7 @@ interface JobProvider {
   averageRating: number;
   totalReviews: number;
   providerAddress: ProviderAddress;
+  isVerifiedBadge:boolean
 }
 
 interface JobDetail extends Omit<Job, 'user' | 'category' | 'provider'> {
@@ -228,6 +230,7 @@ interface MatchingProvider {
   averageRating: number
   totalReviews: number
   area?: string
+  isVerifiedBadge: boolean
   distanceMiles?: number
 }
 

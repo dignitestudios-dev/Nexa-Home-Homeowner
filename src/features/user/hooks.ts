@@ -290,6 +290,7 @@ export interface ProviderDetail {
   services: string[]
   portfolioMedia: ProviderMedia[]
   defaultAddress: DefaultAddress;
+  isVerifiedBadge: boolean
   createdAt: string
   updatedAt: string
 }
