@@ -35,7 +35,7 @@ export interface CreateReportIssueVars {
   description: string
 }
 
-export function useGetReportIssues(params: { page: number; limit: number }) {
+export function useGetReportIssues(params: { page: number; limit: number; status?: 'pending' | 'resolved' }) {
   return useQuery<GetReportIssuesResponse>({
     queryKey: ['report-issues', params],
     queryFn: async () => {

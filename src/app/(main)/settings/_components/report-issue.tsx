@@ -15,33 +15,43 @@ import { Pagination } from '@/components/ui/pagination'
 import { useCreateReportIssue, useGetReportIssues } from '@/features/report/hooks'
 import ServiceCard from '../report-issue/_components/issue-card'
 import IssueCard from '../report-issue/_components/issue-card'
+import SuccessDialog from '@/components/ui/success-dialog'
 // import { useGetReportIssues, useCreateReportIssue } from '@/features/user/hooks'
 
 const TITLE_MAX = 30
-const DESC_MAX = 120
+const DESC_MAX = 250
 const REPORTS_PER_PAGE = 10
+
+const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
 
 const reportIssueSchema = z.object({
     title: z
         .string()
+        .trim()
         .min(1, 'Title is required.')
-        .max(TITLE_MAX, `Title must be ${TITLE_MAX} characters or less.`),
+        .max(TITLE_MAX, `Title must be ${TITLE_MAX} characters or less.`)
+        .refine((val) => !emojiRegex.test(val), 'Emojis are not allowed.'),
     description: z
         .string()
+        .trim()
         .min(1, 'Description is required.')
-        .max(DESC_MAX, `Description must be ${DESC_MAX} characters or less.`),
+        .max(DESC_MAX, `Description must be ${DESC_MAX} characters or less.`)
+        .refine((val) => !emojiRegex.test(val), 'Emojis are not allowed.'),
 })
 
 type ReportIssueFormValues = z.infer<typeof reportIssueSchema>
 
 export default function ReportIssue() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
     const [page, setPage] = useState(1)
+    const [statusTab, setStatusTab] = useState<'pending' | 'resolved'>('pending')
 
-    const { data, isLoading } = useGetReportIssues({ page, limit: REPORTS_PER_PAGE })
+    const { data, isLoading } = useGetReportIssues({ page, limit: REPORTS_PER_PAGE, status: statusTab })
     const { mutate: createReport, isPending } = useCreateReportIssue({
         onSuccess: () => {
             setIsDialogOpen(false)
+            setIsSuccessDialogOpen(true)
             reset()
         },
     })
@@ -54,6 +64,7 @@ export default function ReportIssue() {
         handleSubmit,
         watch,
         reset,
+        setValue,
         formState: { errors },
     } = useForm<ReportIssueFormValues>({
         resolver: zodResolver(reportIssueSchema),
@@ -88,6 +99,22 @@ export default function ReportIssue() {
                     </button>
                 </div>
 
+                {/* Tabs */}
+                <div className="flex items-center gap-6 border-b border-[#E5E5E5]">
+                    <button
+                        onClick={() => { setStatusTab('pending'); setPage(1); }}
+                        className={`pb-3 text-[15px] font-medium transition-colors ${statusTab === 'pending' ? 'border-b-2 border-[#005864] text-[#005864]' : 'text-[#737373] hover:text-[#181818]'}`}
+                    >
+                        Unresolved
+                    </button>
+                    <button
+                        onClick={() => { setStatusTab('resolved'); setPage(1); }}
+                        className={`pb-3 text-[15px] font-medium transition-colors ${statusTab === 'resolved' ? 'border-b-2 border-[#005864] text-[#005864]' : 'text-[#737373] hover:text-[#181818]'}`}
+                    >
+                        Resolved
+                    </button>
+                </div>
+
                 {/* List */}
                 {isLoading ? (
                     <div className="space-y-3">
@@ -97,9 +124,13 @@ export default function ReportIssue() {
                     </div>
                 ) : reports.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-[#005864] bg-[rgba(0,88,100,0.04)] px-6 py-12 text-center">
-                        <p className="font-medium text-[#1F1F1F]">No reports submitted yet.</p>
+                        <p className="font-medium text-[#1F1F1F]">
+                            {statusTab === 'pending' ? 'No unresolved reports yet.' : 'No resolved reports yet.'}
+                        </p>
                         <p className="mt-1 text-sm text-[rgba(24,24,24,0.5)]">
-                            Use the button above to report an issue.
+                            {statusTab === 'pending' 
+                                ? 'Use the button above to report an issue.' 
+                                : 'Resolved issues will appear here.'}
                         </p>
                     </div>
                 ) : (
@@ -108,7 +139,7 @@ export default function ReportIssue() {
                             {reports?.map((report) => (
                                 <IssueCard
                                     key={report._id}
-                                    // id={report._id}
+                                    issueId={report._id}
 
                                     title={report.title}
                                     description={report.description}
@@ -146,6 +177,15 @@ export default function ReportIssue() {
                             </label>
                             <input
                                 {...register('title')}
+                                onChange={(e) => {
+                                    const val = e.target.value
+                                        .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '')
+                                        .replace(/^\s+/, '')
+                                    setValue('title', val, { shouldValidate: true, shouldDirty: true, shouldTouch: true })
+                                }}
+                                onBlur={(e) => {
+                                    setValue('title', e.target.value.trim(), { shouldValidate: true, shouldDirty: true, shouldTouch: true })
+                                }}
                                 type="text"
                                 placeholder="Brief title of the issue"
                                 maxLength={TITLE_MAX}
@@ -169,6 +209,15 @@ export default function ReportIssue() {
                             </label>
                             <textarea
                                 {...register('description')}
+                                onChange={(e) => {
+                                    const val = e.target.value
+                                        .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '')
+                                        .replace(/^\s+/, '')
+                                    setValue('description', val, { shouldValidate: true, shouldDirty: true, shouldTouch: true })
+                                }}
+                                onBlur={(e) => {
+                                    setValue('description', e.target.value.trim(), { shouldValidate: true, shouldDirty: true, shouldTouch: true })
+                                }}
                                 placeholder="Describe the issue in detail"
                                 maxLength={DESC_MAX}
                                 rows={4}
@@ -195,6 +244,12 @@ export default function ReportIssue() {
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <SuccessDialog
+                open={isSuccessDialogOpen}
+                onClose={() => setIsSuccessDialogOpen(false)}
+                title="Issue Reported Successfully"
+            />
         </>
     )
 }
