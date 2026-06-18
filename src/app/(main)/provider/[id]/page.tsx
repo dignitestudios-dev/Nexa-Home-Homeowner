@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Star, Play } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Star, Play, BadgeCheck } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useGetProviderDetail, useGetProviderReviews } from "@/features/user/hooks";
@@ -132,7 +132,12 @@ export default function ProviderProfile() {
 
           {/* Info */}
           <div className="flex-1 text-center sm:text-left min-w-0">
-            <h2 className="text-xl lg:text-2xl font-bold text-[#181818] truncate">{provider.name}</h2>
+            <h2 className="flex items-center justify-center sm:justify-start gap-1.5 text-xl lg:text-2xl font-bold text-[#181818]">
+              <span className="truncate max-w-[90%]">{provider.name}</span>
+              {provider.isVerifiedBadge && (
+                <BadgeCheck size={24} className="text-white fill-[#2E59D7] shrink-0" />
+              )}
+            </h2>
             <div className="mt-2">
               <StarRating rating={provider.rating} />
             </div>

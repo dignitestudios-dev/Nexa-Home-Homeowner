@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, Loader2, Star } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Star, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useGetMatchingProviders } from "@/features/user/hooks";
 import { StepTwoData } from "../page";
@@ -284,8 +284,13 @@ export default function FindExpertStepTwo({
                 )}
                 <ProviderAvatar name={provider.name} profilePicture={provider.profilePicture} />
                 <div className="flex flex-col gap-1 min-w-0">
-                  <span className="text-[16px] font-semibold text-black leading-[20px] truncate pr-6">
-                    {provider.name}
+                  <span className="flex items-center gap-1 text-[16px] font-semibold text-black leading-[20px] truncate pr-6">
+                    <span className="max-w-[90%] truncate">
+                      {provider.name}
+                    </span>
+                    {provider.isVerifiedBadge && (
+                      <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+                    )}
                   </span>
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, MapPin, Star } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Star, BadgeCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -416,6 +416,7 @@ const ServiceDetails = () => {
                   }
                   rating={prov.averageRating}
                   profilePicture={prov.profilePicture?.location || ""}
+                  isVerifiedBadge={prov.isVerifiedBadge}
                 />
               ))}
             </div>
@@ -442,8 +443,11 @@ const ServiceDetails = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm sm:text-base font-semibold text-black truncate hover:text-[#005864] transition-colors">
-                      {provider.name}
+                    <h3 className="flex items-center gap-1 text-sm sm:text-base font-semibold text-black hover:text-[#005864] transition-colors">
+                      <span className="truncate max-w-[90%]">{provider.name}</span>
+                      {provider.isVerifiedBadge && (
+                        <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+                      )}
                     </h3>
                     {(() => {
                       const rating = provider.averageRating || 0;
