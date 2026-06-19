@@ -26,13 +26,20 @@ export interface GetAdFeedResponse {
   }
 }
 
-export function useGetAdFeed(categoryId?: string) {
+export function useGetAdFeed(categoryId?: string, addressId?: string) {
   return useQuery<GetAdFeedResponse>({
-    queryKey: ['advertisement-feed', categoryId],
+    queryKey: ['advertisement-feed', categoryId, addressId],
     queryFn: async () => {
-      const url = categoryId 
-        ? `/advertisement/feed?categoryId=${categoryId}` 
-        : '/advertisement/feed';
+      let url = '/advertisement/feed';
+      const params = new URLSearchParams();
+      if (categoryId) params.append('categoryId', categoryId);
+      if (addressId) params.append('addressId', addressId);
+      
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+
       const res = await apiClient.get<GetAdFeedResponse>(url)
       return res.data
     },

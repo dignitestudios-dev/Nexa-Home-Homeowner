@@ -98,7 +98,8 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
   const watched = watch();
   
   const categoryId = watch("categoryId");
-  const { data: adData } = useGetAdFeed(categoryId);
+  const addressId = watch("addressId");
+  const { data: adData } = useGetAdFeed(categoryId, addressId);
   const ad = adData?.data?.advertisement;
   useEffect(() => {
     // onChange("title", watched.title ?? "");
