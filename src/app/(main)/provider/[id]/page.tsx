@@ -17,13 +17,19 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            size={16}
-            className={i < Math.floor(rating) ? "fill-[#EDAF35] text-[#EDAF35]" : "text-[#E5E5E5]"}
-          />
-        ))}
+        {Array.from({ length: 5 }).map((_, i) => {
+          const fillAmount = Math.max(0, Math.min(1, rating - i));
+          return (
+            <div key={i} className="relative" style={{ width: 16, height: 16 }}>
+              <Star size={16} className="text-[#E5E5E5] absolute inset-0" />
+              {fillAmount > 0 && (
+                <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillAmount * 100}%` }}>
+                  <Star size={16} className="text-[#EDAF35] fill-[#EDAF35] absolute inset-0 max-w-none" />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <span className="text-sm font-semibold text-[#1C1C1C]">{rating.toFixed(1)}</span>
     </div>

@@ -293,9 +293,19 @@ export default function FindExpertStepTwo({
                     )}
                   </span>
                   <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={11} className={i < Math.floor(provider.averageRating) ? "fill-[#EDAF35] text-[#EDAF35]" : "fill-[#E5E5E5] text-[#E5E5E5]"} />
-                    ))}
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const fillAmount = Math.max(0, Math.min(1, provider.averageRating - i));
+                      return (
+                        <div key={i} className="relative" style={{ width: 11, height: 11 }}>
+                          <Star size={11} className="text-[#E5E5E5] fill-[#E5E5E5] absolute inset-0" />
+                          {fillAmount > 0 && (
+                            <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillAmount * 100}%` }}>
+                              <Star size={11} className="text-[#EDAF35] fill-[#EDAF35] absolute inset-0 max-w-none" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                     <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
                   </div>
                   {provider.area && (
