@@ -18,9 +18,6 @@ interface ExpertCardProps {
 
 export function ExpertCard({ id, jobId, name, location, rating, profilePicture, isVerifiedBadge }: ExpertCardProps) {
   const router = useRouter();
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 !== 0;
-
   const { mutate: acceptExpert, isPending } = useUpdateJobStatus();
 
   const handleProfileClick = () => {
@@ -59,19 +56,19 @@ export function ExpertCard({ id, jobId, name, location, rating, profilePicture, 
           </h3>
           <div className="flex items-center gap-1.5 mt-1">
             <div className="flex items-center gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  size={14}
-                  className={`${
-                    i < fullStars
-                      ? "fill-[#EDAF35] text-[#EDAF35]"
-                      : i === fullStars && hasHalfStar
-                      ? "fill-[#EDAF35] text-[#EDAF35]"
-                      : "text-[#E5E5E5]"
-                  }`}
-                />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => {
+                const fillAmount = Math.max(0, Math.min(1, rating - i));
+                return (
+                  <div key={i} className="relative" style={{ width: 14, height: 14 }}>
+                    <Star size={14} className="text-[#E5E5E5] absolute inset-0" />
+                    {fillAmount > 0 && (
+                      <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillAmount * 100}%` }}>
+                        <Star size={14} className="text-[#EDAF35] fill-[#EDAF35] absolute inset-0 max-w-none" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <span className="text-xs font-medium text-[#1C1C1C]">{rating.toFixed(1)}</span>
           </div>
