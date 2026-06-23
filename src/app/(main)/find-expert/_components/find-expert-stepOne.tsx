@@ -593,11 +593,21 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 rel="noopener noreferrer"
                 className="relative block mt-6 rounded-xl overflow-hidden hover:opacity-90 transition-opacity group"
               >
-                <img
-                  src={ad.media.location}
-                  alt="Advertisement"
-                  className="w-full h-auto object-cover rounded-xl"
-                />
+                {ad.media.mimetype.startsWith('video/') ? (
+                  <video
+                    src={ad.media.location}
+                    className="w-full h-auto object-cover rounded-xl"
+                    autoPlay
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={ad.media.location}
+                    alt="Advertisement"
+                    className="w-full h-[300px] object-cover rounded-xl"
+                  />
+                )}
                 <div className="absolute bottom-4 left-4">
                   <p className="text-white text-sm font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate max-w-full">
                     {ad.link}

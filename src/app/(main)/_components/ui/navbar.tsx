@@ -17,6 +17,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import NotificationsPopover from "./notification-popover";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -82,6 +89,7 @@ export default function Navbar() {
     .join("");
 
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = React.useState(false);
   const pathname = usePathname();
 
   return (
@@ -169,7 +177,7 @@ export default function Navbar() {
                       <React.Fragment key={item.label}>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={handleLogout}
+                          onClick={() => setIsLogoutDialogOpen(true)}
                           className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
                         >
                           {item.label}
@@ -193,6 +201,25 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[24px]">
+          <div className="flex flex-col gap-2 p-2">
+            <DialogTitle className="text-xl font-semibold">Confirm Logout</DialogTitle>
+            <DialogDescription className="text-base text-gray-500">
+              Are you sure you want to log out of your account?
+            </DialogDescription>
+          </div>
+          <DialogFooter className="mt-4 flex sm:justify-end gap-3 p-2">
+            <Button variant="outline" className="rounded-xl h-11 px-6" onClick={() => setIsLogoutDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-11 px-6" onClick={handleLogout}>
+              Log Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
