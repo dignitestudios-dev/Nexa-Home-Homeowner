@@ -393,7 +393,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
             {/* Attachments — images & videos, shared 10-file limit */}
             <div className="flex flex-col gap-2 my-4">
               <Label className="text-base font-medium text-black">
-                Add Attachments <span className="text-gray-400 font-normal text-sm">(Optional)</span>
+                Add Photos/Videos <span className="text-gray-400 font-normal text-sm">(Optional)</span>
               </Label>
 
               <label
@@ -559,7 +559,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
               <div className="flex flex-col gap-6">
                 <label className="flex  cursor-pointer items-start gap-3">
                   <input type="radio" value="one-time" {...register("jobType")} className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#005864] focus:ring-[#005864]" />
-                  <span className="text-base font-normal leading-[22px] text-[#181818]">One Time Job</span>
+                  <span className="text-base font-normal leading-[22px] text-[#181818]">One-Time Job</span>
                 </label>
                 <label className="flex cursor-pointer items-start gap-3">
                   <input type="radio" value="recurring" {...register("jobType")} className="mt-0.5 h-4 w-4 shrink-0 text-[#005864] focus:ring-[#005864]" />
