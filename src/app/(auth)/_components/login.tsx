@@ -77,30 +77,30 @@ export default function LoginPage() {
   }
 
   const handleAppleLogin = async () => {
-  try {
-    setGoogleError('') // or setAppleError('') if you have a separate state
+    try {
+      setGoogleError('') // or setAppleError('') if you have a separate state
 
-    const idToken = await signInWithApple()
+      const idToken = await signInWithApple()
 
-    socialAuth({
-      idToken,
-      method: 'apple',
-      role: 'user',
-    })
-  } catch (err: unknown) {
-    const code = (err as { code?: string })?.code
+      socialAuth({
+        idToken,
+        method: 'apple',
+        role: 'user',
+      })
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code
 
-    console.error('Apple sign-in error:', err)
+      console.error('Apple sign-in error:', err)
 
-    if (
-      code !== 'auth/popup-closed-by-user' &&
-      code !== 'auth/cancelled-popup-request'
-    ) {
-      setGoogleError(`Apple sign-in failed: ${code ?? 'unknown error'}`)
-      // or setAppleError(...)
+      if (
+        code !== 'auth/popup-closed-by-user' &&
+        code !== 'auth/cancelled-popup-request'
+      ) {
+        setGoogleError(`Apple sign-in failed: ${code ?? 'unknown error'}`)
+        // or setAppleError(...)
+      }
     }
   }
-}
 
   const onSubmit = (data: LoginFormData) => {
     // Prepend +1 before sending to API
@@ -155,9 +155,10 @@ export default function LoginPage() {
               />
               <span className="text-xs leading-[18px] text-[rgba(24,24,24,0.7)]">
                 I agree to NexaHome&apos;s{' '}
-                <a href="/terms" className="text-[#005864] underline underline-offset-2 font-medium">Terms &amp; Conditions</a>{' '}
+                <a href="https://www.nexahomeapp.com/home-owner/terms-and-conditions" target='_blank' className="text-[#005864] underline underline-offset-2 font-medium">Terms &amp; Conditions</a>{' '}
                 and{' '}
-                <a href="/privacy" className="text-[#005864] underline underline-offset-2 font-medium">Privacy Policy</a>,
+                <a href="https://www.nexahomeapp.com/home-owner/privacy-policy"
+                  target='_blank' className="text-[#005864] underline underline-offset-2 font-medium">Privacy Policy</a>,
                 and consent to receive account-related texts (msg &amp; data rates may apply) and emails from NexaHome.
               </span>
             </label>
@@ -167,12 +168,12 @@ export default function LoginPage() {
               disabled={isPending || !termsAccepted}
               className="w-full bg-[#005864] text-white py-3 rounded-lg font-semibold text-base hover:bg-[#004550] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-               {isPending ? (
-    <Spinner title='Sending Code...' />
-  ) : (
-    'Continue'
-  )}
-              </button>
+              {isPending ? (
+                <Spinner title='Sending Code...' />
+              ) : (
+                'Continue'
+              )}
+            </button>
           </form>
 
           <div className="flex items-center my-8">
@@ -195,7 +196,7 @@ export default function LoginPage() {
             </button>
 
             <button
-            onClick={handleAppleLogin}
+              onClick={handleAppleLogin}
               disabled={isSocialPending || !termsAccepted}
               className="flex items-center justify-center gap-2 bg-[#F8F8F8] rounded-2xl py-3 hover:bg-[#F0F0F0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               type="button"
