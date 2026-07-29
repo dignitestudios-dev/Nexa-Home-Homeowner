@@ -76,6 +76,7 @@ const Profile = () => {
     completeProfile({
       name: data.name,
       referralCode: data.referralCode || undefined,
+      isLinkReferral: data.referralCode ? isLinkReferral : undefined,
       profilePicture: photoFile
         ? { location: URL.createObjectURL(photoFile), file: photoFile }
         : undefined,

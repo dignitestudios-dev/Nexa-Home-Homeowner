@@ -17,7 +17,12 @@ export function useCompleteProfile(
       const fd = new FormData()
       fd.append('name', vars.name)
       if (vars.profilePicture) fd.append('profilePicture', vars.profilePicture.file)
-      if (vars.referralCode) fd.append('referralCode', vars.referralCode)
+      if (vars.referralCode) {
+        fd.append('referralCode', vars.referralCode)
+        if (vars.isLinkReferral !== undefined) {
+          fd.append('isLinkReferral', String(vars.isLinkReferral))
+        }
+      }
       return fd
     },
     mutationOptions: options,
