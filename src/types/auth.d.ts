@@ -99,6 +99,7 @@ interface CompleteProfileVars {
   }
   name: string
   referralCode?: string
+  isLinkReferral?: boolean
 }
 
 interface CompleteProfileResponse {
