@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -35,15 +35,25 @@ const Profile = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState('')
+  const [isLinkReferral, setIsLinkReferral] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   usePreventBack('/profile')
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
   })
+
+  useEffect(() => {
+    const storedReferral = sessionStorage.getItem('referralCode')
+    if (storedReferral) {
+      setValue('referralCode', storedReferral)
+      setIsLinkReferral(true)
+    }
+  }, [setValue])
 
   const { mutate: completeProfile, isPending } = useCompleteProfile({
     onSuccess: (data) => {
@@ -52,6 +62,7 @@ const Profile = () => {
           "isProfileCompleted=; path=/; max-age=0; SameSite=Lax";
         router.replace('/profile/add-address')
         document.cookie = `hasAddress=false; path=/; max-age=86400; SameSite=Lax`;
+        sessionStorage.removeItem('referralCode');
       }
     },
   })
@@ -163,7 +174,8 @@ const Profile = () => {
                 {...register('referralCode')}
                 maxLength={30}
                 placeholder="e.g., REF123"
-                className={inputClass}
+                className={`${inputClass} ${isLinkReferral ? 'cursor-not-allowed opacity-60' : ''}`}
+                readOnly={isLinkReferral}
               />
               {errors.referralCode && <p className="text-red-500 text-xs">{errors.referralCode.message}</p>}
             </div>

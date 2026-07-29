@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Apple } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSendPhoneOtp, useSocialAuth } from '@/features/auth/hooks'
 import { signInWithApple, signInWithGoogle } from '@/lib/firebase'
 import { setToken } from '@/lib/cookies'
@@ -24,6 +24,14 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const referralCode = searchParams.get('referralCode')
+
+  React.useEffect(() => {
+    if (referralCode) {
+      sessionStorage.setItem('referralCode', referralCode)
+    }
+  }, [referralCode])
 
   const {
     register,
