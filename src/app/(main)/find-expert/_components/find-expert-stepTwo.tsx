@@ -269,19 +269,26 @@ export default function FindExpertStepTwo({
           {providers.map((provider) => {
             const isSelected = data.sendToAll || data.selectedProviderIds.includes(provider._id);
             return (
-              <button
+              <div
                 key={provider._id}
-                onClick={() => onToggleProvider(provider._id, allProviderIds)}
-                className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 ${isSelected
+                onClick={() => window.open(`/provider/${provider._id}`, "_blank")}
+                className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 cursor-pointer ${isSelected
                   ? "bg-[rgba(0,88,100,0.1)] border-[#005864]"
                   : "bg-white border-gray-200 hover:border-[#005864]/40"
                   }`}
               >
-                {isSelected && (
-                  <div className="absolute top-2 right-2 w-5 h-5 rounded-[4px] bg-[#005864] flex items-center justify-center">
-                    <Check size={12} color="white" strokeWidth={2.5} />
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleProvider(provider._id, allProviderIds);
+                  }}
+                  className={`absolute top-2 right-2 w-5 h-5 rounded-[4px] flex items-center justify-center border transition-all z-10 ${
+                    isSelected ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300 hover:border-[#005864]"
+                  }`}
+                >
+                  {isSelected && <Check size={12} color="white" strokeWidth={2.5} />}
+                </button>
                 <ProviderAvatar name={provider.name} profilePicture={provider.profilePicture} />
                 <div className="flex flex-col gap-1 min-w-0">
                   <span className="flex items-center gap-1 text-[16px] font-semibold text-black leading-[20px] truncate pr-6">
@@ -314,7 +321,7 @@ export default function FindExpertStepTwo({
                     </span>
                   )}
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
