@@ -25,9 +25,9 @@ const menuItems = [
   { label: "Report An Issue", icon: AlertTriangle, href: "/settings/report-issue" },
   // { label: "Report An Issue - 2", icon: AlertTriangle, href: "/settings/report-issue-2" },
   { label: "Delete Account", icon: Trash2, href: "/settings/delete-account" },
-  { label: "Terms And Conditions", icon: FileText, href: "/settings/terms" },
-  { label: "Privacy Policy", icon: Shield, href: "/settings/privacy" },
-  { label: "Refund Policy", icon: CreditCard, href: "/settings/refund" },
+  { label: "Terms And Conditions", icon: FileText, href: "https://www.nexahomeapp.com/home-owner/terms-and-conditions", isExternal: true },
+  { label: "Privacy Policy", icon: Shield, href: "https://www.nexahomeapp.com/home-owner/privacy-policy", isExternal: true },
+  // { label: "Refund Policy", icon: CreditCard, href: "/settings/refund" },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -54,14 +54,18 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="grid gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
           <aside className="rounded-[24px] bg-white p-4 shadow-sm">
             <nav className="space-y-4">
-              {menuItems.map((item) => {
+              {filteredMenuItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
+                const linkProps = item.isExternal
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {}
 
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}  
+                    href={item.href}
+                    {...linkProps}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-2xl px-4 py-4 text-base font-medium transition-colors",
                       isActive
