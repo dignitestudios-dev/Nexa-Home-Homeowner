@@ -19,8 +19,8 @@ import { toast } from "sonner";
 import { useGetAdFeed } from "@/features/advertisement/hooks";
 
 const MEDIA_MAX_FILES = 10
-const IMAGE_MAX_MB = 20
-const VIDEO_MAX_MB = 20
+const IMAGE_MAX_MB = 100
+const VIDEO_MAX_MB = 100
 const ACCEPTED_TYPES = {
   'image/jpeg': true,
   'image/png': true,
@@ -417,7 +417,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
                 <div className="flex flex-col items-center gap-2">
                   <FileImage size={30} className="text-[#005864]" />
                   <span className="text-center text-[13px] text-[#18181899]">
-                    Images (JPG, PNG, WebP · max 20MB) or Videos (MP4, WebM, MOV · max 20MB)
+                    Images (JPG, PNG, WebP · max 100MB) or Videos (MP4, WebM, MOV · max 100MB)
                   </span>
                   <span className="text-[12px] text-[#18181899]">
                     Up to {MEDIA_MAX_FILES} files total · optional

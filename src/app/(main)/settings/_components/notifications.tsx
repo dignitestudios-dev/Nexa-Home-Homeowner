@@ -2,39 +2,43 @@
 
 import React from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ToggleSettingsVars, useGetSettings, UserSettings, useToggleSettings } from "@/features/settings/hooks"
-// import { useGetSettings, useToggleSettings } from "@/features/notifications/hooks"
-// import type { ToggleSettingsVars, UserSettings } from "@/features/notifications/hooks"
+import { ToggleSettingsVars, useGetSettings, useToggleSettings } from "@/features/settings/hooks"
+import { toast } from "sonner"
 
-// Map each API key → human-readable label + description
-// Add a new entry here when the backend adds a new setting key
-const SETTING_ITEMS: {
-  key: keyof UserSettings
+interface SettingItemConfig {
+  id: "job" | "review" | "engagement"
   label: string
   description: string
-}[] = [
-    {
-      key: "newJobPosted",
-      label: "New job posted",
-      description: "Receive a notification when a new job is posted.",
-    },
-    // Uncomment when provider settings are needed:
-    // {
-    //   key: "jobMatchesCategory",
-    //   label: "Job matches category",
-    //   description: "Get notified when a job matches your service category.",
-    // },
-    // {
-    //   key: "expertSelected",
-    //   label: "Expert selected",
-    //   description: "Be notified when an expert is selected for your job.",
-    // },
-    // {
-    //   key: "newReviewReceived",
-    //   label: "New review received",
-    //   description: "Get notified when you receive a new review.",
-    // },
-  ]
+  apiKeys: string[]
+  patchKey: string
+}
+
+const SETTING_ITEMS: SettingItemConfig[] = [
+  {
+    id: "job",
+    label: "Job Notifications",
+    description:
+      "Receive notifications when an expert purchases your job request or when it's time to confirm an expert.",
+    apiKeys: ["job", "jobNotifications", "newJobPosted"],
+    patchKey: "job",
+  },
+  {
+    id: "review",
+    label: "Review Notifications",
+    description:
+      "Get reminders to leave a review—your feedback helps other homeowners make informed decisions.",
+    apiKeys: ["review", "reviewNotifications", "newReviewReceived"],
+    patchKey: "review",
+  },
+  {
+    id: "engagement",
+    label: "Engagement Notifications",
+    description:
+      "Stay up to date with the latest news, features, and important updates.",
+    apiKeys: ["engagement", "engagementNotifications"],
+    patchKey: "engagement",
+  },
+]
 
 function Toggle({
   checked,
@@ -48,19 +52,20 @@ function Toggle({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={onChange}
       disabled={disabled}
       className={
-        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 " +
-        (checked ? "bg-[#34C759]" : "bg-slate-300") +
+        "relative inline-flex h-8 w-[52px] shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none " +
+        (checked ? "bg-[#005864]" : "bg-[#D9D9D9]") +
         (disabled ? " opacity-50 cursor-not-allowed" : "")
       }
-      aria-pressed={checked}
     >
       <span
         className={
-          "inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 " +
-          (checked ? "translate-x-5" : "translate-x-0.5")
+          "inline-block h-6 w-6 rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out " +
+          (checked ? "translate-x-[24px]" : "translate-x-[4px]")
         }
       />
     </button>
@@ -69,58 +74,100 @@ function Toggle({
 
 function SettingRowSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-[#F9F9F9] px-4 py-4">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36 rounded" />
-        <Skeleton className="h-3 w-56 rounded" />
+    <div className="flex items-start justify-between gap-6 py-6">
+      <div className="space-y-2 flex-1">
+        <Skeleton className="h-5 w-44 rounded-md" />
+        <Skeleton className="h-4 w-full max-w-[500px] rounded-md" />
       </div>
-      <Skeleton className="h-6 w-11 rounded-full" />
+      <Skeleton className="h-8 w-[52px] rounded-full shrink-0" />
     </div>
   )
 }
 
 export default function Notifications() {
-  const { data, isLoading } = useGetSettings()
+  const { data, isLoading, isError, refetch } = useGetSettings()
   const { mutate: toggleSetting, isPending } = useToggleSettings()
 
-  const settings = data?.data?.notifications
-  const handleToggle = (key: keyof UserSettings) => {
-    if (!settings) return
-    const payload: ToggleSettingsVars = { [key]: !settings[key] }
-    toggleSetting(payload)
+  const rawNotifications = data?.data?.notifications as Record<string, unknown> | undefined
+
+  const isItemChecked = (item: SettingItemConfig): boolean => {
+    if (!rawNotifications) return true
+    for (const key of item.apiKeys) {
+      if (rawNotifications[key] !== undefined) {
+        const val = rawNotifications[key]
+        if (typeof val === "boolean") return val
+        if (typeof val === "string") return val.toLowerCase() === "true" || val === "1"
+        if (typeof val === "number") return val === 1
+      }
+    }
+    return true
+  }
+
+  const handleToggle = (item: SettingItemConfig) => {
+    const current = isItemChecked(item)
+    const next = !current
+    const payload: ToggleSettingsVars = {
+      [item.patchKey]: next,
+      ...(item.id === "job" ? { jobNotifications: next, newJobPosted: next } : {}),
+      ...(item.id === "review" ? { reviewNotifications: next, newReviewReceived: next } : {}),
+      ...(item.id === "engagement" ? { engagementNotifications: next } : {}),
+    }
+
+    toggleSetting(payload, {
+      onError: () => {
+        toast.error("Failed to update notification settings. Please try again.")
+      },
+    })
   }
 
   return (
-    <div>
-      <h2 className="mb-6 text-2xl font-semibold tracking-tight text-[#181818]">
+    <div className="w-full">
+      <h2 className="mb-4 text-2xl font-bold tracking-tight text-[#181818]">
         Notifications
       </h2>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-[#EFEFEF]">
         {isLoading ? (
-          // Show skeletons while fetching — one per setting item
-          SETTING_ITEMS.map((item) => <SettingRowSkeleton key={item.key} />)
-        ) : !settings ? (
-          <p className="text-sm text-[rgba(24,24,24,0.5)]">
-            Failed to load settings. Please try again.
-          </p>
-        ) : (
-          SETTING_ITEMS.map((item) => (
-            <div
-              key={item.key}
-              className="flex items-center justify-between rounded-2xl bg-[#F9F9F9] px-4 py-4"
+          SETTING_ITEMS.map((item) => <SettingRowSkeleton key={item.id} />)
+        ) : isError ? (
+          <div className="py-6">
+            <p className="text-sm text-[rgba(24,24,24,0.6)]">
+              Failed to load notification settings.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-2 text-sm font-semibold text-[#005864] underline hover:opacity-80"
             >
-              <div>
-                <p className="font-medium text-[#181818]">{item.label}</p>
-                <p className="mt-0.5 text-sm text-[rgba(24,24,24,0.6)]">{item.description}</p>
+              Try again
+            </button>
+          </div>
+        ) : (
+          SETTING_ITEMS.map((item) => {
+            const checked = isItemChecked(item)
+            return (
+              <div
+                key={item.id}
+                className="flex items-start justify-between gap-6 py-6 first:pt-2"
+              >
+                <div className="max-w-[620px]">
+                  <h3 className="text-[18px] font-bold text-[#181818] leading-[24px]">
+                    {item.label}
+                  </h3>
+                  <p className="mt-2 text-[15px] font-normal leading-[22px] text-[#565656]">
+                    {item.description}
+                  </p>
+                </div>
+                <div className="pt-0.5 shrink-0">
+                  <Toggle
+                    checked={checked}
+                    onChange={() => handleToggle(item)}
+                    disabled={isPending}
+                  />
+                </div>
               </div>
-              <Toggle
-                checked={!!settings[item.key]}
-                onChange={() => handleToggle(item.key)}
-                disabled={isPending}
-              />
-            </div>
-          ))
+            )
+          })
         )}
       </div>
     </div>

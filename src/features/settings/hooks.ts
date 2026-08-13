@@ -2,12 +2,17 @@ import { useApiMutation } from "@/hooks/api/use-api-mutation"
 import { apiClient } from "@/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
 
-// User settings shape — add provider keys if needed later
+// User settings shape
 export interface UserSettings {
-  newJobPosted: boolean
-  // jobMatchesCategory: boolean
-  // expertSelected: boolean
-  // newReviewReceived: boolean
+  job?: boolean
+  jobNotifications?: boolean
+  newJobPosted?: boolean
+  review?: boolean
+  reviewNotifications?: boolean
+  newReviewReceived?: boolean
+  engagement?: boolean
+  engagementNotifications?: boolean
+  [key: string]: boolean | undefined
 }
 
 export interface GetSettingsResponse {
@@ -19,12 +24,7 @@ export interface GetSettingsResponse {
   }
 }
 
-export interface ToggleSettingsVars {
-  newJobPosted?: boolean
-  // jobMatchesCategory?: boolean
-  // expertSelected?: boolean
-  // newReviewReceived?: boolean
-}
+export type ToggleSettingsVars = Partial<UserSettings>
 
 export function useGetSettings() {
   return useQuery<GetSettingsResponse>({
