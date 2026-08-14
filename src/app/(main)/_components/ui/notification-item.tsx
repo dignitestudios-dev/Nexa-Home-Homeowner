@@ -18,10 +18,10 @@ export function NotificationItem({ item, hasRoute, onClick }: NotificationItemPr
       }`}
     >
       <div className="mb-2 flex justify-between">
-        <h3 className="text-[13px] font-bold text-[#787F8C]">
+        <h3 className={`text-[13px] font-bold ${!item.isRead ? 'text-black' : 'text-[#787F8C]'}`}>
           {item.title}
         </h3>
-        <span className="ml-4 shrink-0 text-[12px] font-medium text-[#717171]">
+        <span className={`ml-4 shrink-0 text-[12px] font-medium ${!item.isRead ? 'text-black' : 'text-[#717171]'}`}>
           {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
         </span>
       </div>
