@@ -9,10 +9,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-
 export const metadata: Metadata = {
   title: "NexaHome - User",
   description: "NexaHome - User",
+  icons: {
+    icon: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({
