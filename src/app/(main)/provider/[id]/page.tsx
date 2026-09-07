@@ -40,16 +40,18 @@ function ReviewsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="relative w-full pt-10">
-          <div className="absolute left-5 top-0 z-10">
-            <Skeleton className="h-[122px] w-[122px] rounded-full" />
-          </div>
-          <div className="rounded-[34px] bg-[#E5E5E5] px-5 pb-5 pt-14 space-y-3">
-            <div className="ml-[130px] space-y-2">
+        <div key={i} className="relative w-full">
+          <div className="rounded-[34px] bg-[#eaf0f1] px-5 pb-5 pt-6 space-y-3">
+            <div className="space-y-2">
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-4 w-20" />
+              <div className="flex gap-1 pt-1">
+                {Array.from({ length: 5 }).map((_, starIdx) => (
+                  <Skeleton key={starIdx} className="size-4 rounded-sm" />
+                ))}
+              </div>
             </div>
-            <Skeleton className="h-4 w-full mt-8" />
+            <Skeleton className="h-4 w-full mt-6" />
             <Skeleton className="h-4 w-4/5" />
             <Skeleton className="h-4 w-3/5" />
           </div>
@@ -268,12 +270,13 @@ export default function ProviderProfile() {
                 {reviews.map((r) => (
                   <ReviewCard
                     key={r._id}
-                    name={r.reviewer.name}
+                    name={r.reviewer?.name || "Anonymous"}
                     date={new Date(r.createdAt).toLocaleDateString("en-US", {
                       month: "2-digit", day: "2-digit", year: "2-digit",
                     })}
                     review={r.description}
-                    image={r.reviewer.profilePicture?.url || r.reviewer.profilePicture?.location}
+                    image={r.reviewer?.profilePicture?.url || r.reviewer?.profilePicture?.location}
+                    stars={r.stars}
                   />
                 ))}
               </div>
