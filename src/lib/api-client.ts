@@ -59,7 +59,7 @@ apiClient.interceptors.response.use(
     // Extract message from response data if available
     const message = responseData?.message || error.message || "An error occurred";
 
-    if (status === 401) {
+    if (status === 401 || status === 403) {
       console.error("Unauthorized - redirect to login");
 
       if (typeof window !== "undefined") {
