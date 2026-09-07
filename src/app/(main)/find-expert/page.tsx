@@ -59,7 +59,7 @@ const FindExpert = () => {
   const [stepTwoData, setStepTwoData] = useState<StepTwoData>({
     sendToAll: true,
     selectedProviderIds: [],
-    radius: 25,
+    radius: 75,
   });
 
   const [matchedProviders, setMatchedProviders] = useState<MatchingProvider[]>([]);
