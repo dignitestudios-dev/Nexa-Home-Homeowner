@@ -5,7 +5,7 @@ import { showError } from "@/components/ui/error-dialog";
 
 // Create instance
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.nexahomeapp.com",
   headers: {
     'ngrok-skip-browser-warning': 'true',
   },
