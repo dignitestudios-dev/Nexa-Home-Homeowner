@@ -266,26 +266,28 @@ export default function ProviderProfile() {
             ) : reviews.length === 0 ? (
               <p className="text-sm text-[rgba(24,24,24,0.5)] text-center py-10">No reviews yet.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {reviews.map((r) => (
-                  <ReviewCard
-                    key={r._id}
-                    name={r.reviewer?.name || "Anonymous"}
-                    date={new Date(r.createdAt).toLocaleDateString("en-US", {
-                      month: "2-digit", day: "2-digit", year: "2-digit",
-                    })}
-                    review={r.description}
-                    image={r.reviewer?.profilePicture?.url || r.reviewer?.profilePicture?.location}
-                    stars={r.stars}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {reviews.map((r) => (
+                    <ReviewCard
+                      key={r._id}
+                      name={r.reviewer?.name || "Anonymous"}
+                      date={new Date(r.createdAt).toLocaleDateString("en-US", {
+                        month: "2-digit", day: "2-digit", year: "2-digit",
+                      })}
+                      review={r.description}
+                      image={r.reviewer?.profilePicture?.url || r.reviewer?.profilePicture?.location}
+                      stars={r.stars}
+                    />
+                  ))}
+                </div>
+                <Pagination
+                  page={reviewPage}
+                  totalPages={totalReviewPages}
+                  onPageChange={setReviewPage}
+                />
+              </>
             )}
-            <Pagination
-              page={reviewPage}
-              totalPages={totalReviewPages}
-              onPageChange={setReviewPage}
-            />
           </div>
         )}
       </div>

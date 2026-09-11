@@ -27,7 +27,7 @@ export default function EmailSettings() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState<string[]>(['', '', '', '', ''])
-  const [resendTimer, setResendTimer] = useState(60)
+  const [resendTimer, setResendTimer] = useState(120)
   const [canResend, setCanResend] = useState(false)
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -65,7 +65,7 @@ export default function EmailSettings() {
       if (data.success) {
         setEmail(variables.email)
         setIsDialogOpen(true)
-        setResendTimer(60)
+        setResendTimer(120)
         setCanResend(false)
         setCode(['', '', '', '', ''])
         setTimeout(() => inputRefs.current[0]?.focus(), 100)
@@ -155,7 +155,7 @@ export default function EmailSettings() {
 
         <Button
           type="submit"
-          disabled={isSending || !emailChanged}
+          disabled={isSending || !emailChanged || !formEmail?.trim()}
           className="w-full sm:w-auto text-white py-5  px-8 bg-[#005864] hover:bg-[#004d57] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSending ? 'Sending Code...' : 'Save Changes'}

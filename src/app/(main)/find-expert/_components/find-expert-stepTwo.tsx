@@ -234,7 +234,7 @@ export default function FindExpertStepTwo({
       </Sheet>
 
       {/* Send to All */}
-      <div className="flex items-center gap-3 mb-6 mt-6">
+      <div className="flex items-center gap-3 my-4">
         <button
           onClick={() => onToggleSendToAll(allProviderIds)}
           className={`w-6 h-6 rounded-[4px] flex items-center justify-center border transition-colors ${data.sendToAll ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300"
@@ -247,7 +247,7 @@ export default function FindExpertStepTwo({
 
       {/* Providers Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="w-full h-[100px] rounded-2xl border border-gray-200 px-3 py-4 flex items-start gap-3 bg-white">
               <Skeleton className="w-[52px] h-[52px] rounded-full shrink-0" />
@@ -260,74 +260,76 @@ export default function FindExpertStepTwo({
           ))}
         </div>
       ) : providers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
           <p className="font-medium text-[#181818]">No matching experts found.</p>
           <p className="mt-1 text-sm text-[rgba(24,24,24,0.5)]">Try increasing the search radius.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 grid-rows-5 sm:grid-cols-2 lg:grid-cols-4 gap-3 min-h-70">
-          {providers.map((provider) => {
-            const isSelected = data.sendToAll || data.selectedProviderIds.includes(provider._id);
-            return (
-              <div
-                key={provider._id}
-                onClick={() => window.open(`/provider/${provider._id}`, "_blank")}
-                className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 cursor-pointer ${isSelected
-                  ? "bg-[rgba(0,88,100,0.1)] border-[#005864]"
-                  : "bg-white border-gray-200 hover:border-[#005864]/40"
-                  }`}
-              >
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleProvider(provider._id, allProviderIds);
-                  }}
-                  className={`absolute top-2 right-2 w-5 h-5 rounded-[4px] flex items-center justify-center border transition-all z-10 ${
-                    isSelected ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300 hover:border-[#005864]"
-                  }`}
+        <div className="max-h-[calc(100vh-300px)] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {providers.map((provider) => {
+              const isSelected = data.sendToAll || data.selectedProviderIds.includes(provider._id);
+              return (
+                <div
+                  key={provider._id}
+                  onClick={() => window.open(`/provider/${provider._id}`, "_blank")}
+                  className={`relative w-full h-[100px] rounded-2xl border text-left transition-all px-3 py-4 flex items-start gap-3 cursor-pointer ${isSelected
+                    ? "bg-[rgba(0,88,100,0.1)] border-[#005864]"
+                    : "bg-white border-gray-200 hover:border-[#005864]/40"
+                    }`}
                 >
-                  {isSelected && <Check size={12} color="white" strokeWidth={2.5} />}
-                </button>
-                <ProviderAvatar name={provider.name} profilePicture={provider.profilePicture} />
-                <div className="flex flex-col gap-1 min-w-0">
-                  <span className="flex items-center gap-1 text-[16px] font-semibold text-black leading-[20px] truncate pr-6">
-                    <span className="max-w-[90%] truncate">
-                      {provider.name}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleProvider(provider._id, allProviderIds);
+                    }}
+                    className={`absolute top-2 right-2 w-5 h-5 rounded-[4px] flex items-center justify-center border transition-all z-10 ${
+                      isSelected ? "bg-[#005864] border-[#005864]" : "bg-white border-gray-300 hover:border-[#005864]"
+                    }`}
+                  >
+                    {isSelected && <Check size={12} color="white" strokeWidth={2.5} />}
+                  </button>
+                  <ProviderAvatar name={provider.name} profilePicture={provider.profilePicture} />
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span className="flex items-center gap-1 text-[16px] font-semibold text-black leading-[20px] truncate pr-6">
+                      <span className="max-w-[90%] truncate">
+                        {provider.name}
+                      </span>
+                      {provider.isVerifiedBadge && (
+                        <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+                      )}
                     </span>
-                    {provider.isVerifiedBadge && (
-                      <BadgeCheck size={16} className="text-white fill-[#2E59D7] shrink-0" />
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const fillAmount = Math.max(0, Math.min(1, provider.averageRating - i));
+                        return (
+                          <div key={i} className="relative" style={{ width: 11, height: 11 }}>
+                            <Star size={11} className="text-[#E5E5E5] fill-[#E5E5E5] absolute inset-0" />
+                            {fillAmount > 0 && (
+                              <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillAmount * 100}%` }}>
+                                <Star size={11} className="text-[#EDAF35] fill-[#EDAF35] absolute inset-0 max-w-none" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
+                    </div>
+                    {provider.area && (
+                      <span className="text-[13px] text-[rgba(24,24,24,0.8)] leading-[18px] truncate">
+                        {provider.area}
+                      </span>
                     )}
-                  </span>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => {
-                      const fillAmount = Math.max(0, Math.min(1, provider.averageRating - i));
-                      return (
-                        <div key={i} className="relative" style={{ width: 11, height: 11 }}>
-                          <Star size={11} className="text-[#E5E5E5] fill-[#E5E5E5] absolute inset-0" />
-                          {fillAmount > 0 && (
-                            <div className="absolute inset-0 overflow-hidden" style={{ width: `${fillAmount * 100}%` }}>
-                              <Star size={11} className="text-[#EDAF35] fill-[#EDAF35] absolute inset-0 max-w-none" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    <span className="text-[11px] font-medium text-[rgba(24,24,24,0.6)] ml-1">{provider.averageRating.toFixed(1)}</span>
                   </div>
-                  {provider.area && (
-                    <span className="text-[13px] text-[rgba(24,24,24,0.8)] leading-[18px] truncate">
-                      {provider.area}
-                    </span>
-                  )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-end mt-6">
         <button
           onClick={onNext}
           disabled={(!data.sendToAll && data.selectedProviderIds.length === 0) || (data.sendToAll && providers.length === 0)}
