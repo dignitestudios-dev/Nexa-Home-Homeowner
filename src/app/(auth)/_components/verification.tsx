@@ -41,7 +41,7 @@ export default function Verification() {
   });
 
   const [code, setCode] = useState<string[]>(["", "", "", "", ""]);
-  const [resendTimer, setResendTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const queryClient = useQueryClient();
@@ -137,7 +137,7 @@ export default function Verification() {
   const isPending = isSocialFlow ? isVerifyChangePending : isVerifyPending;
 
   const onResendSuccess = () => {
-    setResendTimer(60);
+    setResendTimer(120);
     setCanResend(false);
     setCode(["", "", "", "", ""]);
     setValue("code", "");

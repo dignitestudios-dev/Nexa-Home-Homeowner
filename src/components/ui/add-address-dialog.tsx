@@ -108,10 +108,25 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
     defaultValues: emptyForm,
   })
 
+  const watchLabel = watch('label')
+  const watchAddress = watch('address')
+  const watchCountry = watch('country')
+  const watchCity = watch('city')
+  const watchZipCode = watch('zipCode')
   const watchLatitude = watch('latitude')
   const watchLongitude = watch('longitude')
   const watchLat = watchLatitude ? parseFloat(watchLatitude) : null
   const watchLng = watchLongitude ? parseFloat(watchLongitude) : null
+
+  const isFormValid = Boolean(
+    watchLabel?.trim() &&
+    watchAddress?.trim() &&
+    watchCountry?.trim() &&
+    watchCity?.trim() &&
+    watchZipCode?.trim() &&
+    watchLatitude?.trim() &&
+    watchLongitude?.trim()
+  )
 
   const mapRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -269,6 +284,22 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
     }
   }, [isLoaded, open, watchLat, watchLng]);
 
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handlePacMousedown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('.pac-container')) {
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener('mousedown', handlePacMousedown, true);
+    return () => {
+      document.removeEventListener('mousedown', handlePacMousedown, true);
+    };
+  }, [open]);
+
   const onSubmit = (data: AddressFormData) => {
     onSave({
       label: data.label,
@@ -287,7 +318,21 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[80%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8">
+      <DialogContent
+        onPointerDownOutside={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (target?.closest?.('.pac-container')) {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (target?.closest?.('.pac-container')) {
+            e.preventDefault();
+          }
+        }}
+        className="relative w-full max-w-131.25! fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] h-[80%] overflow-y-auto rounded-xl bg-[#F8F8F8] p-6 sm:p-8"
+      >
         <div className="flex items-start justify-between gap-4">
           <DialogTitle className="text-[28px] font-semibold text-[#181818]">{title}</DialogTitle>
         </div>
@@ -394,7 +439,7 @@ export function AddAddressDialog({ open, onOpenChange, onSave, isPending, initia
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !isFormValid}
             className="mt-6 w-full rounded-xl bg-[#005864] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#004550] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Saving...' : 'Save Address'}

@@ -166,6 +166,7 @@ const AddAddress = () => {
             <button
               type="button"
               onClick={handleContinue}
+              disabled={addresses.length === 0 || isLoading}
               className="mt-2 w-full rounded-[12px] bg-[#005864] px-4 py-3 text-base font-semibold text-white transition hover:bg-[#004550] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue

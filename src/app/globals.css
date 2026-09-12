@@ -308,3 +308,8 @@
   animation: ringD 1.5s linear infinite;
 }
 
+.pac-container {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+

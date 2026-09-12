@@ -30,7 +30,7 @@ export default function ChangePhoneNumber() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState<string[]>(['', '', '', '', ''])
-  const [resendTimer, setResendTimer] = useState(60)
+  const [resendTimer, setResendTimer] = useState(120)
   const [canResend, setCanResend] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
   const [errorOpen, setErrorOpen] = useState(false)
@@ -71,7 +71,7 @@ export default function ChangePhoneNumber() {
       if (data.success) {
         setPhone(variables.phone)
         setIsDialogOpen(true)
-        setResendTimer(60)
+        setResendTimer(120)
         setCanResend(false)
         setCode(['', '', '', '', ''])
         setTimeout(() => inputRefs.current[0]?.focus(), 100)
