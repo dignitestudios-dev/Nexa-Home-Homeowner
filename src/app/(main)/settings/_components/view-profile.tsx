@@ -254,11 +254,11 @@ export default function ViewProfile() {
             {/* Email (read-only) */}
             <div className="mb-2">
               <div className="flex items-center h-12 w-full rounded-[12px] bg-[rgba(0,88,100,0.06)] px-4">
-                <span className="text-[16px] italic text-black">{user?.email ?? 'Not Provided'}</span>
+                <span className="text-[16px] italic   text-black/50 cursor-not-allowed">{user?.email ?? 'Not Provided'}</span>
               </div>
-              <p className="mt-2 text-[16px] leading-5 text-[rgba(24,24,24,0.6)]">
+              {/* <p className="mt-2 text-[16px] leading-5 text-[rgba(24,24,24,0.6)]">
                 Your email address cannot be changed for security reasons.
-              </p>
+              </p> */}
             </div>
 
             {/* Divider */}
