@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
+  HelpCircle,
   MapPin,
   Mail,
   Phone,
@@ -19,6 +20,7 @@ import { useGetOwnUser } from "@/features/user/hooks";
 
 const menuItems = [
   { label: "Notifications", icon: Bell, href: "/settings/notifications" },
+  { label: "App Tutorial", icon: HelpCircle, href: "/settings/tutorial" },
   { label: "Email Address", icon: Mail, href: "/settings/email" },
   { label: "Change Phone Number", icon: Phone, href: "/settings/change-phone" },
   { label: "Address", icon: MapPin, href: "/settings/address" },

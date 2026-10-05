@@ -88,6 +88,7 @@ interface GetJobsResponse {
     jobs: Job[]
     tab: string
     pagination: JobPagination
+    confirmExpertCount?: number
   }
 }
 

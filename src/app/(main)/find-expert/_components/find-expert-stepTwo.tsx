@@ -136,7 +136,7 @@ export default function FindExpertStepTwo({
   return (
     <div>
       <style>{sliderStyles}</style>
-      <div className="flex items-center justify-between py-2">
+      <div id="tutorial-step-two-header" className="flex items-center justify-between py-2">
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="flex items-center text-[#005864] hover:text-[#004750] transition-colors">
             <ArrowLeft size={20} />

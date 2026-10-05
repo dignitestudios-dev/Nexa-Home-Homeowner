@@ -22,10 +22,16 @@ export function ServiceCard({
 }: ServiceCardProps) {
   const id = showStatus ? "123" : "456"; // Example IDs for demonstration
   const router = useRouter();
+  const isGreenBorder =
+    status?.toString().trim().toLowerCase() === "confirm expert" ||
+    status?.toString().trim().toLowerCase() === "awaiting response";
+
   return (
     <div
       onClick={() => router.push(`/service-details/${id}`)}
-      className="w-[396px] min-h-[168px] rounded-[12px] bg-[#F8F8F8] p-4 flex flex-col justify-between"
+      className={`w-[396px] min-h-[168px] rounded-[12px] bg-[#F8F8F8] p-4 flex flex-col justify-between transition-all ${
+        isGreenBorder ? "border-2 border-green-500" : "border-2 border-transparent"
+      }`}
     >
       {/* Top Content */}
       <div className="flex flex-col gap-3">
