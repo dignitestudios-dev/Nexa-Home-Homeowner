@@ -1,9 +1,12 @@
 /* Nexa Home Custom Styles for Driver.js Tour Popovers */
 
-/* Backdrop overlay */
+/* Backdrop overlay - keep transparent and blur-free so highlighted element is sharp and crystal clear */
 .driver-overlay {
-  background-color: rgba(0, 18, 22, 0.72) !important;
-  backdrop-filter: blur(2px) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
   position: fixed !important;
   inset: 0 !important;
   z-index: 1000000000 !important;
