@@ -39,9 +39,9 @@ body .driver-popover,
   background-color: #ffffff !important;
   color: #181818 !important;
   border-radius: 20px !important;
-  min-width: 360px !important;
-  max-width: 440px !important;
-  width: 420px !important;
+  width: min(480px, calc(100vw - 32px)) !important;
+  min-width: min(320px, calc(100vw - 32px)) !important;
+  max-width: 500px !important;
   padding: 24px 24px 20px 24px !important;
   box-shadow: 0 20px 45px -10px rgba(0, 40, 50, 0.28), 0 0 0 1px rgba(0, 88, 100, 0.12) !important;
   border: 1px solid rgba(0, 88, 100, 0.1) !important;
@@ -125,24 +125,14 @@ body .driver-popover .driver-popover-footer,
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 12px !important;
-  flex-wrap: nowrap !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
 }
 
-/* Step Progress Badge ("Step 1 of 2") */
+/* Hide Step 1 of 1 badge since steps are already titled with step numbers */
 body .driver-popover .driver-popover-progress-text,
 .driver-popover .driver-popover-progress-text {
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  color: #005864 !important;
-  background: rgba(0, 88, 100, 0.08) !important;
-  padding: 5px 10px !important;
-  border-radius: 8px !important;
-  white-space: nowrap !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
+  display: none !important;
 }
 
 /* Button Container */
@@ -152,7 +142,8 @@ body .driver-popover .driver-popover-navigation-btns,
   align-items: center !important;
   gap: 8px !important;
   justify-content: flex-end !important;
-  flex-shrink: 0 !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
 }
 
 /* Back / Prev Button */
@@ -165,11 +156,11 @@ body .driver-popover .driver-popover-footer-btn.driver-popover-prev-btn,
   border: 1px solid #CBD5E1 !important;
   border-radius: 12px !important;
   padding: 8px 14px !important;
-  font-size: 12.5px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
-  min-height: 38px !important;
+  min-height: 40px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -196,12 +187,13 @@ body .driver-popover .driver-popover-footer-btn.driver-popover-next-btn,
   font-weight: 600 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
-  min-height: 38px !important;
+  min-height: 40px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-shadow: 0 4px 12px rgba(0, 88, 100, 0.28) !important;
   transition: all 0.15s ease-in-out !important;
+  margin-left: auto !important;
 }
 
 .driver-popover .driver-popover-next-btn:hover {

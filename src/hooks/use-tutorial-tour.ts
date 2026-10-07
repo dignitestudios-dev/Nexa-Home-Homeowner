@@ -172,7 +172,7 @@ export function useTutorialTour() {
           ...TUTORIAL_STEPS.WIZARD_STEP_THREE,
           popover: {
             ...TUTORIAL_STEPS.WIZARD_STEP_THREE.popover,
-            nextBtnText: "Finish Tutorial 🎉",
+            nextBtnText: "Submit Lead & Go to Ongoing →",
             prevBtnText: "← Step 2",
             onPrevClick: () => {
               driverObj.destroy();
@@ -180,11 +180,7 @@ export function useTutorialTour() {
             },
             onNextClick: () => {
               driverObj.destroy();
-              setTutorialCompleted(true, userId);
-              toast.success("Tutorial completed! You're ready to find experts.", {
-                description: "You can re-watch this walkthrough anytime from Settings.",
-              });
-              router.push("/dashboard");
+              router.push("/dashboard?tab=ongoing&startTutorial=ongoing");
             },
           },
         },
@@ -200,6 +196,109 @@ export function useTutorialTour() {
     [router]
   );
 
+  /**
+   * Drives Ongoing step on Dashboard
+   */
+  const driveOngoingTutorialStep = useCallback(
+    (onNextToCompleted: () => void) => {
+      if (driverInstanceRef.current) {
+        driverInstanceRef.current.destroy();
+      }
+
+      const driverObj = createTutorialDriver();
+      driverInstanceRef.current = driverObj;
+
+      driverObj.setSteps([
+        {
+          ...TUTORIAL_STEPS.DASHBOARD_ONGOING,
+          popover: {
+            ...TUTORIAL_STEPS.DASHBOARD_ONGOING.popover,
+            nextBtnText: "Next: Completed Tab →",
+            prevBtnText: "← Step 3 (Review)",
+            onPrevClick: () => {
+              driverObj.destroy();
+              router.push("/tutorial/step-3");
+            },
+            onNextClick: () => {
+              driverObj.destroy();
+              onNextToCompleted();
+            },
+          },
+        },
+      ]);
+
+      setTimeout(() => {
+        const target = document.querySelector("#tutorial-ongoing-tab-section");
+        if (target) {
+          driverObj.drive(0);
+        }
+      }, 350);
+    },
+    [router]
+  );
+
+  /**
+   * Drives Completed step on Dashboard
+   */
+  const driveCompletedTutorialStep = useCallback(
+    (onBackToOngoing: () => void, onFinish: () => void) => {
+      if (driverInstanceRef.current) {
+        driverInstanceRef.current.destroy();
+      }
+
+      let isFinished = false;
+      const triggerFinish = () => {
+        if (isFinished) return;
+        isFinished = true;
+        if (driverInstanceRef.current) {
+          driverInstanceRef.current.destroy();
+          driverInstanceRef.current = null;
+        }
+        onFinish();
+      };
+
+      const driverObj = createTutorialDriver({
+        onDestroyed: () => {
+          driverInstanceRef.current = null;
+        },
+      });
+      driverInstanceRef.current = driverObj;
+
+      driverObj.setSteps([
+        {
+          ...TUTORIAL_STEPS.DASHBOARD_COMPLETED,
+          popover: {
+            ...TUTORIAL_STEPS.DASHBOARD_COMPLETED.popover,
+            nextBtnText: "Finish Tutorial 🎉",
+            doneBtnText: "Finish Tutorial 🎉",
+            prevBtnText: "← Ongoing Tab",
+            onPrevClick: () => {
+              driverObj.destroy();
+              onBackToOngoing();
+            },
+            onNextClick: () => {
+              triggerFinish();
+            },
+            onDoneClick: () => {
+              triggerFinish();
+            },
+            onCloseClick: () => {
+              triggerFinish();
+            },
+          },
+        },
+      ]);
+
+      setTimeout(() => {
+        const target = document.querySelector("#tutorial-completed-tab-section");
+        if (target) {
+          driverObj.drive(0);
+        }
+      }, 350);
+    },
+    []
+  );
+
   const stopTour = useCallback(() => {
     if (driverInstanceRef.current) {
       driverInstanceRef.current.destroy();
@@ -209,6 +308,8 @@ export function useTutorialTour() {
 
   return {
     startDashboardTour,
+    driveOngoingTutorialStep,
+    driveCompletedTutorialStep,
     runWizardStepOne,
     runWizardStepTwo,
     runWizardStepThree,

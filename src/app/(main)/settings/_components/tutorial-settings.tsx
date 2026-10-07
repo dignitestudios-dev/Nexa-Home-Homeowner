@@ -13,6 +13,7 @@ import {
   Users,
   Send,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetOwnUser } from "@/features/user/hooks";
@@ -59,6 +60,14 @@ const TUTORIAL_STEPS_OVERVIEW = [
     desc: "Review your request summary and submit your lead. Verified pros will receive your request and respond with quotes.",
     highlight: "Step 3 Demo Page",
     href: "/tutorial/step-3",
+  },
+  {
+    step: 6,
+    title: "Track Ongoing & Completed",
+    icon: Clock,
+    desc: "Monitor submitted requests with live expert responses and review your archived completed projects history.",
+    highlight: "Dashboard Ongoing Tab",
+    href: "/dashboard?tab=ongoing&startTutorial=ongoing",
   },
 ];
 

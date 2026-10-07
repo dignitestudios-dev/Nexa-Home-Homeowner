@@ -45,6 +45,8 @@ export const createTutorialDriver = (options?: {
   onDestroyed?: () => void;
   onNextClick?: () => void;
   onPrevClick?: () => void;
+  onDoneClick?: () => void;
+  onCloseClick?: () => void;
 }): Driver => {
   return driver({
     animate: true,
@@ -56,14 +58,16 @@ export const createTutorialDriver = (options?: {
     stagePadding: 8,
     stageRadius: 16,
     popoverClass: "nexa-tutorial-popover",
-    showProgress: true,
+    showProgress: false,
     showButtons: ["next", "previous"],
-    progressText: "Step {{current}} of {{total}}",
     nextBtnText: "Next Step →",
     prevBtnText: "← Back",
     doneBtnText: "Got It!",
     onDestroyStarted: options?.onDestroyStarted,
     onDestroyed: options?.onDestroyed,
+    onNextClick: options?.onNextClick,
+    onPrevClick: options?.onPrevClick,
+    onCloseClick: options?.onCloseClick,
   });
 };
 
@@ -147,7 +151,7 @@ export const TUTORIAL_STEPS = {
   WIZARD_STEP_THREE: {
     element: "#tutorial-step-three-header",
     popover: {
-      title: "5. Step 3: Review & Submit Lead",
+      title: "3. Step 3: Review & Submit Lead",
       description: `
         <div class="space-y-2 text-[13px] leading-relaxed">
           <p>You're almost done! Double check all details:</p>
@@ -162,4 +166,41 @@ export const TUTORIAL_STEPS = {
       align: "start" as const,
     },
   },
+
+  // Step 4: Ongoing Requests & 3 Statuses
+  DASHBOARD_ONGOING: {
+    element: "#tutorial-ongoing-tab-section",
+    popover: {
+      title: "4. Ongoing Requests & 3 Statuses",
+      description: `
+        <div class="space-y-2 text-[13px] leading-relaxed">
+          <p>Created leads appear in the <strong>Ongoing</strong> tab across 3 distinct stages:</p>
+          <ul class="list-disc pl-4 space-y-1">
+            <li><strong>Awaiting Response (Yellow):</strong> Request sent; waiting for nearby expert replies.</li>
+            <li><strong>Confirm Expert (Red):</strong> Pros have submitted quotes; ready for you to confirm.</li>
+            <li><strong>Ongoing (Blue):</strong> Expert is confirmed and work is actively in progress.</li>
+          </ul>
+        </div>
+      `,
+      side: "top" as const,
+      align: "center" as const,
+    },
+  },
+
+  // Step 5: Completed Jobs & History
+  DASHBOARD_COMPLETED: {
+    element: "#tutorial-completed-tab-section",
+    popover: {
+      title: "5. Completed Jobs & History",
+      description: `
+        <div class="space-y-2 text-[13px] leading-relaxed">
+          <p>Once a service is finished and marked done, it moves to the <strong>Completed</strong> tab.</p>
+          <p>Here you can easily reference your past job records, receipts, and contractor details anytime.</p>
+        </div>
+      `,
+      side: "top" as const,
+      align: "center" as const,
+    },
+  },
 };
+

@@ -22,7 +22,8 @@ import SearchInput from "./ui/search-input";
 import { useUpdateFcmToken } from "@/features/auth/hooks";
 import { getFcmToken } from '@/lib/firebase';
 import { useTutorialTour } from "@/hooks/use-tutorial-tour";
-import { isTutorialCompleted } from "@/lib/tutorial";
+import { isTutorialCompleted, setTutorialCompleted } from "@/lib/tutorial";
+import { toast } from "sonner";
 
 type Props = {};
 
@@ -172,18 +173,43 @@ const Dashboard = (props: Props) => {
     }
   }, [jobsCountData, hasShownJobsPopup]);
 
-  const { startDashboardTour } = useTutorialTour();
+  const isTutorialOngoing = searchParams.get("startTutorial") === "ongoing";
+  const {
+    startDashboardTour,
+    driveOngoingTutorialStep,
+    driveCompletedTutorialStep,
+  } = useTutorialTour();
 
-  // Show tutorial once on first signup / login or when ?startTutorial=true
+  // Show tutorial once on first signup / login or when ?startTutorial=true / ?startTutorial=ongoing
   useEffect(() => {
     if (isUserLoading || !userData?.data) return;
     if (emailPopupOpen || jobsCountPopupOpen || isLocationDialogOpen) return;
 
-    const startParam = searchParams.get("startTutorial") === "true";
+    const startParam = searchParams.get("startTutorial");
     const userId = userData.data._id;
     const completed = isTutorialCompleted(userId);
 
-    if (startParam || !completed) {
+    if (startParam === "ongoing") {
+      const timer = setTimeout(() => {
+        if (activeTab === "Ongoing") {
+          driveOngoingTutorialStep(() => {
+            handleTabChange("Completed");
+          });
+        } else if (activeTab === "Completed") {
+          driveCompletedTutorialStep(
+            () => handleTabChange("Ongoing"),
+            () => {
+              setTutorialCompleted(true, userId);
+              toast.success("Tutorial completed! You're ready to find experts.", {
+                description: "You can re-watch this walkthrough anytime from Settings.",
+              });
+              window.location.href = "/dashboard";
+            }
+          );
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    } else if (startParam === "true" || !completed) {
       const timer = setTimeout(() => {
         startDashboardTour(userId);
       }, 700);
@@ -193,10 +219,14 @@ const Dashboard = (props: Props) => {
     isUserLoading,
     userData,
     searchParams,
+    activeTab,
     emailPopupOpen,
     jobsCountPopupOpen,
     isLocationDialogOpen,
     startDashboardTour,
+    driveOngoingTutorialStep,
+    driveCompletedTutorialStep,
+    router,
   ]);
 
   useEffect(() => {
@@ -339,10 +369,12 @@ const Dashboard = (props: Props) => {
                   )}
                 >
                   <span>{tab}</span>
-                  {tab === "Ongoing" && typeof confirmExpertCount === "number" && confirmExpertCount > 0 && (
-                    <span className="inline-flex items-center justify-center text-xs font-semibold px-1.5 min-w-[20px] h-5 rounded-full bg-[#FF0000] text-white">
-                      {confirmExpertCount}
-                    </span>
+                  {tab === "Ongoing" && (
+                    (isTutorialOngoing || (typeof confirmExpertCount === "number" && confirmExpertCount > 0)) && (
+                      <span className="inline-flex items-center justify-center text-xs font-semibold px-1.5 min-w-[20px] h-5 rounded-full bg-[#FF0000] text-white">
+                        {isTutorialOngoing ? 3 : confirmExpertCount}
+                      </span>
+                    )
                   )}
                 </button>
               );
@@ -366,8 +398,20 @@ const Dashboard = (props: Props) => {
         )
 
       }
-      {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" search={search} />}
-      {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" search={search} />}
+      {activeTab === 'Ongoing' && (
+        <OnGoingServicesTab
+          tab="ongoing"
+          search={search}
+          isTutorialMode={isTutorialOngoing}
+        />
+      )}
+      {activeTab === 'Completed' && (
+        <OnGoingServicesTab
+          tab="completed"
+          search={search}
+          isTutorialMode={isTutorialOngoing}
+        />
+      )}
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
         <DialogContent className="sm:max-w-[400px] border-none p-0  rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}

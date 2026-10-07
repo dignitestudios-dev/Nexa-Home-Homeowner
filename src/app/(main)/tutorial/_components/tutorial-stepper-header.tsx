@@ -7,7 +7,7 @@ import { Sparkles, X, Check, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TutorialStepperHeaderProps {
-  currentStep: 1 | 2 | 3;
+  currentStep: 1 | 2 | 3 | 4;
   title: string;
 }
 

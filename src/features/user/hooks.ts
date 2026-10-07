@@ -245,7 +245,10 @@ export function useRequestCategory(
   })
 }
 
-export function useGetJobs(params: { tab: JobTab; page: number; limit: number; search?: string }) {
+export function useGetJobs(
+  params: { tab: JobTab; page: number; limit: number; search?: string },
+  options?: { enabled?: boolean }
+) {
   return useQuery<GetJobsResponse>({
     queryKey: ['jobs', params],
     queryFn: async () => {
@@ -259,6 +262,7 @@ export function useGetJobs(params: { tab: JobTab; page: number; limit: number; s
       })
       return res.data
     },
+    enabled: options?.enabled,
   })
 }
 

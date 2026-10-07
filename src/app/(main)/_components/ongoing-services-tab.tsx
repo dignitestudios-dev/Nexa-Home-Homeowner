@@ -10,15 +10,104 @@ import { Pagination } from '@/components/ui/pagination'
 
 type Props = {
   tab: JobTab;
-  search?:string
+  search?: string;
+  isTutorialMode?: boolean;
 }
 
 const LIMIT = 12
 
-export default function OnGoingServicesTab({ tab ,search }: Props) {
+const TUTORIAL_DUMMY_ONGOING = [
+  {
+    _id: "tutorial-dummy-job-1",
+    serviceName: "Landscaping & Lawn Care",
+    description: "Looking for weekly front and backyard lawn mowing, precision edging, and seasonal hedge trimming.",
+    when: "Right away",
+    status: "Ongoing" as const,
+    postedDate: "Today",
+    actionText: "Awaiting Response",
+  },
+  {
+    _id: "tutorial-dummy-job-2",
+    serviceName: "Plumbing Pipe Repair",
+    description: "Fixing kitchen sink pressure leak and full inspection of master bathroom drainage valve.",
+    when: "This week",
+    status: "Ongoing" as const,
+    postedDate: "Yesterday",
+    actionText: "Confirm Expert",
+  },
+  {
+    _id: "tutorial-dummy-job-3",
+    serviceName: "HVAC System Tune-Up",
+    description: "Seasonal AC coil cleaning, compressor diagnostics, and smart thermostat calibration.",
+    when: "Flexible",
+    status: "Ongoing" as const,
+    postedDate: "10/05/26",
+    actionText: "Ongoing",
+  },
+];
+
+const TUTORIAL_DUMMY_COMPLETED = [
+  {
+    _id: "tutorial-dummy-comp-1",
+    serviceName: "Gutter Cleaning & Guard Installation",
+    description: "Full residential gutter debris cleanout, downspout flushing, and high-durability mesh leaf guard fitting.",
+    when: "Completed",
+    status: "Completed" as const,
+    postedDate: "09/28/26",
+    actionText: "Completed",
+  },
+  {
+    _id: "tutorial-dummy-comp-2",
+    serviceName: "Electrical Panel Upgrade",
+    description: "200A main breaker panel replacement with new safety surge protectors and labeled circuits.",
+    when: "Completed",
+    status: "Completed" as const,
+    postedDate: "09/15/26",
+    actionText: "Completed",
+  },
+  {
+    _id: "tutorial-dummy-comp-3",
+    serviceName: "Pest Control & Termite Barrier",
+    description: "Comprehensive perimeter spray application, foundation sealing, and preventative termite inspection.",
+    when: "Completed",
+    status: "Completed" as const,
+    postedDate: "08/30/26",
+    actionText: "Completed",
+  },
+];
+
+export default function OnGoingServicesTab({ tab, search, isTutorialMode = false }: Props) {
   const [page, setPage] = useState(1)
 
-  const { data, isLoading } = useGetJobs({ tab, page, limit: LIMIT,search })
+  const { data, isLoading } = useGetJobs(
+    { tab, page, limit: LIMIT, search },
+    { enabled: !isTutorialMode }
+  )
+
+  if (isTutorialMode) {
+    const dummyList = tab === "ongoing" ? TUTORIAL_DUMMY_ONGOING : TUTORIAL_DUMMY_COMPLETED;
+    const sectionId = tab === "ongoing" ? "tutorial-ongoing-tab-section" : "tutorial-completed-tab-section";
+
+    return (
+      <div id={sectionId} className="w-full space-y-6">
+        <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 w-full">
+          {dummyList.map((job) => (
+            <ServiceCard
+              key={job._id}
+              id={job._id}
+              serviceName={job.serviceName}
+              description={job.description}
+              when={job.when}
+              status={job.status}
+              postedDate={job.postedDate}
+              actionText={job.actionText}
+              disableLink={true}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const jobs = data?.data?.jobs ?? []
   const pagination = data?.data?.pagination

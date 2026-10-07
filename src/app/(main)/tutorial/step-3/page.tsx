@@ -33,7 +33,7 @@ export default function TutorialStepThreePage() {
         ...TUTORIAL_STEPS.WIZARD_STEP_THREE,
         popover: {
           ...TUTORIAL_STEPS.WIZARD_STEP_THREE.popover,
-          nextBtnText: "Finish Tutorial 🎉",
+          nextBtnText: "Submit Lead & Go to Ongoing →",
           prevBtnText: "← Step 2",
           onPrevClick: () => {
             driverObj.destroy();
@@ -41,7 +41,7 @@ export default function TutorialStepThreePage() {
           },
           onNextClick: () => {
             driverObj.destroy();
-            handleFinish();
+            router.push("/dashboard?tab=ongoing&startTutorial=ongoing");
           },
         },
       },
@@ -66,16 +66,7 @@ export default function TutorialStepThreePage() {
     if (driverRef.current) {
       driverRef.current.destroy();
     }
-    setTutorialCompleted(true, userId);
-    setSuccessModalOpen(true);
-  };
-
-  const handleDoneReturn = () => {
-    setSuccessModalOpen(false);
-    toast.success("Walkthrough completed! You're ready to find experts.", {
-      description: "You can watch this tutorial anytime from Settings -> App Tutorial.",
-    });
-    router.push("/dashboard");
+    router.push("/dashboard?tab=ongoing&startTutorial=ongoing");
   };
 
   const handleBack = () => {
@@ -93,32 +84,6 @@ export default function TutorialStepThreePage() {
         onBack={handleBack}
         onSuccess={handleFinish}
       />
-
-      {/* Tutorial Success Celebration Dialog */}
-      <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent className="sm:max-w-[480px] p-8 rounded-3xl bg-white border-none shadow-2xl text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#005864]/10 text-[#005864] mb-4">
-            <CheckCircle2 className="size-10" />
-          </div>
-
-          <DialogTitle className="text-2xl font-bold text-[#181818]">
-            Tutorial Complete! 🎉
-          </DialogTitle>
-
-          <DialogDescription className="text-sm text-slate-600 mt-2 leading-relaxed">
-            You have successfully completed the walkthrough! You now know how to find experts, specify requirements, and create leads on Nexa Home.
-          </DialogDescription>
-
-          <div className="mt-6 space-y-3">
-            <Button
-              onClick={handleDoneReturn}
-              className="w-full h-12 rounded-xl bg-[#005864] hover:bg-[#004752] text-white font-bold text-base cursor-pointer"
-            >
-              Go to Dashboard & Start Finding Pros
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
