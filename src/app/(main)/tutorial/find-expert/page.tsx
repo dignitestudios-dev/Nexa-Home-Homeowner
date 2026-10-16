@@ -155,29 +155,46 @@ export default function TutorialFindExpertPage() {
     driverRef.current = driverObj;
 
     driverObj.setSteps([
+      // Popup 11: Discovery / Smart Search
       {
-        ...TUTORIAL_STEPS.FIND_EXPERT_SEARCH,
+        ...TUTORIAL_STEPS.DISCOVERY_SMART_SEARCH,
         popover: {
-          ...TUTORIAL_STEPS.FIND_EXPERT_SEARCH.popover,
-          nextBtnText: "Next: Request Category →",
-          prevBtnText: "← Step 4 (History)",
+          ...TUTORIAL_STEPS.DISCOVERY_SMART_SEARCH.popover,
+          nextBtnText: "Next Step →",
+          prevBtnText: "← Find an Expert",
           onPrevClick: () => {
             driverObj.destroy();
-            router.push("/tutorial/step-4");
+            router.push("/dashboard?tab=completed&startTutorial=find-expert");
           },
           onNextClick: () => {
             driverObj.drive(1);
           },
         },
       },
+      // Popup 12: System / Notifications
       {
-        ...TUTORIAL_STEPS.FIND_EXPERT_REQUEST_CATEGORY,
+        ...TUTORIAL_STEPS.SYSTEM_NOTIFICATIONS,
         popover: {
-          ...TUTORIAL_STEPS.FIND_EXPERT_REQUEST_CATEGORY.popover,
-          nextBtnText: "Finish Tutorial 🎉",
-          prevBtnText: "← Search Bar",
+          ...TUTORIAL_STEPS.SYSTEM_NOTIFICATIONS.popover,
+          nextBtnText: "Next Step →",
+          prevBtnText: "← Back",
           onPrevClick: () => {
             driverObj.drive(0);
+          },
+          onNextClick: () => {
+            driverObj.drive(2);
+          },
+        },
+      },
+      // Popup 13: Settings / Profile
+      {
+        ...TUTORIAL_STEPS.SETTINGS_PROFILE,
+        popover: {
+          ...TUTORIAL_STEPS.SETTINGS_PROFILE.popover,
+          nextBtnText: "Finish Tutorial 🎉",
+          prevBtnText: "← Back",
+          onPrevClick: () => {
+            driverObj.drive(1);
           },
           onNextClick: () => {
             driverObj.destroy();
@@ -188,7 +205,7 @@ export default function TutorialFindExpertPage() {
     ]);
 
     const timer = setTimeout(() => {
-      const el = document.querySelector("#tutorial-search-input-container");
+      const el = document.querySelector("#tutorial-smart-search-card");
       if (el) {
         driverObj.drive(0);
       }
@@ -213,7 +230,7 @@ export default function TutorialFindExpertPage() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => router.push("/tutorial/step-4")}
+            onClick={() => router.push("/dashboard?tab=completed")}
             className="flex items-center justify-center size-10 rounded-full bg-white border border-[#E5E5E5] text-[#005864] hover:bg-[#005864]/5 transition-colors shadow-xs cursor-pointer"
             aria-label="Back"
           >
@@ -241,7 +258,7 @@ export default function TutorialFindExpertPage() {
       </div>
 
       {/* Main Interactive AI Search Card */}
-      <div className="relative rounded-[24px] bg-white border border-[#E5E5E5] p-6 sm:p-10 shadow-sm flex flex-col items-center text-center overflow-hidden">
+      <div id="tutorial-smart-search-card" className="relative rounded-[24px] bg-white border border-[#E5E5E5] p-6 sm:p-10 shadow-sm flex flex-col items-center text-center overflow-hidden">
           {/* Decorative background blur */}
           <div className="absolute -top-16 -right-16 size-48 rounded-full bg-[#005864]/5 pointer-events-none blur-2xl" />
           <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-[#D7DF23]/10 pointer-events-none blur-2xl" />

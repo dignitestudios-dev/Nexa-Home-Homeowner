@@ -42,6 +42,9 @@ body .driver-popover,
   width: min(480px, calc(100vw - 32px)) !important;
   min-width: min(320px, calc(100vw - 32px)) !important;
   max-width: 500px !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: fit-content !important;
   padding: 24px 24px 20px 24px !important;
   box-shadow: 0 20px 45px -10px rgba(0, 40, 50, 0.28), 0 0 0 1px rgba(0, 88, 100, 0.12) !important;
   border: 1px solid rgba(0, 88, 100, 0.1) !important;
@@ -213,4 +216,37 @@ body .driver-popover .driver-popover-footer-btn.driver-popover-next-btn,
 .driver-popover .driver-popover-btn-disabled {
   opacity: 0.4 !important;
   pointer-events: none !important;
+}
+
+/* Popover Subtitle / Category Badge */
+.driver-popover-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 9999px !important;
+  background-color: rgba(0, 88, 100, 0.08) !important;
+  color: #005864 !important;
+  margin-bottom: 6px !important;
+}
+
+/* Custom positioning for Dashboard Home popup so it stays centered and visible without scrolling down */
+.driver-popover-dashboard-home {
+  position: fixed !important;
+  top: 140px !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: fit-content !important;
+}
+
+.driver-popover-dashboard-home .driver-popover-arrow {
+  display: none !important;
 }

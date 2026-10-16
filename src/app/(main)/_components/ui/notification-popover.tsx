@@ -53,6 +53,7 @@ export default function NotificationsPopover() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
+          id="tutorial-notifications-btn"
           className="relative flex h-11 w-11 items-center justify-center rounded-full text-[#005864] transition hover:bg-[#EAF0F0]"
           aria-label="Notifications"
         >

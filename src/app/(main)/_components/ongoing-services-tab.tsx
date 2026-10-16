@@ -73,18 +73,19 @@ export default function OnGoingServicesTab({ tab, search, isTutorialMode = false
     return (
       <div id={sectionId} className="w-full space-y-6">
         <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 w-full">
-          {dummyList.map((job) => (
-            <ServiceCard
-              key={job._id}
-              id={job._id}
-              serviceName={job.serviceName}
-              description={job.description}
-              when={job.when}
-              status={job.status}
-              postedDate={job.postedDate}
-              actionText={job.actionText}
-              disableLink={true}
-            />
+          {dummyList.map((job, index) => (
+            <div key={job._id} id={`tutorial-job-card-${index}`}>
+              <ServiceCard
+                id={job._id}
+                serviceName={job.serviceName}
+                description={job.description}
+                when={job.when}
+                status={job.status}
+                postedDate={job.postedDate}
+                actionText={job.actionText}
+                disableLink={true}
+              />
+            </div>
           ))}
         </div>
       </div>

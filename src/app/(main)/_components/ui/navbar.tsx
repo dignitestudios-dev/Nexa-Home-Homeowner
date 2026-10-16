@@ -147,6 +147,7 @@ export default function Navbar() {
             <DropdownMenu onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild>
                 <button
+                  id="tutorial-profile-btn"
                   type="button"
                   className="group flex items-center gap-3 rounded-full pr-1 text-left transition-colors hover:bg-slate-50 outline-none"
                 >

@@ -11,15 +11,32 @@ import {
 } from "@/lib/tutorial";
 import { toast } from "sonner";
 
+function waitForElement(selector: string, callback: () => void, maxAttempts = 20) {
+  let count = 0;
+  const timer = setInterval(() => {
+    count++;
+    if (document.querySelector(selector) || count >= maxAttempts) {
+      clearInterval(timer);
+      callback();
+    }
+  }, 60);
+}
+
 export function useTutorialTour() {
   const router = useRouter();
   const driverInstanceRef = useRef<Driver | null>(null);
 
   /**
-   * Starts Dashboard Tour (Steps 1 & 2)
+   * Starts the Dashboard Tour (Steps 1 through 8)
    */
   const startDashboardTour = useCallback(
-    (userId?: string) => {
+    (options: {
+      userId?: string;
+      handleTabChange: (tab: string) => void;
+      initialStepIndex?: number;
+    }) => {
+      const { userId, handleTabChange, initialStepIndex = 0 } = options;
+
       // Clean up previous instance if active
       if (driverInstanceRef.current && driverInstanceRef.current.isActive()) {
         driverInstanceRef.current.destroy();
@@ -48,277 +65,175 @@ export function useTutorialTour() {
       driverInstanceRef.current = driverObj;
 
       driverObj.setSteps([
+        // Step 0 (Popup 1): Home / Find an Expert
         {
-          ...TUTORIAL_STEPS.DASHBOARD_FIND_EXPERT,
+          ...TUTORIAL_STEPS.DASHBOARD_HOME,
           popover: {
-            ...TUTORIAL_STEPS.DASHBOARD_FIND_EXPERT.popover,
-            nextBtnText: "Next: Categories →",
+            ...TUTORIAL_STEPS.DASHBOARD_HOME.popover,
+            nextBtnText: "Next Step →",
             onNextClick: () => {
-              driverObj.moveNext();
+              waitForElement("#tutorial-categories-section", () => {
+                driverObj.drive(1);
+              });
             },
           },
         },
+
+        // Step 1 (Popup 2): Booking Flow / Explore Services
         {
           ...TUTORIAL_STEPS.DASHBOARD_CATEGORIES,
           popover: {
             ...TUTORIAL_STEPS.DASHBOARD_CATEGORIES.popover,
-            nextBtnText: "Next: Step 1 →",
+            nextBtnText: "Next Step →",
             prevBtnText: "← Back",
-            onNextClick: () => {
-              driverObj.destroy();
-              // Smoothly transition to separate tutorial stepper pages
-              router.push("/tutorial/step-1");
-            },
             onPrevClick: () => {
-              driverObj.movePrevious();
+              waitForElement("#tutorial-dashboard-container", () => {
+                driverObj.drive(0);
+              });
+            },
+            onNextClick: () => {
+              waitForElement("#tutorial-dashboard-tabs", () => {
+                driverObj.drive(2);
+              });
             },
           },
         },
-      ]);
 
-      // Delay briefly to allow DOM elements to fully settle
-      setTimeout(() => {
-        const btn = document.querySelector("#tutorial-find-expert-btn");
-        if (btn) {
-          driverObj.drive(0);
-        }
-      }, 400);
-    },
-    [router]
-  );
-
-  /**
-   * Runs Step 1 Tour in Find Expert (Step 3 of total)
-   */
-  const runWizardStepOne = useCallback(
-    (onNextStep: () => void) => {
-      if (driverInstanceRef.current && driverInstanceRef.current.isActive()) {
-        driverInstanceRef.current.destroy();
-      }
-
-      const driverObj = createTutorialDriver();
-      driverInstanceRef.current = driverObj;
-
-      driverObj.setSteps([
+        // Step 2 (Popup 3): Job Management / History (Tabs container)
         {
-          ...TUTORIAL_STEPS.WIZARD_STEP_ONE,
+          ...TUTORIAL_STEPS.DASHBOARD_TABS_HISTORY,
           popover: {
-            ...TUTORIAL_STEPS.WIZARD_STEP_ONE.popover,
-            nextBtnText: "Next: Step 2 (Select Experts) →",
-            prevBtnText: "← Back to Home",
+            ...TUTORIAL_STEPS.DASHBOARD_TABS_HISTORY.popover,
+            nextBtnText: "Next Step →",
+            prevBtnText: "← Back",
             onPrevClick: () => {
-              driverObj.destroy();
-              router.push("/dashboard?startTutorial=true");
+              waitForElement("#tutorial-categories-section", () => {
+                driverObj.drive(1);
+              });
             },
             onNextClick: () => {
-              driverObj.destroy();
-              onNextStep();
+              handleTabChange("Ongoing");
+              waitForElement("#tutorial-ongoing-tab-btn", () => {
+                driverObj.drive(3);
+              });
             },
           },
         },
-      ]);
 
-      setTimeout(() => {
-        const target = document.querySelector("#tutorial-step-one-header");
-        if (target) {
-          driverObj.drive(0);
-        }
-      }, 400);
-    },
-    [router]
-  );
-
-  /**
-   * Runs Step 2 Tour in Find Expert (Step 4 of total)
-   */
-  const runWizardStepTwo = useCallback(
-    (onNextStep: () => void, onPrevStep: () => void) => {
-      if (driverInstanceRef.current && driverInstanceRef.current.isActive()) {
-        driverInstanceRef.current.destroy();
-      }
-
-      const driverObj = createTutorialDriver();
-      driverInstanceRef.current = driverObj;
-
-      driverObj.setSteps([
+        // Step 3 (Popup 4): Job Management / Ongoing Jobs
         {
-          ...TUTORIAL_STEPS.WIZARD_STEP_TWO,
+          ...TUTORIAL_STEPS.DASHBOARD_ONGOING_TAB,
           popover: {
-            ...TUTORIAL_STEPS.WIZARD_STEP_TWO.popover,
-            nextBtnText: "Next: Step 3 (Review & Lead) →",
-            prevBtnText: "← Step 1",
+            ...TUTORIAL_STEPS.DASHBOARD_ONGOING_TAB.popover,
+            nextBtnText: "Next Step →",
+            prevBtnText: "← Back",
             onPrevClick: () => {
-              driverObj.destroy();
-              onPrevStep();
+              handleTabChange("Home");
+              waitForElement("#tutorial-dashboard-tabs", () => {
+                driverObj.drive(2);
+              });
             },
             onNextClick: () => {
-              driverObj.destroy();
-              onNextStep();
+              waitForElement("#tutorial-job-card-0", () => {
+                driverObj.drive(4);
+              });
             },
           },
         },
-      ]);
 
-      setTimeout(() => {
-        const target = document.querySelector("#tutorial-step-two-header");
-        if (target) {
-          driverObj.drive(0);
-        }
-      }, 400);
-    },
-    []
-  );
-
-  /**
-   * Runs Step 3 Tour in Find Expert (Step 5 of total)
-   */
-  const runWizardStepThree = useCallback(
-    (onPrevStep: () => void, userId?: string) => {
-      if (driverInstanceRef.current && driverInstanceRef.current.isActive()) {
-        driverInstanceRef.current.destroy();
-      }
-
-      const driverObj = createTutorialDriver();
-      driverInstanceRef.current = driverObj;
-
-      driverObj.setSteps([
+        // Step 4 (Popup 5): Status Update / Awaiting Response (Card 0)
         {
-          ...TUTORIAL_STEPS.WIZARD_STEP_THREE,
+          ...TUTORIAL_STEPS.JOB_STATUS_AWAITING,
           popover: {
-            ...TUTORIAL_STEPS.WIZARD_STEP_THREE.popover,
-            nextBtnText: "Submit Lead & Go to Ongoing →",
-            prevBtnText: "← Step 2",
+            ...TUTORIAL_STEPS.JOB_STATUS_AWAITING.popover,
+            nextBtnText: "Next Step →",
+            prevBtnText: "← Back",
             onPrevClick: () => {
-              driverObj.destroy();
-              onPrevStep();
+              waitForElement("#tutorial-ongoing-tab-btn", () => {
+                driverObj.drive(3);
+              });
             },
             onNextClick: () => {
-              driverObj.destroy();
-              router.push("/dashboard?tab=ongoing&startTutorial=ongoing");
+              waitForElement("#tutorial-job-card-1", () => {
+                driverObj.drive(5);
+              });
             },
           },
         },
-      ]);
 
-      setTimeout(() => {
-        const target = document.querySelector("#tutorial-step-three-header");
-        if (target) {
-          driverObj.drive(0);
-        }
-      }, 400);
-    },
-    [router]
-  );
-
-  /**
-   * Drives Ongoing step on Dashboard
-   */
-  const driveOngoingTutorialStep = useCallback(
-    (onNextToCompleted: () => void) => {
-      if (driverInstanceRef.current) {
-        driverInstanceRef.current.destroy();
-      }
-
-      const onSkip = () => {
-        if (driverInstanceRef.current) {
-          driverInstanceRef.current.destroy();
-          driverInstanceRef.current = null;
-        }
-        setTutorialCompleted(true);
-        toast.info("Tutorial skipped", {
-          description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
-        });
-        router.replace("/dashboard");
-      };
-
-      const driverObj = createTutorialDriver({
-        onDestroyed: () => {
-          driverInstanceRef.current = null;
-        },
-        onSkip,
-      });
-      driverInstanceRef.current = driverObj;
-
-      driverObj.setSteps([
+        // Step 5 (Popup 6): Action Required / Confirm Expert (Card 1)
         {
-          ...TUTORIAL_STEPS.DASHBOARD_ONGOING,
+          ...TUTORIAL_STEPS.JOB_ACTION_CONFIRM,
           popover: {
-            ...TUTORIAL_STEPS.DASHBOARD_ONGOING.popover,
-            nextBtnText: "Next: Completed Tab →",
-            prevBtnText: "← Step 3 (Review)",
+            ...TUTORIAL_STEPS.JOB_ACTION_CONFIRM.popover,
+            nextBtnText: "Next Step →",
+            prevBtnText: "← Back",
             onPrevClick: () => {
-              driverObj.destroy();
-              router.push("/tutorial/step-3");
+              waitForElement("#tutorial-job-card-0", () => {
+                driverObj.drive(4);
+              });
             },
             onNextClick: () => {
-              driverObj.destroy();
-              onNextToCompleted();
+              waitForElement("#tutorial-job-card-2", () => {
+                driverObj.drive(6);
+              });
             },
           },
         },
-      ]);
 
-      setTimeout(() => {
-        const target = document.querySelector("#tutorial-ongoing-tab-section");
-        if (target) {
-          driverObj.drive(0);
-        }
-      }, 350);
-    },
-    [router]
-  );
-
-  /**
-   * Drives Completed step on Dashboard
-   */
-  const driveCompletedTutorialStep = useCallback(
-    (onBackToOngoing: () => void, onFinish: () => void) => {
-      if (driverInstanceRef.current) {
-        driverInstanceRef.current.destroy();
-      }
-
-      let isFinished = false;
-      const triggerFinish = () => {
-        if (isFinished) return;
-        isFinished = true;
-        if (driverInstanceRef.current) {
-          driverInstanceRef.current.destroy();
-          driverInstanceRef.current = null;
-        }
-        onFinish();
-      };
-
-      const onSkip = () => {
-        if (driverInstanceRef.current) {
-          driverInstanceRef.current.destroy();
-          driverInstanceRef.current = null;
-        }
-        setTutorialCompleted(true);
-        toast.info("Tutorial skipped", {
-          description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
-        });
-        router.replace("/dashboard");
-      };
-
-      const driverObj = createTutorialDriver({
-        onDestroyed: () => {
-          driverInstanceRef.current = null;
-        },
-        onSkip,
-      });
-      driverInstanceRef.current = driverObj;
-
-      driverObj.setSteps([
+        // Step 6 (Popup 7): Active Status / Appliance Installation (Card 2)
         {
-          ...TUTORIAL_STEPS.DASHBOARD_COMPLETED,
+          ...TUTORIAL_STEPS.JOB_ACTIVE_STATUS,
           popover: {
-            ...TUTORIAL_STEPS.DASHBOARD_COMPLETED.popover,
+            ...TUTORIAL_STEPS.JOB_ACTIVE_STATUS.popover,
+            nextBtnText: "Next Step →",
+            prevBtnText: "← Back",
+            onPrevClick: () => {
+              waitForElement("#tutorial-job-card-1", () => {
+                driverObj.drive(5);
+              });
+            },
+            onNextClick: () => {
+              handleTabChange("Completed");
+              waitForElement("#tutorial-completed-tab-btn", () => {
+                driverObj.drive(7);
+              });
+            },
+          },
+        },
+
+        // Step 7 (Popup 8): Review Flow / Completed
+        {
+          ...TUTORIAL_STEPS.DASHBOARD_COMPLETED_TAB,
+          popover: {
+            ...TUTORIAL_STEPS.DASHBOARD_COMPLETED_TAB.popover,
             nextBtnText: "Next: Find an Expert →",
-            doneBtnText: "Next: Find an Expert →",
-            prevBtnText: "← Ongoing Tab",
+            prevBtnText: "← Back",
             onPrevClick: () => {
-              driverObj.destroy();
-              onBackToOngoing();
+              handleTabChange("Ongoing");
+              waitForElement("#tutorial-job-card-2", () => {
+                driverObj.drive(6);
+              });
+            },
+            onNextClick: () => {
+              waitForElement("#tutorial-find-expert-btn", () => {
+                driverObj.drive(8);
+              });
+            },
+          },
+        },
+
+        // Step 8 (Popup 10): Discovery / Search for a Service (Find an Expert button)
+        {
+          ...TUTORIAL_STEPS.DISCOVERY_SEARCH,
+          popover: {
+            ...TUTORIAL_STEPS.DISCOVERY_SEARCH.popover,
+            nextBtnText: "Next: Smart Search →",
+            prevBtnText: "← Completed Tab",
+            onPrevClick: () => {
+              waitForElement("#tutorial-completed-tab-btn", () => {
+                driverObj.drive(7);
+              });
             },
             onNextClick: () => {
               if (driverInstanceRef.current) {
@@ -327,28 +242,26 @@ export function useTutorialTour() {
               }
               router.push("/tutorial/find-expert");
             },
-            onDoneClick: () => {
-              if (driverInstanceRef.current) {
-                driverInstanceRef.current.destroy();
-                driverInstanceRef.current = null;
-              }
-              router.push("/tutorial/find-expert");
-            },
-            onCloseClick: () => {
-              triggerFinish();
-            },
           },
         },
       ]);
 
+      const targetSelector =
+        initialStepIndex === 8
+          ? "#tutorial-find-expert-btn"
+          : initialStepIndex === 7
+          ? "#tutorial-completed-tab-btn"
+          : initialStepIndex === 3
+          ? "#tutorial-ongoing-tab-btn"
+          : "#tutorial-dashboard-container";
+
       setTimeout(() => {
-        const target = document.querySelector("#tutorial-completed-tab-section");
-        if (target) {
-          driverObj.drive(0);
-        }
+        waitForElement(targetSelector, () => {
+          driverObj.drive(initialStepIndex);
+        });
       }, 350);
     },
-    []
+    [router]
   );
 
   const stopTour = useCallback(() => {
@@ -358,13 +271,32 @@ export function useTutorialTour() {
     }
   }, []);
 
+  const runWizardStepOne = useCallback((onNextStep?: () => void) => {
+    onNextStep?.();
+  }, []);
+
+  const runWizardStepTwo = useCallback((onNextStep?: () => void, onPrevStep?: () => void) => {
+    onNextStep?.();
+  }, []);
+
+  const runWizardStepThree = useCallback((onPrevStep?: () => void, userId?: string) => {
+  }, []);
+
+  const driveOngoingTutorialStep = useCallback((onNextToCompleted?: () => void) => {
+    onNextToCompleted?.();
+  }, []);
+
+  const driveCompletedTutorialStep = useCallback((onBackToOngoing?: () => void, onFinish?: () => void) => {
+    onFinish?.();
+  }, []);
+
   return {
     startDashboardTour,
-    driveOngoingTutorialStep,
-    driveCompletedTutorialStep,
     runWizardStepOne,
     runWizardStepTwo,
     runWizardStepThree,
+    driveOngoingTutorialStep,
+    driveCompletedTutorialStep,
     stopTour,
     isTutorialCompleted,
     setTutorialCompleted,

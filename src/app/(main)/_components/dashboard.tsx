@@ -173,60 +173,73 @@ const Dashboard = (props: Props) => {
     }
   }, [jobsCountData, hasShownJobsPopup]);
 
-  const isTutorialOngoing = searchParams.get("startTutorial") === "ongoing";
-  const {
-    startDashboardTour,
-    driveOngoingTutorialStep,
-    driveCompletedTutorialStep,
-  } = useTutorialTour();
+  const [isTutorialActive, setIsTutorialActive] = useState(false);
+  const startParam = searchParams.get("startTutorial");
+  const isTutorialOngoing =
+    isTutorialActive ||
+    startParam === "ongoing" ||
+    startParam === "completed" ||
+    startParam === "true";
 
-  // Show tutorial once on first signup / login or when ?startTutorial=true / ?startTutorial=ongoing
+  const { startDashboardTour } = useTutorialTour();
+
+  // Show tutorial once on first signup / login or when ?startTutorial=...
   useEffect(() => {
     if (isUserLoading || !userData?.data) return;
     if (emailPopupOpen || jobsCountPopupOpen || isLocationDialogOpen) return;
 
-    const startParam = searchParams.get("startTutorial");
     const userId = userData.data._id;
     const completed = isTutorialCompleted(userId);
 
-    if (startParam === "ongoing") {
+    if (startParam === "find-expert") {
+      setIsTutorialActive(true);
       const timer = setTimeout(() => {
-        if (activeTab === "Ongoing") {
-          driveOngoingTutorialStep(() => {
-            handleTabChange("Completed");
-          });
-        } else if (activeTab === "Completed") {
-          driveCompletedTutorialStep(
-            () => handleTabChange("Ongoing"),
-            () => {
-              setTutorialCompleted(true, userId);
-              toast.success("Tutorial completed! You're ready to find experts.", {
-                description: "You can re-watch this walkthrough anytime from Settings.",
-              });
-              window.location.href = "/dashboard";
-            }
-          );
-        }
-      }, 350);
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 8,
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    } else if (startParam === "completed") {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 7,
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    } else if (startParam === "ongoing") {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 3,
+        });
+      }, 400);
       return () => clearTimeout(timer);
     } else if (startParam === "true" || !completed) {
+      setIsTutorialActive(true);
       const timer = setTimeout(() => {
-        startDashboardTour(userId);
-      }, 700);
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 0,
+        });
+      }, 650);
       return () => clearTimeout(timer);
     }
   }, [
     isUserLoading,
     userData,
-    searchParams,
-    activeTab,
+    startParam,
     emailPopupOpen,
     jobsCountPopupOpen,
     isLocationDialogOpen,
     startDashboardTour,
-    driveOngoingTutorialStep,
-    driveCompletedTutorialStep,
-    router,
   ]);
 
   useEffect(() => {
@@ -321,7 +334,7 @@ const Dashboard = (props: Props) => {
   }
 
   return (
-    <div className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
+    <div id="tutorial-dashboard-container" className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <TopHeading title={`Welcome ${userData?.data.name}`} />
@@ -352,17 +365,24 @@ const Dashboard = (props: Props) => {
       </div>
 
       <div className="space-y-8">
-        <div className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
+        <div id="tutorial-dashboard-tabs" className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
           <div className="grid grid-cols-3 gap-2">
             {tabs.map((tab) => {
               const active = tab === activeTab;
+              const tabId =
+                tab === "Home"
+                  ? "tutorial-home-tab-btn"
+                  : tab === "Ongoing"
+                  ? "tutorial-ongoing-tab-btn"
+                  : "tutorial-completed-tab-btn";
               return (
                 <button
                   key={tab}
+                  id={tabId}
                   type="button"
                   onClick={() => handleTabChange(tab)}
                   className={cn(
-                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:ring-[#005864]/20 flex items-center justify-center gap-1.5",
+                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:ring-[#005864]/20 flex items-center justify-center gap-1.5 cursor-pointer",
                     active
                       ? "bg-[#005864] text-white shadow-sm"
                       : "bg-white text-[#005864] hover:bg-slate-100",

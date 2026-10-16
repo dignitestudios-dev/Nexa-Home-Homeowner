@@ -79,6 +79,14 @@ export const createTutorialDriver = (options?: {
         popover.closeButton.style.display = "none";
       }
 
+      // 2. Prevent card from stretching vertically
+      if (popover.wrapper) {
+        popover.wrapper.style.height = "auto";
+        if (popover.wrapper.classList.contains("driver-popover-dashboard-home")) {
+          popover.wrapper.style.bottom = "auto";
+        }
+      }
+
       // 2. Add Skip Tutorial button to footer if not present
       let skipBtn = popover.footer.querySelector<HTMLButtonElement>(".driver-popover-skip-btn");
       if (!skipBtn) {
@@ -123,34 +131,44 @@ export const createTutorialDriver = (options?: {
   return driverInstance;
 };
 
+export function createTutorialStepTitle(badge: string | null, title: string): string {
+  if (!badge) {
+    return `<div class="font-bold text-[18px] text-[#181818]">${title}</div>`;
+  }
+  return `
+    <div class="driver-popover-tag">${badge}</div>
+    <div class="font-bold text-[18px] text-[#181818] mt-0.5">${title}</div>
+  `;
+}
+
 /**
  * Step definitions for the complete Nexa Home Lead & Expert Walkthrough
  */
 export const TUTORIAL_STEPS = {
-  // Step 1: Dashboard Find Expert Button
-  DASHBOARD_FIND_EXPERT: {
-    element: "#tutorial-find-expert-btn",
+  // Popup 1: Home (Whole Dashboard)
+  DASHBOARD_HOME: {
+    element: "#tutorial-dashboard-container",
     popover: {
-      title: "1. Find an Expert",
+      title: createTutorialStepTitle(null, "Home"),
       description: `
         <div class="space-y-2">
-          <p>Looking for a licensed home service professional? Click <strong>Find an Expert</strong> to start your service request and match with verified pros in your area.</p>
+          <p>Pick or search for a service to get started. Your recent and popular services in your area show up here.</p>
         </div>
       `,
-      side: "bottom" as const,
-      align: "end" as const,
+      side: "top" as const,
+      align: "center" as const,
+      popoverClass: "driver-popover-dashboard-home",
     },
   },
 
-  // Step 2: Dashboard Categories Tab / Cards
+  // Popup 2: Booking Flow / Explore Services
   DASHBOARD_CATEGORIES: {
     element: "#tutorial-categories-section",
     popover: {
-      title: "2. Choose a Service Category",
+      title: createTutorialStepTitle("Booking Flow", "Explore Services"),
       description: `
         <div class="space-y-2">
-          <p>Explore popular services like <strong>Landscaping, Plumbing, Pest Control, Electrical, and HVAC</strong>.</p>
-          <p>Clicking any service card immediately starts a request with that category pre-selected!</p>
+          <p>Tap a service to start your job request. Once you fill in the details, you’ll see Experts who match your job.</p>
         </div>
       `,
       side: "top" as const,
@@ -158,20 +176,14 @@ export const TUTORIAL_STEPS = {
     },
   },
 
-  // Step 3: Find Expert Wizard - Step 1 (Job Details)
-  WIZARD_STEP_ONE: {
-    element: "#tutorial-step-one-header",
+  // Popup 3: Job Management / History
+  DASHBOARD_TABS_HISTORY: {
+    element: "#tutorial-dashboard-tabs",
     popover: {
-      title: "3. Step 1: Tell Us What You Need",
+      title: createTutorialStepTitle("Job Management", "History"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Fill out the essential requirements for your job:</p>
-          <ul class="list-disc pl-4 space-y-1">
-            <li><strong>Select Service (Required):</strong> The trade or skill required.</li>
-            <li><strong>Description (Required):</strong> Explain the task, scope, or specific issues.</li>
-            <li><strong>When & Location (Required):</strong> Set your timeline and property address.</li>
-            <li><strong>Preferences & Photos:</strong> Add helpful images/videos and select contact preference (Phone or Email).</li>
-          </ul>
+        <div class="space-y-2">
+          <p>See all your job requests, from open to completed.</p>
         </div>
       `,
       side: "bottom" as const,
@@ -179,90 +191,89 @@ export const TUTORIAL_STEPS = {
     },
   },
 
-  // Step 4: Find Expert Wizard - Step 2 (Select Experts)
-  WIZARD_STEP_TWO: {
-    element: "#tutorial-step-two-header",
+  // Popup 4: Job Management / Ongoing Jobs
+  DASHBOARD_ONGOING_TAB: {
+    element: "#tutorial-ongoing-tab-btn",
     popover: {
-      title: "4. Step 2: Select Matching Experts",
+      title: createTutorialStepTitle("Job Management", "Ongoing Jobs"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Choose which professionals receive your request:</p>
-          <ul class="list-disc pl-4 space-y-1">
-            <li><strong>Distance Radius:</strong> Adjust how far out to search for pros.</li>
-            <li><strong>Send to All:</strong> Automatically alert all top-rated verified experts nearby.</li>
-            <li><strong>Hand-Pick:</strong> Review ratings, badges, and select specific professionals individually.</li>
-          </ul>
+        <div class="space-y-2">
+          <p>Track ongoing jobs here until they’re done.</p>
         </div>
       `,
       side: "bottom" as const,
-      align: "start" as const,
-    },
-  },
-
-  // Step 5: Find Expert Wizard - Step 3 (Review & Submit Lead)
-  WIZARD_STEP_THREE: {
-    element: "#tutorial-step-three-header",
-    popover: {
-      title: "3. Step 3: Review & Submit Lead",
-      description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>You're almost done! Double check all details:</p>
-          <ul class="list-disc pl-4 space-y-1">
-            <li>Review your service category, notes, attachments, and timing.</li>
-            <li>Verify your location and chosen pros.</li>
-            <li>Click <strong>Submit Lead</strong> — your request is sent directly to matching experts who will promptly reach out with quotes!</li>
-          </ul>
-        </div>
-      `,
-      side: "bottom" as const,
-      align: "start" as const,
-    },
-  },
-
-  // Step 4: Ongoing Requests & 3 Statuses
-  DASHBOARD_ONGOING: {
-    element: "#tutorial-ongoing-tab-section",
-    popover: {
-      title: "4. Ongoing Requests & 3 Statuses",
-      description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Created leads appear in the <strong>Ongoing</strong> tab across 3 distinct stages:</p>
-          <ul class="list-disc pl-4 space-y-1">
-            <li><strong>Awaiting Response (Yellow):</strong> Request sent; waiting for nearby expert replies.</li>
-            <li><strong>Confirm Expert (Red):</strong> Pros have submitted quotes; ready for you to confirm.</li>
-            <li><strong>Ongoing (Blue):</strong> Expert is confirmed and work is actively in progress.</li>
-          </ul>
-        </div>
-      `,
-      side: "top" as const,
       align: "center" as const,
     },
   },
 
-  // Step 5: Completed Jobs & History
-  DASHBOARD_COMPLETED: {
-    element: "#tutorial-completed-tab-section",
+  // Popup 5: Status Update / Awaiting Response
+  JOB_STATUS_AWAITING: {
+    element: "#tutorial-job-card-0",
     popover: {
-      title: "5. Completed Jobs & History",
+      title: createTutorialStepTitle("Status Update", "Awaiting Response"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Once a service is finished and marked done, it moves to the <strong>Completed</strong> tab.</p>
-          <p>Here you can easily reference your past job records, receipts, and contractor details anytime.</p>
+        <div class="space-y-2">
+          <p>Your job is posted. No Experts have reached out yet.</p>
         </div>
       `,
-      side: "top" as const,
+      side: "bottom" as const,
       align: "center" as const,
     },
   },
 
-  // Step 6: Return to Dashboard Find Expert button
-  DASHBOARD_FIND_EXPERT_RETURN: {
+  // Popup 6: Action Required / Confirm Expert
+  JOB_ACTION_CONFIRM: {
+    element: "#tutorial-job-card-1",
+    popover: {
+      title: createTutorialStepTitle("Action Required", "Confirm Expert"),
+      description: `
+        <div class="space-y-2">
+          <p>Experts are interested in your job! Once you’ve decided who to hire, open the job and confirm your Expert.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "center" as const,
+    },
+  },
+
+  // Popup 7: Active Status / Appliance Installation
+  JOB_ACTIVE_STATUS: {
+    element: "#tutorial-job-card-2",
+    popover: {
+      title: createTutorialStepTitle("Active Status", "Appliance Installation"),
+      description: `
+        <div class="space-y-2">
+          <p>Your Expert is on the job. Mark it complete once the work is done.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "center" as const,
+    },
+  },
+
+  // Popup 8: Review Flow / Completed
+  DASHBOARD_COMPLETED_TAB: {
+    element: "#tutorial-completed-tab-btn",
+    popover: {
+      title: createTutorialStepTitle("Review Flow", "Completed"),
+      description: `
+        <div class="space-y-2">
+          <p>Finished jobs appear here. Open one to leave a review for your Expert.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "center" as const,
+    },
+  },
+
+  // Popup 10: Discovery / Search for a Service (Find an Expert button)
+  DISCOVERY_SEARCH: {
     element: "#tutorial-find-expert-btn",
     popover: {
-      title: "6. Find an Expert Page",
+      title: createTutorialStepTitle("Discovery", "Search for a Service"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Now let's explore how to search for any custom service or request a new category if it's not available yet.</p>
+        <div class="space-y-2">
+          <p>Tap the magnifying glass to find the service you need.</p>
         </div>
       `,
       side: "bottom" as const,
@@ -270,29 +281,44 @@ export const TUTORIAL_STEPS = {
     },
   },
 
-  // Step 7: Find Expert Search Input
-  FIND_EXPERT_SEARCH: {
-    element: "#tutorial-search-input-container",
+  // Popup 11: Discovery / Smart Search
+  DISCOVERY_SMART_SEARCH: {
+    element: "#tutorial-smart-search-card",
     popover: {
-      title: "7. Search Any Service",
+      title: createTutorialStepTitle("Discovery", "Smart Search"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>Type any home service or repair you need. Our system will instantly find matching categories and verified experts in your area.</p>
+        <div class="space-y-2">
+          <p>Describe what you need in your own words. Our system analyzes your request to match Experts.</p>
         </div>
       `,
-      side: "bottom" as const,
+      side: "top" as const,
       align: "center" as const,
     },
   },
 
-  // Step 8: Request Category Button
-  FIND_EXPERT_REQUEST_CATEGORY: {
-    element: "#tutorial-request-category-btn",
+  // Popup 12: System / Notifications
+  SYSTEM_NOTIFICATIONS: {
+    element: "#tutorial-notifications-btn",
     popover: {
-      title: "8. Can't Find It? Request a Category!",
+      title: createTutorialStepTitle("System", "Notifications"),
       description: `
-        <div class="space-y-2 text-[13px] leading-relaxed">
-          <p>If you search and can't find your required service, simply click <strong>Request Category</strong>! You can tell us what service you need, and our team will review it and onboard verified local experts for you.</p>
+        <div class="space-y-2">
+          <p>Updates on your jobs, helpful reminders, and app news.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "end" as const,
+    },
+  },
+
+  // Popup 13: Settings / Profile
+  SETTINGS_PROFILE: {
+    element: "#tutorial-profile-btn",
+    popover: {
+      title: createTutorialStepTitle("Settings", "Profile"),
+      description: `
+        <div class="space-y-2">
+          <p>Manage your contact info, saved addresses, and notification settings.</p>
         </div>
       `,
       side: "bottom" as const,
