@@ -57,7 +57,7 @@ export const createTutorialDriver = (options?: {
     animate: true,
     allowClose: false,
     disableActiveInteraction: true,
-    overlayClickBehavior: () => {},
+    overlayClickBehavior: () => { },
     overlayColor: "#001216",
     overlayOpacity: 0.72,
     stagePadding: 8,
@@ -274,7 +274,7 @@ export const TUTORIAL_STEPS = {
   FIND_EXPERT_SEARCH: {
     element: "#tutorial-search-input-container",
     popover: {
-      title: "7. Search Any Service or Ask AI",
+      title: "7. Search Any Service",
       description: `
         <div class="space-y-2 text-[13px] leading-relaxed">
           <p>Type any home service or repair you need. Our system will instantly find matching categories and verified experts in your area.</p>
