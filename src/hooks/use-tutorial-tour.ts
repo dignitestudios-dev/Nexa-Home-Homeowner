@@ -25,10 +25,24 @@ export function useTutorialTour() {
         driverInstanceRef.current.destroy();
       }
 
+      const onSkip = () => {
+        if (driverInstanceRef.current) {
+          driverInstanceRef.current.destroy();
+          driverInstanceRef.current = null;
+        }
+        setTutorialCompleted(true, userId);
+        toast.info("Tutorial skipped", {
+          description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+        });
+        router.replace("/dashboard");
+      };
+
       const driverObj = createTutorialDriver({
         onDestroyed: () => {
           driverInstanceRef.current = null;
         },
+        userId,
+        onSkip,
       });
 
       driverInstanceRef.current = driverObj;
@@ -205,7 +219,24 @@ export function useTutorialTour() {
         driverInstanceRef.current.destroy();
       }
 
-      const driverObj = createTutorialDriver();
+      const onSkip = () => {
+        if (driverInstanceRef.current) {
+          driverInstanceRef.current.destroy();
+          driverInstanceRef.current = null;
+        }
+        setTutorialCompleted(true);
+        toast.info("Tutorial skipped", {
+          description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+        });
+        router.replace("/dashboard");
+      };
+
+      const driverObj = createTutorialDriver({
+        onDestroyed: () => {
+          driverInstanceRef.current = null;
+        },
+        onSkip,
+      });
       driverInstanceRef.current = driverObj;
 
       driverObj.setSteps([
@@ -257,10 +288,23 @@ export function useTutorialTour() {
         onFinish();
       };
 
+      const onSkip = () => {
+        if (driverInstanceRef.current) {
+          driverInstanceRef.current.destroy();
+          driverInstanceRef.current = null;
+        }
+        setTutorialCompleted(true);
+        toast.info("Tutorial skipped", {
+          description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+        });
+        router.replace("/dashboard");
+      };
+
       const driverObj = createTutorialDriver({
         onDestroyed: () => {
           driverInstanceRef.current = null;
         },
+        onSkip,
       });
       driverInstanceRef.current = driverObj;
 
@@ -269,18 +313,26 @@ export function useTutorialTour() {
           ...TUTORIAL_STEPS.DASHBOARD_COMPLETED,
           popover: {
             ...TUTORIAL_STEPS.DASHBOARD_COMPLETED.popover,
-            nextBtnText: "Finish Tutorial 🎉",
-            doneBtnText: "Finish Tutorial 🎉",
+            nextBtnText: "Next: Find an Expert →",
+            doneBtnText: "Next: Find an Expert →",
             prevBtnText: "← Ongoing Tab",
             onPrevClick: () => {
               driverObj.destroy();
               onBackToOngoing();
             },
             onNextClick: () => {
-              triggerFinish();
+              if (driverInstanceRef.current) {
+                driverInstanceRef.current.destroy();
+                driverInstanceRef.current = null;
+              }
+              router.push("/tutorial/find-expert");
             },
             onDoneClick: () => {
-              triggerFinish();
+              if (driverInstanceRef.current) {
+                driverInstanceRef.current.destroy();
+                driverInstanceRef.current = null;
+              }
+              router.push("/tutorial/find-expert");
             },
             onCloseClick: () => {
               triggerFinish();

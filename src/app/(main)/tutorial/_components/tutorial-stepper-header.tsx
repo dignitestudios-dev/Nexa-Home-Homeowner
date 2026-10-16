@@ -3,8 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, X, Check, ArrowLeft } from "lucide-react";
+import { Sparkles, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setTutorialCompleted } from "@/lib/tutorial";
+import { toast } from "sonner";
 
 interface TutorialStepperHeaderProps {
   currentStep: 1 | 2 | 3 | 4;
@@ -15,6 +17,7 @@ const STEPS = [
   { step: 1, label: "Job Details", href: "/tutorial/step-1" },
   { step: 2, label: "Select Experts", href: "/tutorial/step-2" },
   { step: 3, label: "Review & Submit", href: "/tutorial/step-3" },
+  { step: 4, label: "Ongoing & History", href: "/tutorial/step-4" },
 ];
 
 export default function TutorialStepperHeader({
@@ -24,6 +27,10 @@ export default function TutorialStepperHeader({
   const router = useRouter();
 
   const handleExit = () => {
+    setTutorialCompleted(true);
+    toast.info("Tutorial skipped", {
+      description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+    });
     router.push("/dashboard");
   };
 
@@ -40,7 +47,7 @@ export default function TutorialStepperHeader({
               <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
                 Interactive Tutorial Demo
               </span>
-              <span className="text-xs text-white/70">Step {currentStep} of 3</span>
+              <span className="text-xs text-white/70">Step {currentStep} of 4</span>
             </div>
             <p className="text-sm font-semibold text-white mt-0.5">
               {title}
@@ -53,8 +60,8 @@ export default function TutorialStepperHeader({
           onClick={handleExit}
           className="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-xs transition border border-white/20 cursor-pointer"
         >
-          <X className="size-3.5" />
-          Exit Tutorial
+          Skip Tutorial
+          <ArrowRight className="size-3.5" />
         </button>
       </div>
 

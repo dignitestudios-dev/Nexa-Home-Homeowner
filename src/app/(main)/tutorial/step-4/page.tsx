@@ -26,12 +26,26 @@ export default function TutorialStepFourPage() {
   const [activeTab, setActiveTab] = useState<"Ongoing" | "Completed">("Ongoing");
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
+  const handleSkip = () => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+    }
+    setTutorialCompleted(true, userId);
+    toast.info("Tutorial skipped", {
+      description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+    });
+    router.push("/dashboard");
+  };
+
   const startOngoingTour = () => {
     if (driverRef.current) {
       driverRef.current.destroy();
     }
 
-    const driverObj = createTutorialDriver();
+    const driverObj = createTutorialDriver({
+      userId,
+      onSkip: handleSkip,
+    });
     driverRef.current = driverObj;
 
     driverObj.setSteps([
@@ -66,7 +80,10 @@ export default function TutorialStepFourPage() {
       driverRef.current.destroy();
     }
 
-    const driverObj = createTutorialDriver();
+    const driverObj = createTutorialDriver({
+      userId,
+      onSkip: handleSkip,
+    });
     driverRef.current = driverObj;
 
     driverObj.setSteps([
@@ -74,7 +91,7 @@ export default function TutorialStepFourPage() {
         ...TUTORIAL_STEPS.DASHBOARD_COMPLETED,
         popover: {
           ...TUTORIAL_STEPS.DASHBOARD_COMPLETED.popover,
-          nextBtnText: "Finish Tutorial 🎉",
+          nextBtnText: "Next: Find an Expert →",
           prevBtnText: "← Ongoing Requests",
           onPrevClick: () => {
             driverObj.destroy();
@@ -82,7 +99,7 @@ export default function TutorialStepFourPage() {
           },
           onNextClick: () => {
             driverObj.destroy();
-            handleFinish();
+            startReturnToDashboardTour();
           },
         },
       },
@@ -94,6 +111,44 @@ export default function TutorialStepFourPage() {
         driverObj.drive(0);
       }
     }, 450);
+  };
+
+  const startReturnToDashboardTour = () => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+    }
+
+    const driverObj = createTutorialDriver({
+      userId,
+      onSkip: handleSkip,
+    });
+    driverRef.current = driverObj;
+
+    driverObj.setSteps([
+      {
+        ...TUTORIAL_STEPS.DASHBOARD_FIND_EXPERT_RETURN,
+        popover: {
+          ...TUTORIAL_STEPS.DASHBOARD_FIND_EXPERT_RETURN.popover,
+          nextBtnText: "Go to Find an Expert Page →",
+          prevBtnText: "← Completed History",
+          onPrevClick: () => {
+            driverObj.destroy();
+            setActiveTab("Completed");
+          },
+          onNextClick: () => {
+            driverObj.destroy();
+            router.push("/tutorial/find-expert");
+          },
+        },
+      },
+    ]);
+
+    setTimeout(() => {
+      const el = document.querySelector("#tutorial-find-expert-btn");
+      if (el) {
+        driverObj.drive(0);
+      }
+    }, 400);
   };
 
   useEffect(() => {

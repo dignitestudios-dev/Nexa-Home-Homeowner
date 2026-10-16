@@ -1,4 +1,5 @@
 import { driver, Driver, DriveStep } from "driver.js";
+import { toast } from "sonner";
 
 export const TUTORIAL_STORAGE_KEY = "nexa_home_tutorial_completed";
 
@@ -47,8 +48,12 @@ export const createTutorialDriver = (options?: {
   onPrevClick?: () => void;
   onDoneClick?: () => void;
   onCloseClick?: () => void;
+  onSkip?: () => void;
+  userId?: string;
 }): Driver => {
-  return driver({
+  let driverInstance: Driver;
+
+  driverInstance = driver({
     animate: true,
     allowClose: false,
     disableActiveInteraction: true,
@@ -68,7 +73,54 @@ export const createTutorialDriver = (options?: {
     onNextClick: options?.onNextClick,
     onPrevClick: options?.onPrevClick,
     onCloseClick: options?.onCloseClick,
+    onPopoverRender: (popover) => {
+      // 1. Remove/hide cross close button completely
+      if (popover.closeButton) {
+        popover.closeButton.style.display = "none";
+      }
+
+      // 2. Add Skip Tutorial button to footer if not present
+      let skipBtn = popover.footer.querySelector<HTMLButtonElement>(".driver-popover-skip-btn");
+      if (!skipBtn) {
+        skipBtn = document.createElement("button");
+        skipBtn.type = "button";
+        skipBtn.className = "driver-popover-skip-btn";
+        skipBtn.innerText = "Skip Tutorial";
+        if (popover.footerButtons) {
+          popover.footer.insertBefore(skipBtn, popover.footerButtons);
+        } else {
+          popover.footer.appendChild(skipBtn);
+        }
+      }
+
+      skipBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (driverInstance) {
+          driverInstance.destroy();
+        }
+        if (options?.onSkip) {
+          options.onSkip();
+        } else {
+          setTutorialCompleted(true, options?.userId);
+          toast.info("Tutorial skipped", {
+            description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+          });
+          if (typeof window !== "undefined") {
+            if (window.location.pathname.startsWith("/tutorial")) {
+              window.location.href = "/dashboard";
+            } else {
+              const url = new URL(window.location.href);
+              url.searchParams.delete("startTutorial");
+              window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+            }
+          }
+        }
+      };
+    },
   });
+
+  return driverInstance;
 };
 
 /**
@@ -200,6 +252,51 @@ export const TUTORIAL_STEPS = {
       `,
       side: "top" as const,
       align: "center" as const,
+    },
+  },
+
+  // Step 6: Return to Dashboard Find Expert button
+  DASHBOARD_FIND_EXPERT_RETURN: {
+    element: "#tutorial-find-expert-btn",
+    popover: {
+      title: "6. Find an Expert Page",
+      description: `
+        <div class="space-y-2 text-[13px] leading-relaxed">
+          <p>Now let's explore how to search for any custom service or request a new category if it's not available yet.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "end" as const,
+    },
+  },
+
+  // Step 7: Find Expert Search Input
+  FIND_EXPERT_SEARCH: {
+    element: "#tutorial-search-input-container",
+    popover: {
+      title: "7. Search Any Service or Ask AI",
+      description: `
+        <div class="space-y-2 text-[13px] leading-relaxed">
+          <p>Type any home service or repair you need. Our system will instantly find matching categories and verified experts in your area.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "center" as const,
+    },
+  },
+
+  // Step 8: Request Category Button
+  FIND_EXPERT_REQUEST_CATEGORY: {
+    element: "#tutorial-request-category-btn",
+    popover: {
+      title: "8. Can't Find It? Request a Category!",
+      description: `
+        <div class="space-y-2 text-[13px] leading-relaxed">
+          <p>If you search and can't find your required service, simply click <strong>Request Category</strong>! You can tell us what service you need, and our team will review it and onboard verified local experts for you.</p>
+        </div>
+      `,
+      side: "bottom" as const,
+      align: "end" as const,
     },
   },
 };

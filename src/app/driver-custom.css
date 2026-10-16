@@ -57,7 +57,7 @@ body .driver-popover .driver-popover-title,
   color: #181818 !important;
   line-height: 1.35 !important;
   margin: 0 0 10px 0 !important;
-  padding-right: 32px !important;
+  padding-right: 0 !important;
   display: block !important;
   letter-spacing: -0.01em !important;
 }
@@ -88,32 +88,38 @@ body .driver-popover .driver-popover-description,
   margin-bottom: 3px !important;
 }
 
-/* Close Button (X) */
+/* Remove cross button (X) completely from popups */
 body .driver-popover .driver-popover-close-btn,
 .driver-popover .driver-popover-close-btn {
-  color: #64748B !important;
-  font-size: 18px !important;
-  width: 28px !important;
-  height: 28px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: absolute !important;
-  top: 14px !important;
-  right: 14px !important;
-  background: #F1F5F9 !important;
-  border: none !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  line-height: 1 !important;
-  padding: 0 !important;
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-.driver-popover .driver-popover-close-btn:hover {
-  color: #0F172A !important;
-  background: #E2E8F0 !important;
-  transform: scale(1.05) !important;
+/* Skip Tutorial Button */
+body .driver-popover .driver-popover-skip-btn,
+.driver-popover .driver-popover-skip-btn {
+  background-color: transparent !important;
+  color: #64748B !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+body .driver-popover .driver-popover-skip-btn:hover,
+.driver-popover .driver-popover-skip-btn:hover {
+  background-color: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
 }
 
 /* Popover Footer Container */
@@ -143,7 +149,7 @@ body .driver-popover .driver-popover-navigation-btns,
   gap: 8px !important;
   justify-content: flex-end !important;
   flex-wrap: wrap !important;
-  width: 100% !important;
+  margin-left: auto !important;
 }
 
 /* Back / Prev Button */

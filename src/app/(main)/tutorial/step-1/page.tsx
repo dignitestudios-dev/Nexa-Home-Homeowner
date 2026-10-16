@@ -5,16 +5,30 @@ import { useRouter } from "next/navigation";
 import DemoStepOneView from "../_components/demo-step-one-view";
 import { StepOneData } from "../../find-expert/page";
 import { DEMO_STEP_ONE_DATA } from "../_components/demo-data";
-import { createTutorialDriver, TUTORIAL_STEPS } from "@/lib/tutorial";
+import { createTutorialDriver, TUTORIAL_STEPS, setTutorialCompleted } from "@/lib/tutorial";
 import { Driver } from "driver.js";
+import { toast } from "sonner";
 
 export default function TutorialStepOnePage() {
   const router = useRouter();
   const driverRef = useRef<Driver | null>(null);
   const [data, setData] = useState<StepOneData>(DEMO_STEP_ONE_DATA);
 
+  const handleSkip = () => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+    }
+    setTutorialCompleted(true);
+    toast.info("Tutorial skipped", {
+      description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+    });
+    router.push("/dashboard");
+  };
+
   useEffect(() => {
-    const driverObj = createTutorialDriver();
+    const driverObj = createTutorialDriver({
+      onSkip: handleSkip,
+    });
     driverRef.current = driverObj;
 
     driverObj.setSteps([

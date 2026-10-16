@@ -102,6 +102,7 @@ export default function DemoDashboardView({
           </div>
 
           <Button
+            id="tutorial-find-expert-btn"
             type="button"
             className="flex items-center cursor-pointer w-full lg:w-[172px] gap-2 px-5 bg-[#005864] hover:bg-[#004752] text-white"
           >

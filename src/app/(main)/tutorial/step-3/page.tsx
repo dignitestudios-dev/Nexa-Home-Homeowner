@@ -24,8 +24,22 @@ export default function TutorialStepThreePage() {
   const userId = userData?.data?._id;
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
+  const handleSkip = () => {
+    if (driverRef.current) {
+      driverRef.current.destroy();
+    }
+    setTutorialCompleted(true, userId);
+    toast.info("Tutorial skipped", {
+      description: "You can restart the tutorial anytime from Settings -> App Tutorial.",
+    });
+    router.push("/dashboard");
+  };
+
   useEffect(() => {
-    const driverObj = createTutorialDriver();
+    const driverObj = createTutorialDriver({
+      userId,
+      onSkip: handleSkip,
+    });
     driverRef.current = driverObj;
 
     driverObj.setSteps([

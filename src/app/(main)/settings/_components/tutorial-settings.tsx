@@ -67,7 +67,15 @@ const TUTORIAL_STEPS_OVERVIEW = [
     icon: Clock,
     desc: "Monitor submitted requests with live expert responses and review your archived completed projects history.",
     highlight: "Dashboard Ongoing Tab",
-    href: "/dashboard?tab=ongoing&startTutorial=ongoing",
+    href: "/tutorial/step-4",
+  },
+  {
+    step: 7,
+    title: "Search & Request Categories",
+    icon: Search,
+    desc: "Search for any specific trade or service, or submit a request for a new category if it's not yet available.",
+    highlight: "Find Expert Search Page",
+    href: "/tutorial/find-expert",
   },
 ];
 
