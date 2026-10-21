@@ -8,7 +8,7 @@ import DisclaimerDialog from "./ui/disclaimer-dialog";
 import SuccessDialog from "./ui/success-dialog";
 import { StepOneData, StepTwoData } from "../page";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AttachmentDialog from "@/components/ui/attachment-dialog";
 import { Loader } from "./ui/loader";
 
@@ -55,9 +55,28 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
     setSelectedAttachmentIndex((prev) => (prev === 0 ? attachments.length - 1 : prev - 1));
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTutorial = searchParams.get("tutorial") === "true";
+
   const { data: addressData } = useGetAddresses();
   const addresses = addressData?.data?.addresses ?? [];
-  const selectedAddress = addresses.find((a) => a._id === stepOneData.addressId);
+  const selectedAddress = addresses.find((a) => a._id === stepOneData.addressId) || (isTutorial ? {
+    _id: "demo-address",
+    user: "demo-user",
+    label: "Home",
+    address: "123 Innovation Way",
+    city: "Austin",
+    state: "TX",
+    zipCode: "78701",
+    country: "USA",
+    isDefault: true,
+    coordinates: {
+      type: "Point",
+      coordinates: [-97.7431, 30.2672] as [number, number],
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  } : undefined);
 
   const contactPreference = [
     ...(stepOneData.contactCall ? ["phone"] : []),
@@ -76,6 +95,12 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
   const handleNext = () => setIsDisclaimerOpen(true);
 
   const handleConfirmDisclaimer = () => {
+    if (isTutorial) {
+      setIsDisclaimerOpen(false);
+      setIsSuccessOpen(true);
+      return;
+    }
+
     const images = (stepOneData.uploadedImages ?? []).filter((f) => f.type.startsWith("image/"));
     const videos = (stepOneData.uploadedImages ?? []).filter((f) => f.type.startsWith("video/"));
 
@@ -103,7 +128,7 @@ export default function FindExpertStepThree({ stepOneData, stepTwoData, matchedP
       )}
 
       <div className="max-w-[1400px] mx-auto rounded-[24px] py-2">
-        <div className="flex items-center gap-4 mb-6">
+        <div id="tutorial-step-three-header" className="flex items-center gap-4 mb-6">
           <button onClick={onBack} className="flex items-center text-[#005864] hover:text-[#004750] transition-colors">
             <ArrowLeft size={20} />
           </button>

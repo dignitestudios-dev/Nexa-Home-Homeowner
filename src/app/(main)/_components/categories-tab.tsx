@@ -41,7 +41,7 @@ const CategoriesTab = ({
     onCategoryClick(`/find-expert?categoryId=${encodeURIComponent(id)}&categoryName=${encodeURIComponent(name)}`);
   };
   return (
-    <>
+    <div id="tutorial-categories-section">
       {/* Recent Activity Carousel */}
       {carouselItems.length > 0 && <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
@@ -176,7 +176,7 @@ const CategoriesTab = ({
           onPageChange={setCategoryPage}
         />
       </div>
-    </>
+    </div>
   );
 };
 

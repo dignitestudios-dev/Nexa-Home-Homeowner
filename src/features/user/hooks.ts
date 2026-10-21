@@ -173,7 +173,82 @@ export function useGetRecentActivityCategories() {
   })
 }
 
-export function useGetJobs(params: { tab: JobTab; page: number; limit: number; search?: string }) {
+export interface CategoryPricing {
+  dollarPrice?: number
+  oneTimeCredits?: number
+  recurringCredits?: number
+}
+
+export interface CategorySearchItem {
+  _id: string
+  id?: string
+  name: string
+  slug?: string
+  description?: string | null
+  credits?: number | null
+  pricing?: CategoryPricing
+  icon?: CategoryIcon
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface SearchCategoriesResponse {
+  success: boolean
+  message: string
+  data: CategorySearchItem[]
+}
+
+export function useSearchCategories(search: string, enabled: boolean = true) {
+  return useQuery<SearchCategoriesResponse>({
+    queryKey: ['categories-search', search],
+    queryFn: async () => {
+      const res = await apiClient.get<SearchCategoriesResponse>('/category/search', {
+        params: { search },
+      })
+      return res.data
+    },
+    enabled: enabled && search.trim().length > 0,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export interface RequestCategoryItem {
+  _id: string
+  user: string
+  text: string
+  status: string
+  processedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RequestCategoryVars {
+  text: string
+}
+
+export interface RequestCategoryResponse {
+  success: boolean
+  message: string
+  data?: {
+    request: RequestCategoryItem
+  }
+}
+
+export function useRequestCategory(
+  options?: Parameters<typeof useApiMutation<RequestCategoryResponse, RequestCategoryVars>>[0]['mutationOptions']
+) {
+  return useApiMutation<RequestCategoryResponse, RequestCategoryVars>({
+    endpoint: '/request',
+    method: 'POST',
+    invalidateKeys: ['categories', 'categories-search'],
+    mutationOptions: options,
+  })
+}
+
+export function useGetJobs(
+  params: { tab: JobTab; page: number; limit: number; search?: string },
+  options?: { enabled?: boolean }
+) {
   return useQuery<GetJobsResponse>({
     queryKey: ['jobs', params],
     queryFn: async () => {
@@ -187,6 +262,7 @@ export function useGetJobs(params: { tab: JobTab; page: number; limit: number; s
       })
       return res.data
     },
+    enabled: options?.enabled,
   })
 }
 

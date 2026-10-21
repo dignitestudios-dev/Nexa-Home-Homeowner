@@ -10,15 +10,87 @@ import { Pagination } from '@/components/ui/pagination'
 
 type Props = {
   tab: JobTab;
-  search?:string
+  search?: string;
+  isTutorialMode?: boolean;
 }
 
 const LIMIT = 12
 
-export default function OnGoingServicesTab({ tab ,search }: Props) {
+const TUTORIAL_DUMMY_ONGOING = [
+  {
+    _id: "demo_awaiting",
+    serviceName: "Air Duct Cleaning",
+    description: "My Air Duct is not working properly and I need urgent help.",
+    when: "Ready to Hire",
+    status: "Ongoing" as const,
+    postedDate: "Today",
+    actionText: "Awaiting Response",
+  },
+  {
+    _id: "demo_confirm",
+    serviceName: "Alarm System",
+    description: "My Alarm System is not working, I think its broken.",
+    when: "Researching Options",
+    status: "Ongoing" as const,
+    postedDate: "Yesterday",
+    actionText: "Confirm Expert",
+  },
+  {
+    _id: "demo_ongoing",
+    serviceName: "Appliance Installation",
+    description: "My TV needs to be installed on the wall. I need it urgent today",
+    when: "Ready to Hire",
+    status: "Ongoing" as const,
+    postedDate: "10/05/26",
+    actionText: "Ongoing",
+  },
+];
+
+const TUTORIAL_DUMMY_COMPLETED = [
+  {
+    _id: "demo_completed",
+    serviceName: "Appliance Installation",
+    description: "My TV needs to be installed on the wall. I need it urgent today",
+    when: "Ready to Hire",
+    status: "Completed" as const,
+    postedDate: "09/28/26",
+    actionText: "Completed",
+  },
+];
+
+export default function OnGoingServicesTab({ tab, search, isTutorialMode = false }: Props) {
   const [page, setPage] = useState(1)
 
-  const { data, isLoading } = useGetJobs({ tab, page, limit: LIMIT,search })
+  const { data, isLoading } = useGetJobs(
+    { tab, page, limit: LIMIT, search },
+    { enabled: !isTutorialMode }
+  )
+
+  if (isTutorialMode) {
+    const dummyList = tab === "ongoing" ? TUTORIAL_DUMMY_ONGOING : TUTORIAL_DUMMY_COMPLETED;
+    const sectionId = tab === "ongoing" ? "tutorial-ongoing-tab-section" : "tutorial-completed-tab-section";
+
+    return (
+      <div id={sectionId} className="w-full space-y-6">
+        <div className="grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 w-full">
+          {dummyList.map((job, index) => (
+            <div key={job._id} id={`tutorial-job-card-${index}`}>
+              <ServiceCard
+                id={job._id}
+                serviceName={job.serviceName}
+                description={job.description}
+                when={job.when}
+                status={job.status}
+                postedDate={job.postedDate}
+                actionText={job.actionText}
+                disableLink={true}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const jobs = data?.data?.jobs ?? []
   const pagination = data?.data?.pagination

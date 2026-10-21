@@ -279,7 +279,7 @@ export default function FindExpertStepOne({ data, onChange, onRemoveImage, onRem
 
   return (
     <div className="min-h-screen">
-      <div className="flex items-center gap-4 py-2">
+      <div id="tutorial-step-one-header" className="flex items-center gap-4 py-2">
         <button onClick={onBack} className="flex items-center text-[#005864] hover:text-[#004750] transition-colors">
           <ArrowLeft size={20} />
         </button>

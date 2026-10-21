@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Search, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
 import TopHeading from "./ui/top-heading";
-import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress, useGetJobsCount, useGetRecentActivityCategories } from "@/features/user/hooks";
+import { useGetOwnUser, useGetCategories, useGetAddresses, useSetDefaultAddress, useGetJobsCount, useGetRecentActivityCategories, useGetJobs } from "@/features/user/hooks";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,10 @@ import CustomSelect from "@/components/global/custom-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchInput from "./ui/search-input";
 import { useUpdateFcmToken } from "@/features/auth/hooks";
-import { getFcmToken } from '@/lib/firebase'
+import { getFcmToken } from '@/lib/firebase';
+import { useTutorialTour } from "@/hooks/use-tutorial-tour";
+import { isTutorialCompleted, setTutorialCompleted } from "@/lib/tutorial";
+import { toast } from "sonner";
 
 type Props = {};
 
@@ -93,6 +96,15 @@ const Dashboard = (props: Props) => {
   const hasShownJobsPopup = typeof window !== 'undefined' && sessionStorage.getItem('jobs-count-popup-shown') === 'true';
   const { data: jobsCountData } = useGetJobsCount(!isUserLoading && !!userData?.data && !hasShownJobsPopup);
 
+  // Fetch ongoing jobs to get confirmExpertCount indicator
+  const { data: ongoingJobsData } = useGetJobs({
+    tab: "ongoing",
+    page: 1,
+    limit: 12,
+    search: activeTab === "Ongoing" ? search : "",
+  });
+  const confirmExpertCount = ongoingJobsData?.data?.confirmExpertCount;
+
   const addresses = addressData?.data?.addresses || [];
   const defaultAddress = addresses.find((addr) => addr.isDefault);
   const addressText = defaultAddress
@@ -123,7 +135,7 @@ const Dashboard = (props: Props) => {
 
   const hasEmail = !!userData?.data?.contactEmail;
 
-  const handleFindExpert = (path = "/find-expert") => {
+  const handleFindExpert = (path = "/find-expert/search") => {
     if (!hasEmail) {
       setEmailPopupOpen(true);
       return;
@@ -160,6 +172,75 @@ const Dashboard = (props: Props) => {
       sessionStorage.setItem('jobs-count-popup-shown', 'true');
     }
   }, [jobsCountData, hasShownJobsPopup]);
+
+  const [isTutorialActive, setIsTutorialActive] = useState(false);
+  const startParam = searchParams.get("startTutorial");
+  const isTutorialOngoing =
+    isTutorialActive ||
+    startParam === "ongoing" ||
+    startParam === "completed" ||
+    startParam === "true";
+
+  const { startDashboardTour } = useTutorialTour();
+
+  // Show tutorial once on first signup / login or when ?startTutorial=...
+  useEffect(() => {
+    if (isUserLoading || !userData?.data) return;
+    if (emailPopupOpen || jobsCountPopupOpen || isLocationDialogOpen) return;
+
+    const userId = userData.data._id;
+    const completed = isTutorialCompleted(userId);
+
+    if (startParam === "find-expert") {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 8,
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    } else if (startParam === "completed") {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 7,
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    } else if (startParam === "ongoing") {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 3,
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    } else if (startParam === "true" || !completed) {
+      setIsTutorialActive(true);
+      const timer = setTimeout(() => {
+        startDashboardTour({
+          userId,
+          handleTabChange,
+          initialStepIndex: 0,
+        });
+      }, 650);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    isUserLoading,
+    userData,
+    startParam,
+    emailPopupOpen,
+    jobsCountPopupOpen,
+    isLocationDialogOpen,
+    startDashboardTour,
+  ]);
 
   useEffect(() => {
     if (isUserLoading || !userData?.data) return
@@ -253,7 +334,7 @@ const Dashboard = (props: Props) => {
   }
 
   return (
-    <div className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
+    <div id="tutorial-dashboard-container" className="max-w-[1230px] mx-auto py-5 space-y-10 px-4 sm:px-6 lg:px-0">
       <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <TopHeading title={`Welcome ${userData?.data.name}`} />
@@ -276,7 +357,7 @@ const Dashboard = (props: Props) => {
             onChange={setSearch}
             placeholder="Search"
           />}
-          <Button onClick={() => handleFindExpert()} className="flex items-center cursor-pointer w-full lg:w-[172px] gap-2 px-5" variant="primary">
+          <Button id="tutorial-find-expert-btn" onClick={() => handleFindExpert()} className="flex items-center cursor-pointer w-full lg:w-[172px] gap-2 px-5" variant="primary">
             <Search size={18} />
             Find an Expert
           </Button>
@@ -284,23 +365,37 @@ const Dashboard = (props: Props) => {
       </div>
 
       <div className="space-y-8">
-        <div className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
-          <div className="grid grid-cols-3 ">
+        <div id="tutorial-dashboard-tabs" className="w-full max-w-[510px] rounded-[12px] bg-[#F8F8F8] p-1">
+          <div className="grid grid-cols-3 gap-2">
             {tabs.map((tab) => {
               const active = tab === activeTab;
+              const tabId =
+                tab === "Home"
+                  ? "tutorial-home-tab-btn"
+                  : tab === "Ongoing"
+                  ? "tutorial-ongoing-tab-btn"
+                  : "tutorial-completed-tab-btn";
               return (
                 <button
                   key={tab}
+                  id={tabId}
                   type="button"
                   onClick={() => handleTabChange(tab)}
                   className={cn(
-                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:ring-[#005864]/20",
+                    "min-h-[38px] rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-0 focus:ring-[#005864]/20 flex items-center justify-center gap-1.5 cursor-pointer",
                     active
                       ? "bg-[#005864] text-white shadow-sm"
                       : "bg-white text-[#005864] hover:bg-slate-100",
                   )}
                 >
-                  {tab}
+                  <span>{tab}</span>
+                  {tab === "Ongoing" && (
+                    (isTutorialOngoing || (typeof confirmExpertCount === "number" && confirmExpertCount > 0)) && (
+                      <span className="inline-flex items-center justify-center text-xs font-semibold px-1.5 min-w-[20px] h-5 rounded-full bg-[#FF0000] text-white">
+                        {isTutorialOngoing ? 3 : confirmExpertCount}
+                      </span>
+                    )
+                  )}
                 </button>
               );
             })}
@@ -323,8 +418,20 @@ const Dashboard = (props: Props) => {
         )
 
       }
-      {activeTab === 'Ongoing' && <OnGoingServicesTab tab="ongoing" search={search} />}
-      {activeTab === 'Completed' && <OnGoingServicesTab tab="completed" search={search} />}
+      {activeTab === 'Ongoing' && (
+        <OnGoingServicesTab
+          tab="ongoing"
+          search={search}
+          isTutorialMode={isTutorialOngoing}
+        />
+      )}
+      {activeTab === 'Completed' && (
+        <OnGoingServicesTab
+          tab="completed"
+          search={search}
+          isTutorialMode={isTutorialOngoing}
+        />
+      )}
       <Dialog open={emailPopupOpen} onOpenChange={setEmailPopupOpen}>
         <DialogContent className="sm:max-w-[400px] border-none p-0  rounded-[24px] bg-white flex flex-col items-center select-none outline-none">
           {/* Circular green/teal background check icon */}

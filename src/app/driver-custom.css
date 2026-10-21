@@ -1,0 +1,252 @@
+/* Nexa Home Custom Styles for Driver.js Tour Popovers */
+
+/* Backdrop overlay - keep transparent and blur-free so highlighted element is sharp and crystal clear */
+.driver-overlay {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1000000000 !important;
+}
+
+/* Highlighted cutout ring */
+.driver-stage {
+  box-shadow: 0 0 0 4px #005864, 0 0 35px rgba(0, 88, 100, 0.5) !important;
+  border-radius: 14px !important;
+  position: fixed !important;
+  z-index: 1000000001 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  pointer-events: none !important;
+}
+
+/* Disable clicks on focused/highlighted elements during tutorial */
+.driver-active-element,
+.driver-active-element *,
+.driver-no-interaction,
+.driver-no-interaction * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Popover Card */
+body .driver-popover,
+.driver-popover {
+  box-sizing: border-box !important;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: #ffffff !important;
+  color: #181818 !important;
+  border-radius: 20px !important;
+  width: min(480px, calc(100vw - 32px)) !important;
+  min-width: min(320px, calc(100vw - 32px)) !important;
+  max-width: 500px !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: fit-content !important;
+  padding: 24px 24px 20px 24px !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 40, 50, 0.28), 0 0 0 1px rgba(0, 88, 100, 0.12) !important;
+  border: 1px solid rgba(0, 88, 100, 0.1) !important;
+  z-index: 1000000002 !important;
+  display: block !important;
+}
+
+/* Title */
+body .driver-popover .driver-popover-title,
+.driver-popover .driver-popover-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #181818 !important;
+  line-height: 1.35 !important;
+  margin: 0 0 10px 0 !important;
+  padding-right: 0 !important;
+  display: block !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Description */
+body .driver-popover .driver-popover-description,
+.driver-popover .driver-popover-description {
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  color: #4B5563 !important;
+  line-height: 1.6 !important;
+  margin: 0 0 18px 0 !important;
+  display: block !important;
+}
+
+.driver-popover .driver-popover-description strong {
+  color: #181818 !important;
+  font-weight: 600 !important;
+}
+
+.driver-popover .driver-popover-description ul {
+  margin: 6px 0 0 0 !important;
+  padding-left: 18px !important;
+  list-style-type: disc !important;
+}
+
+.driver-popover .driver-popover-description li {
+  margin-bottom: 3px !important;
+}
+
+/* Remove cross button (X) completely from popups */
+body .driver-popover .driver-popover-close-btn,
+.driver-popover .driver-popover-close-btn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Skip Tutorial Button */
+body .driver-popover .driver-popover-skip-btn,
+.driver-popover .driver-popover-skip-btn {
+  background-color: transparent !important;
+  color: #64748B !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+body .driver-popover .driver-popover-skip-btn:hover,
+.driver-popover .driver-popover-skip-btn:hover {
+  background-color: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
+}
+
+/* Popover Footer Container */
+body .driver-popover .driver-popover-footer,
+.driver-popover .driver-popover-footer {
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid #F1F5F9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+/* Hide Step 1 of 1 badge since steps are already titled with step numbers */
+body .driver-popover .driver-popover-progress-text,
+.driver-popover .driver-popover-progress-text {
+  display: none !important;
+}
+
+/* Button Container */
+body .driver-popover .driver-popover-navigation-btns,
+.driver-popover .driver-popover-navigation-btns {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  margin-left: auto !important;
+}
+
+/* Back / Prev Button */
+body .driver-popover .driver-popover-prev-btn,
+body .driver-popover .driver-popover-footer-btn.driver-popover-prev-btn,
+.driver-popover .driver-popover-prev-btn,
+.driver-popover .driver-popover-footer-btn.driver-popover-prev-btn {
+  background-color: #F8FAFC !important;
+  color: #005864 !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease-in-out !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.driver-popover .driver-popover-prev-btn:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #94A3B8 !important;
+}
+
+/* Next / Finish Button */
+body .driver-popover .driver-popover-next-btn,
+body .driver-popover .driver-popover-footer-btn.driver-popover-next-btn,
+.driver-popover .driver-popover-next-btn,
+.driver-popover .driver-popover-footer-btn.driver-popover-next-btn {
+  background-color: #005864 !important;
+  color: #ffffff !important;
+  border: 1px solid #005864 !important;
+  border-radius: 12px !important;
+  padding: 8px 18px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  min-height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(0, 88, 100, 0.28) !important;
+  transition: all 0.15s ease-in-out !important;
+  margin-left: auto !important;
+}
+
+.driver-popover .driver-popover-next-btn:hover {
+  background-color: #004752 !important;
+  border-color: #004752 !important;
+  box-shadow: 0 6px 16px rgba(0, 88, 100, 0.38) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Disabled button state */
+.driver-popover .driver-popover-btn-disabled {
+  opacity: 0.4 !important;
+  pointer-events: none !important;
+}
+
+/* Popover Subtitle / Category Badge */
+.driver-popover-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 9999px !important;
+  background-color: rgba(0, 88, 100, 0.08) !important;
+  color: #005864 !important;
+  margin-bottom: 6px !important;
+}
+
+/* Custom positioning for Dashboard Home popup so it stays centered and visible without scrolling down */
+.driver-popover-dashboard-home {
+  position: fixed !important;
+  top: 140px !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: fit-content !important;
+}
+
+.driver-popover-dashboard-home .driver-popover-arrow {
+  display: none !important;
+}

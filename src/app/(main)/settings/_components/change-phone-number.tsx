@@ -99,7 +99,24 @@ export default function ChangePhoneNumber() {
   const phoneChanged = formPhone !== currentPhoneDigits
 
   const handleInputChange = (index: number, value: string) => {
-    if (value.length > 1) value = value.slice(-1)
+    if (value.length > 1) {
+      const digits = value.replace(/\D/g, '')
+      if (digits.length > 1) {
+        const newCode = [...code]
+        const startIndex = digits.length >= 5 ? 0 : index
+        const digitsArr = digits.slice(0, 5 - startIndex).split('')
+        digitsArr.forEach((d, i) => {
+          if (startIndex + i < 5) {
+            newCode[startIndex + i] = d
+          }
+        })
+        setCode(newCode)
+        const nextIndex = Math.min(startIndex + digitsArr.length, 4)
+        inputRefs.current[nextIndex]?.focus()
+        return
+      }
+      value = value.slice(-1)
+    }
     if (!/^\d*$/.test(value)) return
 
     const newCode = [...code]
@@ -109,6 +126,28 @@ export default function ChangePhoneNumber() {
     if (value && index < 4) {
       inputRefs.current[index + 1]?.focus()
     }
+  }
+
+  const handlePaste = (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text')
+    const digits = pastedData.replace(/\D/g, '')
+    if (!digits) return
+
+    const newCode = [...code]
+    const startIndex = digits.length >= 5 ? 0 : index
+    const digitsArr = digits.slice(0, 5 - startIndex).split('')
+
+    digitsArr.forEach((digit, i) => {
+      if (startIndex + i < 5) {
+        newCode[startIndex + i] = digit
+      }
+    })
+
+    setCode(newCode)
+
+    const nextFocusIndex = Math.min(startIndex + digitsArr.length, 4)
+    inputRefs.current[nextFocusIndex]?.focus()
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -201,6 +240,7 @@ export default function ChangePhoneNumber() {
                   value={digit}
                   onChange={(e) => handleInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={(e) => handlePaste(index, e)}
                   placeholder="0"
                   className="w-14 h-14 bg-[#F8F8F8] text-[#005864] text-center text-xl font-semibold border-2 border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-colors"
                   onFocus={(e) => {
