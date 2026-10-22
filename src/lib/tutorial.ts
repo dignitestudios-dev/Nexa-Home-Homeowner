@@ -285,10 +285,10 @@ export const TUTORIAL_STEPS = {
   DISCOVERY_SMART_SEARCH: {
     element: "#tutorial-smart-search-card",
     popover: {
-      title: createTutorialStepTitle("Discovery", "Smart Search"),
+      title: createTutorialStepTitle("Discovery", "Tell us what service you're looking for?"),
       description: `
         <div class="space-y-2">
-          <p>Describe what you need in your own words. Our system analyzes your request to match Experts.</p>
+          <p></p>
         </div>
       `,
       side: "top" as const,
