@@ -144,7 +144,7 @@ export default function FindExpertStepTwo({
           <h1 className="text-[32px] font-semibold">Expert Matches</h1>
         </div>
         <div className="flex items-center gap-4">
-          <SearchInput value={search} onChange={setSearch} placeholder="Search Here" />
+          {/* <SearchInput value={search} onChange={setSearch} placeholder="Search Here" /> */}
           <button
             type="button"
             onClick={() => setShowFilters((v) => !v)}

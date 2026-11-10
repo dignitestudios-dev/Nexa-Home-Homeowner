@@ -53,7 +53,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 const whenOptions = [
-  { label: "Need an expert right away", value: "Need an expert right away" },
+  // { label: "Need an expert right away", value: "Need an expert right away" },
   { label: "Ready to hire", value: "Ready to hire" },
   { label: "Researching options", value: "Researching options" },
   { label: "Select Specific Date", value: "select-specific-date" },
