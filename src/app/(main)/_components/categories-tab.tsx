@@ -3,7 +3,7 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Category } from "@/features/user/hooks";
+import { useGetAddresses, type Category } from "@/features/user/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/pagination";
 
@@ -40,6 +40,8 @@ const CategoriesTab = ({
   const handleCategoryClick = (id: string, name: string) => {
     onCategoryClick(`/find-expert?categoryId=${encodeURIComponent(id)}&categoryName=${encodeURIComponent(name)}`);
   };
+  const { data: addressData } = useGetAddresses();
+  const defaultAddress = addressData?.data?.addresses.find((addr) => addr.isDefault);
   return (
     <div id="tutorial-categories-section">
       {/* Recent Activity Carousel */}
@@ -169,7 +171,7 @@ const CategoriesTab = ({
         )}
 
         {/* Pagination */}
-        
+
         <Pagination
           page={categoryPage}
           totalPages={totalPages}

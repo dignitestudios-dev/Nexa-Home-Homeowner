@@ -143,7 +143,7 @@ function FindExpertSearchContent() {
               Find an Expert
             </h1>
             <p className="text-[13px] sm:text-[14px] text-gray-500">
-              Search by service or ask our smart assistant
+              Search by service or ask our smart search
             </p>
           </div>
         </div>
@@ -275,7 +275,7 @@ function FindExpertSearchContent() {
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-[#005864]" />
                 <h3 className="text-[17px] font-semibold text-[#181818]">
-                  Suggested Categories ({suggestedCategories.length})
+                  Top matches for your search: ({suggestedCategories.length})
                 </h3>
               </div>
               <p className="text-[13px] text-gray-500">
