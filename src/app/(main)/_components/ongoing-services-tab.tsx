@@ -136,7 +136,14 @@ export default function OnGoingServicesTab({ tab, search, isTutorialMode = false
             when={job.when}
             status={tab === 'ongoing' ? 'Ongoing' : 'Completed'}
             postedDate={new Date(job.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
-            actionText={job.applyCount > 0 ? job.userDisplayTag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'Awaiting Response'}
+            actionText={
+              job.applyCount > 0
+                ? job.userDisplayTag?.trim().toLowerCase() === 'confirm_expert' ||
+                  job.userDisplayTag?.trim().toLowerCase() === 'confirm expert'
+                  ? 'Ongoing'
+                  : job.userDisplayTag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                : 'Awaiting Response'
+            }
           />
         ))}
       </div>

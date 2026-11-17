@@ -58,6 +58,8 @@ const ServiceDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
   const [successOpen, setSuccessOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
@@ -86,9 +88,12 @@ const ServiceDetails = () => {
   const provider = job?.provider;
   const displayTag =
     job?.applyCount && job.applyCount > 0
-      ? job.userDisplayTag
-          ?.replace(/_/g, " ")
-          ?.replace(/\b\w/g, (c) => c.toUpperCase())
+      ? job.userDisplayTag?.trim().toLowerCase() === "confirm_expert" ||
+        job.userDisplayTag?.trim().toLowerCase() === "confirm expert"
+        ? "Ongoing"
+        : job.userDisplayTag
+            ?.replace(/_/g, " ")
+            ?.replace(/\b\w/g, (c) => c.toUpperCase())
       : job
       ? "Awaiting Response"
       : "";
@@ -389,14 +394,11 @@ const ServiceDetails = () => {
         <div className="bg-[#F9FAFA] rounded-[18px] p-4 sm:p-6 h-fit xl:sticky xl:top-6">
           <div className="mb-6">
             <h2 className="text-[18px] sm:text-[20px] font-bold text-[#181818] mb-2">
-              {job.userDisplayTag == "ongoing" || job.userDisplayTag == "completed"
-                ? "Hired for this Service"
-                : "Experts Ready To Help"}
+              Experts Ready To Help
             </h2>
             {appliedProviders.length > 0 && (
-              <p className="text-sm sm:text-base font-bold text-[#181818] leading-[26px]">
-                Below are available Experts for your requests. Choose the Expert
-                you'd like to work with.
+              <p className="text-sm sm:text-base font-normal text-[rgba(24,24,24,0.7)] leading-[24px]">
+                Below are available Experts for your requests. Choose the Expert you'd like to work with.
               </p>
             )}
           </div>
@@ -407,7 +409,6 @@ const ServiceDetails = () => {
                 <ExpertCard
                   key={prov._id}
                   id={prov._id}
-                  jobId={id}
                   name={prov.name}
                   location={
                     prov.providerAddress
@@ -507,9 +508,16 @@ const ServiceDetails = () => {
               >
                 Find Another Expert
               </Button>
-            ) : job.userDisplayTag === "ongoing" ? (
+            ) : appliedProviders.length > 0 ||
+              job.userDisplayTag === "ongoing" ||
+              job.status === "ongoing" ||
+              job.userDisplayTag?.toLowerCase().includes("confirm") ? (
               <Button
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => {
+                  setSelectedProviderId("");
+                  setValidationError("");
+                  setConfirmOpen(true);
+                }}
                 className="h-12 w-full rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-sm sm:text-base font-semibold"
               >
                 Mark As Completed
@@ -531,49 +539,141 @@ const ServiceDetails = () => {
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="w-[calc(100%-2rem)] sm:w-[360px] rounded-[16px] bg-white p-0 border-0 shadow-lg">
-          {/* Icon */}
-          <div className="flex justify-center pt-8">
-            <svg
-              width="35"
-              height="32"
-              viewBox="0 0 35 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M21.8352 2.52366L34.5555 24.6001C34.8355 25.2591 34.958 25.7949 34.993 26.3515C35.063 27.6521 34.608 28.9162 33.7157 29.889C32.8233 30.8584 31.616 31.4306 30.3038 31.5H4.68808C4.14567 31.4671 3.60326 31.3439 3.09585 31.1532C0.558778 30.1301 -0.666016 27.2515 0.36631 24.7562L13.1742 2.50805C13.6116 1.72599 14.2765 1.05143 15.0988 0.617914C17.4784 -0.701714 20.5054 0.165321 21.8352 2.52366ZM19.0182 17.0725C19.0182 17.9049 18.3358 18.6002 17.4959 18.6002C16.6561 18.6002 15.9562 17.9049 15.9562 17.0725V12.1668C15.9562 11.3327 16.6561 10.6582 17.4959 10.6582C18.3358 10.6582 19.0182 11.3327 19.0182 12.1668V17.0725ZM17.4958 24.5303C16.6559 24.5303 15.9561 23.8349 15.9561 23.0043C15.9561 22.1702 16.6559 21.4766 17.4958 21.4766C18.3357 21.4766 19.018 22.1546 19.018 22.9852C19.018 23.8349 18.3357 24.5303 17.4958 24.5303Z"
-                fill="#005864"
-              />
-            </svg>
-          </div>
+        <DialogContent className="w-[calc(100%-2rem)] sm:w-[440px] max-h-[85vh] flex flex-col rounded-[24px] bg-white p-0 border-0 shadow-xl overflow-hidden">
+          {/* Top Section / Header */}
+          <div className="flex flex-col items-center pt-8 px-6 sm:px-8 shrink-0">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-3">
+              <svg
+                width="36"
+                height="33"
+                viewBox="0 0 35 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M21.8352 2.52366L34.5555 24.6001C34.8355 25.2591 34.958 25.7949 34.993 26.3515C35.063 27.6521 34.608 28.9162 33.7157 29.889C32.8233 30.8584 31.616 31.4306 30.3038 31.5H4.68808C4.14567 31.4671 3.60326 31.3439 3.09585 31.1532C0.558778 30.1301 -0.666016 27.2515 0.36631 24.7562L13.1742 2.50805C13.6116 1.72599 14.2765 1.05143 15.0988 0.617914C17.4784 -0.701714 20.5054 0.165321 21.8352 2.52366ZM19.0182 17.0725C19.0182 17.9049 18.3358 18.6002 17.4959 18.6002C16.6561 18.6002 15.9562 17.9049 15.9562 17.0725V12.1668C15.9562 11.3327 16.6561 10.6582 17.4959 10.6582C18.3358 10.6582 19.0182 11.3327 19.0182 12.1668V17.0725ZM17.4958 24.5303C16.6559 24.5303 15.9561 23.8349 15.9561 23.0043C15.9561 22.1702 16.6559 21.4766 17.4958 21.4766C18.3357 21.4766 19.018 22.1546 19.018 22.9852C19.018 23.8349 18.3357 24.5303 17.4958 24.5303Z"
+                  fill="#005864"
+                />
+              </svg>
+            </div>
 
-          {/* Content */}
-          <div className="flex flex-col items-center px-6 sm:px-8 pb-6 pt-4">
-            <DialogTitle className="text-[20px] sm:text-[24px] font-bold text-[#181818] text-center mt-2">
+            <DialogTitle className="text-[22px] sm:text-[24px] font-bold text-[#181818] text-center">
               Mark as Completed
             </DialogTitle>
-            <DialogDescription className="mt-2 text-sm sm:text-base font-normal text-[#565656] text-center leading-[20px]">
-              Are you sure you want to mark this job as completed?
+            <DialogDescription className="mt-2 text-sm sm:text-base font-normal text-[#565656] text-center leading-[22px]">
+              {appliedProviders.length > 0
+                ? "Please select the expert who completed the job."
+                : "Are you sure you want to mark this job as completed?"}
             </DialogDescription>
+          </div>
 
-            <div className="flex gap-3 sm:gap-4 mt-6 w-full">
+          {/* Middle Scrollable Section: Applicants List */}
+          {appliedProviders.length > 0 && (
+            <div className="w-full flex-1 min-h-0 overflow-y-auto px-6 sm:px-8 py-3 space-y-2.5">
+              {appliedProviders.map((prov) => {
+                const isSelected = selectedProviderId === prov._id;
+                return (
+                  <div
+                    key={prov._id}
+                    onClick={() => {
+                      setSelectedProviderId(prov._id);
+                      setValidationError("");
+                    }}
+                    className={`flex items-center justify-between gap-3 p-3.5 rounded-[14px] border cursor-pointer transition-all ${
+                      isSelected
+                        ? "border-[#005864] bg-[#005864]/[0.03] shadow-xs"
+                        : "border-[#E5E7EB] hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
+                        {prov.profilePicture?.location ? (
+                          <Image
+                            src={prov.profilePicture.location}
+                            alt={prov.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-sm font-semibold text-[#005864]">
+                            {prov.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 text-left">
+                        <div className="flex items-center gap-1">
+                          <p className="text-[15px] font-semibold text-[#181818] truncate leading-tight">
+                            {prov.name}
+                          </p>
+                          {prov.isVerifiedBadge && (
+                            <BadgeCheck
+                              size={15}
+                              className="text-white fill-[#2E59D7] shrink-0"
+                            />
+                          )}
+                        </div>
+                        {prov.providerAddress && (
+                          <p className="text-xs text-[#737373] mt-0.5 truncate">
+                            {prov.providerAddress.city}, {prov.providerAddress.state}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Radio Indicator */}
+                    <div
+                      className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        isSelected
+                          ? "border-[#005864] bg-white"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="size-2.5 rounded-full bg-[#005864]" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Bottom Fixed Action Section */}
+          <div className="px-6 sm:px-8 pb-6 pt-2 shrink-0">
+            {validationError && (
+              <p className="mb-3 text-xs text-red-500 font-medium text-center">
+                {validationError}
+              </p>
+            )}
+
+            <div className="flex gap-3 sm:gap-4 w-full">
               <Button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                className="flex-1 h-[49px] rounded-[12px] bg-[rgba(0,88,100,0.06)] hover:bg-[rgba(0,88,100,0.12)] text-[#005864] text-[12px] font-semibold border-0 shadow-none"
+                className="flex-1 h-[48px] rounded-[12px] bg-[#F1F5F7] hover:bg-[#E5ECEF] text-[#005864] text-[14px] font-semibold border-0 shadow-none"
               >
-                No
+                Cancel
               </Button>
               <Button
                 type="button"
-                disabled={isCompleting}
-                onClick={() => completeJob({ jobId: id })}
-                className="flex-1 h-[49px] rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white text-[12px] font-semibold"
+                disabled={isCompleting || (appliedProviders.length > 0 && !selectedProviderId)}
+                onClick={() => {
+                  if (appliedProviders.length > 0 && !selectedProviderId) {
+                    setValidationError("Please select an expert to proceed.");
+                    return;
+                  }
+                  completeJob({
+                    jobId: id,
+                    providerId: selectedProviderId || provider?._id || undefined,
+                  });
+                }}
+                className="flex-1 h-[48px] rounded-[12px] bg-[#005864] hover:bg-[#004752] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-semibold shadow-none"
               >
-                {isCompleting ? "Completing..." : "Yes"}
+                {isCompleting ? "Completing..." : "Complete"}
               </Button>
             </div>
           </div>

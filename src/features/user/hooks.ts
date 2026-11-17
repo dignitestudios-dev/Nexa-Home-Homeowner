@@ -325,13 +325,13 @@ export function useUpdateJobStatus(
 }
 
 export function useCompleteJob(
-  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string }>>[0]['mutationOptions']
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId?: string }>>[0]['mutationOptions']
 ) {
-  return useApiMutation<{ success: boolean; message: string }, { jobId: string }>({
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId?: string }>({
     endpoint: (vars) => `/job/${vars.jobId}/status`,
     method: 'PATCH',
     invalidateKeys: ['job', 'jobs'],
-    toBody: () => ({ status: 'completed' }),
+    toBody: ({ providerId }) => (providerId ? { status: 'completed', providerId } : { status: 'completed' }),
     mutationOptions: options,
   })
 }
