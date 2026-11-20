@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react'
 import Dashboard from '../_components/dashboard';
-// import Dashboard from ""
+import DashboardSkeleton from '../_components/dashboard-skeleton';
+
 type Props = {}
 
 const page = (props: Props) => {
   return (
     <div className="">
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <Dashboard/>
       </Suspense>
     </div>
