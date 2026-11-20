@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, MapPin, Star, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, Star, BadgeCheck, Trash2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   useGetJobDetail,
   useCompleteJob,
   useSubmitReview,
+  useDeleteJob,
 } from "@/features/user/hooks";
 import { ExpertCard } from "./_components/expert-card";
 import { ExperienceDialog } from "./_components/experience-dialog";
@@ -62,6 +64,7 @@ const ServiceDetails = () => {
   const [validationError, setValidationError] = useState<string>("");
   const [successOpen, setSuccessOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleAttachmentClick = (index: number) => {
     setSelectedImageIndex(index);
@@ -82,7 +85,8 @@ const ServiceDetails = () => {
     );
   };
 
-  const { data, isLoading } = useGetJobDetail(id);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const { data, isLoading } = useGetJobDetail(id, !isDeleted);
   const job = data?.data?.job;
   const appliedProviders = data?.data?.appliedProviders ?? [];
   const provider = job?.provider;
@@ -92,11 +96,11 @@ const ServiceDetails = () => {
         job.userDisplayTag?.trim().toLowerCase() === "confirm expert"
         ? "Ongoing"
         : job.userDisplayTag
-            ?.replace(/_/g, " ")
-            ?.replace(/\b\w/g, (c) => c.toUpperCase())
+          ?.replace(/_/g, " ")
+          ?.replace(/\b\w/g, (c) => c.toUpperCase())
       : job
-      ? "Awaiting Response"
-      : "";
+        ? "Awaiting Response"
+        : "";
 
   const handleProviderClick = () => {
     if (!provider) return;
@@ -115,6 +119,15 @@ const ServiceDetails = () => {
         setConfirmOpen(false);
         setSuccessOpen(true);
       }
+    },
+  });
+
+  const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob({
+    onSuccess: (res) => {
+      setIsDeleted(true);
+      setDeleteDialogOpen(false);
+      toast.success(res?.message || "Job deleted successfully");
+      router.push("/dashboard");
     },
   });
 
@@ -244,6 +257,16 @@ const ServiceDetails = () => {
 
   const mapUrl = `https://www.google.com/maps?q=${job.addressDetails.coordinates.coordinates[1]},${job.addressDetails.coordinates.coordinates[0]}`;
 
+  const canDeleteJob =
+    job &&
+    (job.status?.toLowerCase() === "ongoing" ||
+      job.status?.toLowerCase() === "pending" ||
+      job.userDisplayTag?.toLowerCase() === "ongoing" ||
+      job.userDisplayTag?.toLowerCase() === "awaiting response" ||
+      job.userDisplayTag?.toLowerCase() === "awaiting_response" ||
+      displayTag?.toLowerCase() === "ongoing" ||
+      displayTag?.toLowerCase() === "awaiting response");
+
   return (
     <div className="max-w-[1200px] mx-auto rounded-[24px] py-2 px-4 sm:px-6 xl:px-0">
       {/* Header */}
@@ -259,17 +282,29 @@ const ServiceDetails = () => {
             Service Details
           </h1>
         </div>
-        {!isLoading && data?.data?.job ? (
-          <div
-            className={`flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(displayTag!, "ongoing")}`}
-          >
-            <span className="text-[13px] text-nowrap sm:text-[14px] font-bold leading-[22px]">
-              {displayTag}
-            </span>
-          </div>
-        ) : (
-          <Skeleton className="h-[34px] w-[80px] rounded-full" />
-        )}
+        <div className="flex items-center gap-3">
+          {canDeleteJob && (
+            <button
+              type="button"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="flex size-[38px] items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+              title="Delete Job"
+            >
+              <Trash2 className="size-4" strokeWidth={1.8} />
+            </button>
+          )}
+          {!isLoading && data?.data?.job ? (
+            <div
+              className={`flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(displayTag!, "ongoing")}`}
+            >
+              <span className="text-[13px] text-nowrap sm:text-[14px] font-bold leading-[22px]">
+                {displayTag}
+              </span>
+            </div>
+          ) : (
+            <Skeleton className="h-[34px] w-[80px] rounded-full" />
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_487px] gap-6">
@@ -508,10 +543,7 @@ const ServiceDetails = () => {
               >
                 Find Another Expert
               </Button>
-            ) : appliedProviders.length > 0 ||
-              job.userDisplayTag === "ongoing" ||
-              job.status === "ongoing" ||
-              job.userDisplayTag?.toLowerCase().includes("confirm") ? (
+            ) : job.applyCount > 0 ? (
               <Button
                 onClick={() => {
                   setSelectedProviderId("");
@@ -582,11 +614,10 @@ const ServiceDetails = () => {
                       setSelectedProviderId(prov._id);
                       setValidationError("");
                     }}
-                    className={`flex items-center justify-between gap-3 p-3.5 rounded-[14px] border cursor-pointer transition-all ${
-                      isSelected
+                    className={`flex items-center justify-between gap-3 p-3.5 rounded-[14px] border cursor-pointer transition-all ${isSelected
                         ? "border-[#005864] bg-[#005864]/[0.03] shadow-xs"
                         : "border-[#E5E7EB] hover:border-gray-300 bg-white"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
@@ -626,11 +657,10 @@ const ServiceDetails = () => {
 
                     {/* Radio Indicator */}
                     <div
-                      className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        isSelected
+                      className={`size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected
                           ? "border-[#005864] bg-white"
                           : "border-gray-300 bg-white"
-                      }`}
+                        }`}
                     >
                       {isSelected && (
                         <div className="size-2.5 rounded-full bg-[#005864]" />
@@ -711,6 +741,47 @@ const ServiceDetails = () => {
           setShowSuccessDialog(false);
         }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[360px] p-0 border-none rounded-[16px] overflow-hidden min-h-[251px]">
+          <div className="relative flex flex-col items-center justify-center bg-white px-5 pt-8 pb-6 h-full">
+            <div className="flex items-center justify-center mb-[14px]">
+              <AlertTriangle
+                className="h-[42px] w-[42px]"
+                fill="#FF0000"
+                color="#ffffff"
+                strokeWidth={1.5}
+              />
+            </div>
+
+            <DialogTitle className="text-[24px] font-bold leading-[30px] text-[#181818] mb-2 text-center capitalize font-sans">
+              Delete Job
+            </DialogTitle>
+            <DialogDescription className="text-[16px] leading-[20px] text-[#565656] text-center max-w-[260px] font-sans mb-[27px]">
+              Are you sure you want to delete this job request?
+            </DialogDescription>
+
+            <div className="flex w-full gap-3 justify-center px-1">
+              <button
+                type="button"
+                onClick={() => setDeleteDialogOpen(false)}
+                className="flex h-[49px] w-[152px] items-center justify-center rounded-[12px] bg-[#ECECEC] text-[12px] font-medium leading-[16px] text-[#181818] transition hover:bg-[#E0E0E0] font-sans"
+              >
+                No, keep it
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteJob({ jobId: id })}
+                disabled={isDeleting}
+                className="flex h-[49px] w-[152px] items-center justify-center rounded-[12px] bg-[rgba(255,0,0,0.12)] text-[12px] font-medium leading-[16px] text-[#FF0000] transition hover:bg-[rgba(255,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete Now"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
