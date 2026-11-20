@@ -1,12 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useGetJobs } from '@/features/user/hooks'
+import { useGetJobs, useDeleteJob } from '@/features/user/hooks'
 import { Skeleton } from '@/components/ui/skeleton'
 import ServiceCard from './ui/service-card'
 import { Pagination } from '@/components/ui/pagination'
+import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 
 type Props = {
   tab: JobTab;
@@ -60,11 +67,19 @@ const TUTORIAL_DUMMY_COMPLETED = [
 
 export default function OnGoingServicesTab({ tab, search, isTutorialMode = false }: Props) {
   const [page, setPage] = useState(1)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const { data, isLoading } = useGetJobs(
     { tab, page, limit: LIMIT, search },
     { enabled: !isTutorialMode }
   )
+
+  const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob({
+    onSuccess: (res) => {
+      setDeleteTargetId(null)
+      toast.success(res?.message || 'Job deleted successfully')
+    },
+  })
 
   if (isTutorialMode) {
     const dummyList = tab === "ongoing" ? TUTORIAL_DUMMY_ONGOING : TUTORIAL_DUMMY_COMPLETED;
@@ -136,10 +151,63 @@ export default function OnGoingServicesTab({ tab, search, isTutorialMode = false
             when={job.when}
             status={tab === 'ongoing' ? 'Ongoing' : 'Completed'}
             postedDate={new Date(job.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}
-            actionText={job.applyCount > 0 ? job.userDisplayTag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'Awaiting Response'}
+            actionText={
+              job.applyCount > 0
+                ? job.userDisplayTag?.trim().toLowerCase() === 'confirm_expert' ||
+                  job.userDisplayTag?.trim().toLowerCase() === 'confirm expert'
+                  ? 'Ongoing'
+                  : job.userDisplayTag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                : 'Awaiting Response'
+            }
+            onDelete={
+              tab === 'ongoing'
+                ? (_e, jobId) => setDeleteTargetId(jobId)
+                : undefined
+            }
           />
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTargetId} onOpenChange={(open) => !open && setDeleteTargetId(null)}>
+        <DialogContent className="sm:max-w-[360px] p-0 border-none rounded-[16px] overflow-hidden min-h-[251px]">
+          <div className="relative flex flex-col items-center justify-center bg-white px-5 pt-8 pb-6 h-full">
+            <div className="flex items-center justify-center mb-[14px]">
+              <AlertTriangle
+                className="h-[42px] w-[42px]"
+                fill="#FF0000"
+                color="#ffffff"
+                strokeWidth={1.5}
+              />
+            </div>
+
+            <DialogTitle className="text-[24px] font-bold leading-[30px] text-[#181818] mb-2 text-center capitalize font-sans">
+              Delete Job
+            </DialogTitle>
+            <DialogDescription className="text-[16px] leading-[20px] text-[#565656] text-center max-w-[260px] font-sans mb-[27px]">
+              Are you sure you want to delete this job request?
+            </DialogDescription>
+
+            <div className="flex w-full gap-3 justify-center px-1">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="flex h-[49px] w-[152px] items-center justify-center rounded-[12px] bg-[#ECECEC] text-[12px] font-medium leading-[16px] text-[#181818] transition hover:bg-[#E0E0E0] font-sans"
+              >
+                No, keep it
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteTargetId && deleteJob({ jobId: deleteTargetId })}
+                disabled={isDeleting}
+                className="flex h-[49px] w-[152px] items-center justify-center rounded-[12px] bg-[rgba(255,0,0,0.12)] text-[12px] font-medium leading-[16px] text-[#FF0000] transition hover:bg-[rgba(255,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+              >
+                {isDeleting ? 'Deleting...' : 'Yes, Delete Now'}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* {totalPages > 1 && (
         <div className="flex justify-end pt-2">

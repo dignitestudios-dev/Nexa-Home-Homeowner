@@ -287,14 +287,14 @@ export function useGetJobsCount(enabled: boolean = true) {
   })
 }
 
-export function useGetJobDetail(id: string) {
+export function useGetJobDetail(id: string, enabled = true) {
   return useQuery<GetJobDetailResponse>({
     queryKey: ['job', id],
     queryFn: async () => {
       const res = await apiClient.get<GetJobDetailResponse>(`/job/user/${id}`)
       return res.data
     },
-    enabled: !!id,
+    enabled: !!id && enabled,
   })
 }
 
@@ -325,13 +325,24 @@ export function useUpdateJobStatus(
 }
 
 export function useCompleteJob(
-  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string }>>[0]['mutationOptions']
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId?: string }>>[0]['mutationOptions']
 ) {
-  return useApiMutation<{ success: boolean; message: string }, { jobId: string }>({
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string; providerId?: string }>({
     endpoint: (vars) => `/job/${vars.jobId}/status`,
     method: 'PATCH',
     invalidateKeys: ['job', 'jobs'],
-    toBody: () => ({ status: 'completed' }),
+    toBody: ({ providerId }) => (providerId ? { status: 'completed', providerId } : { status: 'completed' }),
+    mutationOptions: options,
+  })
+}
+
+export function useDeleteJob(
+  options?: Parameters<typeof useApiMutation<{ success: boolean; message: string }, { jobId: string }>>[0]['mutationOptions']
+) {
+  return useApiMutation<{ success: boolean; message: string }, { jobId: string }>({
+    endpoint: (vars) => `/job/${vars.jobId}`,
+    method: 'DELETE',
+    invalidateKeys: ['jobs'],
     mutationOptions: options,
   })
 }

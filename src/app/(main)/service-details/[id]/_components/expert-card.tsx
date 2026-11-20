@@ -8,7 +8,6 @@ import { useUpdateJobStatus } from "@/features/user/hooks";
 
 interface ExpertCardProps {
   id: string;
-  jobId: string;
   name: string;
   location: string;
   rating: number;
@@ -16,9 +15,15 @@ interface ExpertCardProps {
   isVerifiedBadge?: boolean;
 }
 
-export function ExpertCard({ id, jobId, name, location, rating, profilePicture, isVerifiedBadge }: ExpertCardProps) {
+export function ExpertCard({
+  id,
+  name,
+  location,
+  rating,
+  profilePicture,
+  isVerifiedBadge,
+}: ExpertCardProps) {
   const router = useRouter();
-  const { mutate: acceptExpert, isPending } = useUpdateJobStatus();
 
   const handleProfileClick = () => {
     const qs = new URLSearchParams({
@@ -34,7 +39,7 @@ export function ExpertCard({ id, jobId, name, location, rating, profilePicture, 
     <div className="bg-white rounded-[12px] p-5">
       {/* Profile Section */}
       <div
-        className="flex items-start gap-4 mb-4 cursor-pointer"
+        className="flex items-start gap-4 cursor-pointer"
         onClick={handleProfileClick}
       >
         <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#E5E5E5]">
@@ -75,14 +80,6 @@ export function ExpertCard({ id, jobId, name, location, rating, profilePicture, 
           <p className="text-sm text-[rgba(24,24,24,0.8)] mt-1 truncate">{location}</p>
         </div>
       </div>
-
-      <Button
-        disabled={isPending}
-        onClick={() => acceptExpert({ jobId, providerId: id })}
-        className="w-full h-12 rounded-[12px] bg-[#005864] hover:bg-[#004752] text-white font-bold text-base transition-colors"
-      >
-        {isPending ? "Selecting..." : "Select Expert"}
-      </Button>
     </div>
   );
 }

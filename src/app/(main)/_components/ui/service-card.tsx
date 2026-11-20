@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 
 type ServiceCardProps = {
   id: string;
@@ -9,6 +10,7 @@ type ServiceCardProps = {
   actionText: string;
   when: string;
   disableLink?: boolean;
+  onDelete?: (e: React.MouseEvent, id: string) => void;
 };
 
 const tagStyles: Record<string, string> = {
@@ -32,6 +34,7 @@ export default function ServiceCard({
   actionText,
   when,
   disableLink = false,
+  onDelete,
 }: ServiceCardProps) {
   const isGreenBorder =
     actionText?.trim().toLowerCase() === "confirm expert" ||
@@ -41,13 +44,29 @@ export default function ServiceCard({
 
   const cardContent = (
     <>
-      {/* Badge */}
-      <div
-        className={`absolute right-3 top-3 flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(actionText, status)}`}
-      >
-        <span className="text-[14px] font-bold leading-[22px]">
-          {actionText}
-        </span>
+      {/* Badge & Optional Delete */}
+      <div className="absolute right-3 top-3 flex items-center gap-2">
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(e, id);
+            }}
+            className="flex size-[34px] items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+            title="Delete Job"
+          >
+            <Trash2 className="size-4" strokeWidth={1.8} />
+          </button>
+        )}
+        <div
+          className={`flex h-[34px] min-w-[80px] items-center justify-center rounded-full px-[10px] py-[6px] ${getBadgeStyle(actionText, status)}`}
+        >
+          <span className="text-[14px] font-bold leading-[22px]">
+            {actionText}
+          </span>
+        </div>
       </div>
 
       {/* Title */}
